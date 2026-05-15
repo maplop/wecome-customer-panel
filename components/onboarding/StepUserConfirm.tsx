@@ -4,9 +4,10 @@ interface StepUserConfirmProps {
   curp: string
   onNext: () => void
   onBack: () => void
+  isVerified?: boolean
 }
 
-export default function StepUserConfirm({ curp, onNext, onBack }: StepUserConfirmProps) {
+export default function StepUserConfirm({ curp, onNext, onBack, isVerified = true }: StepUserConfirmProps) {
   // Derive a display name from CURP (first 4 letters → initials)
   const firstName = curp.slice(0, 4)
 
@@ -40,23 +41,41 @@ export default function StepUserConfirm({ curp, onNext, onBack }: StepUserConfir
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">Estado</span>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-              <span className="text-sm font-medium text-foreground">Verificado en lista blanca</span>
-            </span>
+            {isVerified ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
+                <span className="text-sm font-medium text-foreground">Verificado en lista blanca</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                <span className="text-sm font-medium text-red-600">No verificado en lista blanca</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={onNext}
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
-          style={{ backgroundColor: '#E1941F' }}
-        >
-          Iniciar solicitud
-        </button>
+        {isVerified ? (
+          <button
+            type="button"
+            onClick={onNext}
+            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
+            style={{ backgroundColor: '#E1941F' }}
+          >
+            Iniciar solicitud
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition cursor-not-allowed opacity-50"
+            style={{ backgroundColor: '#E1941F' }}
+          >
+            No puedes iniciar la solicitud
+          </button>
+        )}
         <button
           type="button"
           onClick={onBack}
