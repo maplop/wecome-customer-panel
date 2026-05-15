@@ -14,7 +14,7 @@ export default function StepSuccess({ amount, onRestart }: StepSuccessProps) {
           style={{ backgroundColor: '#2B2929' }}
         >
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E1941F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
         <div className="flex flex-col gap-2">

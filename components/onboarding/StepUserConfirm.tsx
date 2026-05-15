@@ -42,7 +42,7 @@ export default function StepUserConfirm({ curp, onNext, onBack }: StepUserConfir
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-              <span className="text-sm font-medium text-foreground">Activo en nómina</span>
+              <span className="text-sm font-medium text-foreground">Verificado en lista blanca</span>
             </span>
           </div>
         </div>

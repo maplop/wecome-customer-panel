@@ -6,7 +6,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'CreditoNomina — Solicitud de Crédito',
+  title: 'Wecome — Solicitud de Crédito',
   description: 'Solicita tu crédito de nómina de forma rápida, segura y 100% en línea.',
   generator: 'v0.app',
 }

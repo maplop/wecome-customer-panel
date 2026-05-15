@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Header from './Header'
 import { LoggedUser } from './LoginModal'
 import PaymentModal from './PaymentModal'
 import CreditDetailModal from './CreditDetailModal'
@@ -155,32 +156,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
       )}
 
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-border/60">
-          <div className="flex items-center gap-2">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ backgroundColor: '#E1941F' }}
-              aria-hidden="true"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <span className="text-base font-bold text-foreground tracking-tight">CreditoNomina</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={onLogout}
-              className="text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </header>
+        <Header showLogout onLogout={onLogout} />
 
         {/* Main */}
         <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
@@ -302,8 +278,8 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                   <button
                     type="button"
                     onClick={() => data.credits[0] && handleOpenDetail(data.credits[0])}
-                    className="w-full rounded-xl border-2 py-3 text-sm font-semibold transition hover:bg-secondary active:scale-[0.98]"
-                    style={{ borderColor: '#2B2929', color: '#2B2929' }}
+                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
+                    style={{ backgroundColor: '#2B2929' }}
                   >
                     Ver detalle
                   </button>
@@ -324,11 +300,10 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                       key={tab}
                       type="button"
                       onClick={() => setActiveTab(tab)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                        isActive
-                          ? 'bg-foreground text-background'
-                          : 'bg-transparent text-foreground border border-border hover:bg-secondary'
-                      }`}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${isActive
+                        ? 'bg-foreground text-background'
+                        : 'bg-transparent text-foreground border border-border hover:bg-secondary'
+                        }`}
                     >
                       {labels[tab]}
                     </button>
@@ -350,10 +325,10 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                     return (
                       <div
                         key={credit.id}
-                        className="rounded-2xl border border-border bg-card p-5 flex flex-col md:flex-row md:items-center gap-4"
+                        className="rounded-2xl border border-border bg-card p-5 flex flex-col md:flex-row md:items-center gap-6"
                       >
                         {/* Icon + Info */}
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-4 flex-2 min-w-0">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary shrink-0">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
                               <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -367,7 +342,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                         </div>
 
                         {/* Amount / Status */}
-                        <div className="flex flex-col items-start md:items-end md:w-32">
+                        <div className="flex flex-col flex-1 items-start md:items-end md:w-32">
                           {isFinished ? (
                             <span className="text-sm font-semibold" style={{ color: '#2B2929' }}>Finalizado</span>
                           ) : (
