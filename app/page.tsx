@@ -14,9 +14,9 @@ import StepCreditSelection from '@/components/onboarding/StepCreditSelection'
 import StepCreditSummary from '@/components/onboarding/StepCreditSummary'
 import StepFinalConfirm from '@/components/onboarding/StepFinalConfirm'
 import StepSuccess from '@/components/onboarding/StepSuccess'
-import LoginModal from '@/components/onboarding/LoginModal'
+import type { LoggedUser } from '@/components/Auth/types'
+import Auth from '@/components/Auth'
 import DashboardSolicitud from '@/components/onboarding/DashboardSolicitud'
-import type { LoggedUser } from '@/components/onboarding/LoginModal'
 
 // Steps that count in the progress indicator (1-indexed, 0 = success/no-indicator)
 const TOTAL_STEPS = 11
@@ -78,7 +78,7 @@ export default function OnboardingPage() {
     return (
       <>
         {showLoginModal && (
-          <LoginModal
+          <Auth
             onClose={() => setShowLoginModal(false)}
             onSuccess={handleLoginSuccess}
           />
@@ -96,7 +96,7 @@ export default function OnboardingPage() {
     <>
       {/* Login modal — rendered above everything */}
       {showLoginModal && (
-        <LoginModal
+        <Auth
           onClose={() => setShowLoginModal(false)}
           onSuccess={handleLoginSuccess}
         />
