@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { registerWebClient } from '@/services/auth'
+
 interface StepCreateAccountProps {
   onNext: (data: { email: string; password: string }) => void
   onBack: () => void
@@ -21,27 +23,58 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
   const [errors, setErrors] = useState<Partial<FormState>>({})
   const [showPwd, setShowPwd] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const validate = () => {
     const e: Partial<FormState> = {}
+
     // Email is pre-filled from whitelist, no validation needed
     if (!form.password) e.password = 'Ingresa una contraseña'
     else if (form.password.length < 8) e.password = 'Mínimo 8 caracteres'
+
     if (!form.confirm) e.confirm = 'Confirma tu contraseña'
     else if (form.confirm !== form.password) e.confirm = 'Las contraseñas no coinciden'
+
     return e
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     const errs = validate()
-    if (Object.keys(errs).length) { setErrors(errs); return }
-    onNext({ email: form.email, password: form.password })
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      return
+    }
+
+    setErrors({})
+    setSubmitError('')
+    setIsSubmitting(true)
+
+    try {
+      await registerWebClient({
+        email: form.email,
+        password: form.password,
+        username: form.email,
+      })
+
+      onNext({ email: form.email, password: form.password })
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo crear la cuenta. Intenta nuevamente.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const strength = (() => {
     const p = form.password
     if (!p) return 0
+
     let s = 0
     if (p.length >= 8) s++
     if (/[A-Z]/.test(p)) s++
@@ -90,12 +123,16 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
               type={showPwd ? 'text' : 'password'}
               placeholder="Mínimo 8 caracteres"
               value={form.password}
-              onChange={(e) => { setForm(f => ({ ...f, password: e.target.value })); setErrors(er => ({ ...er, password: '' })) }}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, password: e.target.value }))
+                setErrors((er) => ({ ...er, password: '' }))
+                if (submitError) setSubmitError('')
+              }}
               className={`w-full rounded-xl border px-4 py-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${errors.password ? 'border-destructive' : 'border-border bg-background'}`}
             />
             <button
               type="button"
-              onClick={() => setShowPwd(v => !v)}
+              onClick={() => setShowPwd((v) => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
               aria-label={showPwd ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
@@ -109,7 +146,7 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
           {form.password && (
             <div className="flex items-center gap-2">
               <div className="flex gap-1 flex-1">
-                {[1, 2, 3, 4].map(i => (
+                {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="h-1 flex-1 rounded-full transition-all" style={{ backgroundColor: i <= strength ? strengthColor : '#e5e7eb' }} />
                 ))}
               </div>
@@ -130,12 +167,16 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
               type={showConfirm ? 'text' : 'password'}
               placeholder="Repite tu contraseña"
               value={form.confirm}
-              onChange={(e) => { setForm(f => ({ ...f, confirm: e.target.value })); setErrors(er => ({ ...er, confirm: '' })) }}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, confirm: e.target.value }))
+                setErrors((er) => ({ ...er, confirm: '' }))
+                if (submitError) setSubmitError('')
+              }}
               className={`w-full rounded-xl border px-4 py-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${errors.confirm ? 'border-destructive' : 'border-border bg-background'}`}
             />
             <button
               type="button"
-              onClick={() => setShowConfirm(v => !v)}
+              onClick={() => setShowConfirm((v) => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
               aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
@@ -149,19 +190,25 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
           {errors.confirm && <p className="text-xs text-destructive">{errors.confirm}</p>}
         </div>
 
+        {submitError && (
+          <p className="text-sm text-destructive">{submitError}</p>
+        )}
+
         <button
           type="submit"
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 mt-1"
+          disabled={isSubmitting}
+          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 mt-1 disabled:cursor-not-allowed disabled:opacity-70"
           style={{ backgroundColor: '#E1941F' }}
         >
-          Crear cuenta
+          {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
       </form>
 
       <button
         type="button"
         onClick={onBack}
-        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
+        disabled={isSubmitting}
+        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
       >
         Regresar
       </button>
