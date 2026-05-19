@@ -2,7 +2,7 @@
 interface AuthLayoutProps {
   title: string
   subtitle: string
-  onClose?: () => void
+  onClose: () => void
   children: React.ReactNode
 }
 

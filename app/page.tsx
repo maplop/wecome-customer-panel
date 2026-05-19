@@ -16,7 +16,7 @@ import StepFinalConfirm from '@/components/onboarding/StepFinalConfirm'
 import StepSuccess from '@/components/onboarding/StepSuccess'
 import type { LoggedUser } from '@/components/Auth/types'
 import Auth from '@/components/Auth'
-import DashboardSolicitud from '@/components/onboarding/DashboardSolicitud'
+import DashboardSolicitud from '@/components/Dashbaoard/DashboardSolicitud'
 
 // Steps that count in the progress indicator (1-indexed, 0 = success/no-indicator)
 const TOTAL_STEPS = 11

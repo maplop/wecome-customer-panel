@@ -2,11 +2,12 @@ import AuthLayout from "./AuthLayout"
 import PasswordToggle from "./PasswordToggle"
 import type { LoginProps } from "../types"
 
-export default function Login({ email, password, showPassword, error, loading, successMessage, setEmail, setPassword, setShowPassword, setError, setSuccessMessage, handleSubmit, setMode }: LoginProps) {
+export default function Login({ email, password, showPassword, error, loading, successMessage, setEmail, setPassword, setShowPassword, setError, setSuccessMessage, handleSubmit, setMode, onClose }: LoginProps) {
   return (
     <AuthLayout
       title="Ingresa a tu cuenta"
       subtitle="Consulta el estado de tu solicitud activa."
+      onClose={onClose}
       children={
         <>
           <div className="mx-6 mt-4 rounded-xl border border-border bg-secondary/60 px-4 py-3">

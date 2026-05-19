@@ -6,11 +6,13 @@ export default function RecoverRequest({
   recoveryLoading,
   handleSendRecoveryCode,
   goToLogin,
+  onClose
 }: RecoverRequestProps) {
   return (
     <AuthLayout
       title="Recupera tu contraseña"
       subtitle="Enviaremos un codigo de 6 digitos al correo registrado para esta demo."
+      onClose={onClose}
       children={
         <div className="flex flex-col gap-5 px-6 pb-6 pt-5">
           <div className="rounded-xl border border-border bg-secondary/60 px-4 py-4">

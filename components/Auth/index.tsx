@@ -66,6 +66,7 @@ export default function Auth({ onClose, onSuccess }: AuthProps) {
           setSuccessMessage={setSuccessMessage}
           handleSubmit={handleSubmit}
           setMode={setMode}
+          onClose={handleClose}
         />
       )}
 
@@ -75,6 +76,7 @@ export default function Auth({ onClose, onSuccess }: AuthProps) {
           recoveryLoading={recoveryLoading}
           handleSendRecoveryCode={handleSendRecoveryCode}
           goToLogin={() => setMode('login')}
+          onClose={handleClose}
         />
       )}
 
@@ -93,6 +95,7 @@ export default function Auth({ onClose, onSuccess }: AuthProps) {
           handleVerifyRecoveryCode={handleVerifyRecoveryCode}
           handleResendRecoveryCode={handleResendRecoveryCode}
           setMode={setMode}
+          onClose={handleClose}
         />
       )}
 
@@ -112,6 +115,7 @@ export default function Auth({ onClose, onSuccess }: AuthProps) {
           setResetError={setResetError}
           setMode={setMode}
           handleResetPassword={handleResetPassword}
+          onClose={handleClose}
         />
       )}
     </>

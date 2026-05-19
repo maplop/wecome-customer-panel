@@ -15,12 +15,14 @@ export default function RecoverVerify({
   handleRecoveryKeyDown,
   handleRecoveryPaste,
   handleResendRecoveryCode,
-  setMode
+  setMode,
+  onClose
 }: RecoverVerifyProps) {
   return (
     <AuthLayout
       title="Verifica el codigo"
       subtitle="Captura el codigo que enviamos al correo registrado para continuar."
+      onClose={onClose}
       children={
         <form onSubmit={handleVerifyRecoveryCode} className="flex flex-col gap-5 px-6 pb-6 pt-5">
           <div className="rounded-xl border border-border bg-secondary/60 px-4 py-4">

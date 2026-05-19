@@ -34,6 +34,7 @@ export interface LoginProps {
   setSuccessMessage: (v: string) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   setMode: (mode: ViewMode) => void;
+  onClose: () => void;
 }
 
 export interface RecoverRequestProps {
@@ -41,6 +42,7 @@ export interface RecoverRequestProps {
   recoveryLoading: boolean;
   handleSendRecoveryCode: () => Promise<void>;
   goToLogin: () => void;
+  onClose: () => void;
 }
 
 export interface RecoverResetProps {
@@ -58,6 +60,7 @@ export interface RecoverResetProps {
   setResetError: (v: string) => void;
   setMode: (mode: ViewMode) => void;
   handleResetPassword: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  onClose: () => void;
 }
 
 export interface RecoverVerifyProps {
@@ -79,4 +82,5 @@ export interface RecoverVerifyProps {
   handleRecoveryPaste: (e: React.ClipboardEvent<HTMLDivElement>) => void;
   handleResendRecoveryCode: () => Promise<void>;
   setMode: (mode: ViewMode) => void;
+  onClose: () => void;
 }

@@ -16,12 +16,14 @@ export default function RecoverReset({
   setShowConfirmPassword,
   setResetError,
   setMode,
-  handleResetPassword
+  handleResetPassword,
+  onClose
 }: RecoverResetProps) {
   return (
     <AuthLayout
       title="Crea una nueva contraseña"
       subtitle="Define una contraseña nueva para volver a iniciar sesion."
+      onClose={onClose}
       children={
         <form onSubmit={handleResetPassword} className="flex flex-col gap-5 px-6 pb-6 pt-5">
           <div className="rounded-xl border border-border bg-secondary/60 px-4 py-4">
