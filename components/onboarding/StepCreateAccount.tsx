@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import { isApiClientError } from '@/lib/api-client'
 import { registerWebClient } from '@/services/auth'
 
 interface StepCreateAccountProps {
@@ -61,6 +62,13 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
 
       onNext({ email: form.email, password: form.password })
     } catch (error) {
+      if (isApiClientError(error)) {
+        setSubmitError(
+          error.apiDetail || error.apiMessage || error.apiError || error.message,
+        )
+        return
+      }
+
       setSubmitError(
         error instanceof Error
           ? error.message

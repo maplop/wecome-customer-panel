@@ -42,28 +42,25 @@ export async function registerWebClient(
   data: RegisterRequest,
 ): Promise<RegisterResponse> {
   console.log("Registering user with data:", data);
-  try {
-    const response = await apiClient.post<RegisterResponse>(
-      API_ENDPOINTS.AUTH.REGISTER,
-      {
-        username: data.username,
-        password: data.password,
-        attributes: data.attributes || [
-          {
-            Name: "email",
-            Value: data.email,
-          },
-        ],
-      },
-    );
-    return {
-      ...response.data,
-      success: true,
-    };
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message;
-    throw new Error(errorMessage || "Error durante el registro");
-  }
+
+  const response = await apiClient.post<RegisterResponse>(
+    API_ENDPOINTS.AUTH.REGISTER,
+    {
+      username: data.username,
+      password: data.password,
+      attributes: data.attributes || [
+        {
+          Name: "email",
+          Value: data.email,
+        },
+      ],
+    },
+  );
+
+  return {
+    ...response.data,
+    success: true,
+  };
 }
 
 /**
@@ -72,22 +69,18 @@ export async function registerWebClient(
 export async function loginWebClient(
   data: LoginRequest,
 ): Promise<LoginResponse> {
-  try {
-    const response = await apiClient.post<LoginResponse>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      {
-        email: data.email,
-        password: data.password,
-      },
-    );
-    return {
-      ...response.data,
-      success: true,
-    };
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message;
-    throw new Error(errorMessage || "Error al iniciar sesión");
-  }
+  const response = await apiClient.post<LoginResponse>(
+    API_ENDPOINTS.AUTH.LOGIN,
+    {
+      email: data.email,
+      password: data.password,
+    },
+  );
+
+  return {
+    ...response.data,
+    success: true,
+  };
 }
 
 /**
