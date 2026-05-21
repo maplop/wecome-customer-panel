@@ -3,6 +3,7 @@
 interface StepCreditSummaryProps {
   amount: number
   term: number
+  hasInsurance: boolean
   onNext: () => void
   onBack: () => void
 }
@@ -10,11 +11,12 @@ interface StepCreditSummaryProps {
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
 
-export default function StepCreditSummary({ amount, term, onNext, onBack }: StepCreditSummaryProps) {
+export default function StepCreditSummary({ amount, term, hasInsurance, onNext, onBack }: StepCreditSummaryProps) {
   const commission = Math.round(amount * COMMISSION_RATE)
   const netAmount = amount - commission
   const totalInterest = Math.round(amount * MONTHLY_RATE * term)
-  const totalPayment = amount + totalInterest
+  const insuranceCost = hasInsurance ? Math.round(amount * 0.02) : 0
+  const totalPayment = amount + totalInterest + insuranceCost
   const biweeklyPayment = totalPayment / (term * 2)
 
   // Generate amortization table (biweekly periods)
@@ -33,12 +35,16 @@ export default function StepCreditSummary({ amount, term, onNext, onBack }: Step
     }
   })
 
+  const creditTypeLabel = hasInsurance ? 'Protegido (con seguro)' : 'Esencial (sin seguro)'
+
   const summaryRows = [
+    { label: 'Tipo de crédito', value: creditTypeLabel },
     { label: 'Monto solicitado', value: `$${amount.toLocaleString('es-MX')}` },
     { label: 'Comisión por apertura', value: `$${commission.toLocaleString('es-MX')}` },
     { label: 'Monto a recibir', value: `$${netAmount.toLocaleString('es-MX')}`, highlight: true },
     { label: 'Pago quincenal', value: `$${biweeklyPayment.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`, highlight: true },
     { label: 'Intereses totales', value: `$${totalInterest.toLocaleString('es-MX')}` },
+    ...(hasInsurance ? [{ label: 'Seguro de vida', value: `$${insuranceCost.toLocaleString('es-MX')}` }] : []),
     { label: 'Total a pagar', value: `$${totalPayment.toLocaleString('es-MX')}` },
   ]
 

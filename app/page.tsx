@@ -13,13 +13,14 @@ import StepCreditResult from '@/components/Onboarding/StepCreditResult'
 import StepCreditSelection from '@/components/Onboarding/StepCreditSelection'
 import StepCreditSummary from '@/components/Onboarding/StepCreditSummary'
 import StepFinalConfirm from '@/components/Onboarding/StepFinalConfirm'
+import StepTermsAcceptance from '@/components/Onboarding/StepTermsAcceptance'
 import StepSuccess from '@/components/Onboarding/StepSuccess'
 import type { LoggedUser } from '@/components/Auth/types'
 import Auth from '@/components/Auth'
 import DashboardSolicitud from '@/components/Dashbaoard/DashboardSolicitud'
 
 // Steps that count in the progress indicator (1-indexed, 0 = success/no-indicator)
-const TOTAL_STEPS = 11
+const TOTAL_STEPS = 13
 
 interface FormData {
   curp: string
@@ -27,6 +28,7 @@ interface FormData {
   salary: number
   amount: number
   term: number
+  hasInsurance: boolean
 }
 
 export default function OnboardingPage() {
@@ -60,7 +62,6 @@ export default function OnboardingPage() {
   }
 
   const showIndicator = step >= 1 && step <= TOTAL_STEPS
-  const isSuccess = step > TOTAL_STEPS
 
   const handleNewRequest = () => {
     setShowDashboard(false)
@@ -102,7 +103,7 @@ export default function OnboardingPage() {
         />
       )}
 
-      <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator && !isSuccess}>
+      <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator}>
         {step === 1 && (
           <StepLogin
             onNext={({ curp }) => {
@@ -174,8 +175,8 @@ export default function OnboardingPage() {
         {step === 9 && (
           <StepCreditSelection
             salary={data.salary ?? 0}
-            onNext={({ amount, term }) => {
-              patch({ amount, term })
+            onNext={({ amount, term, hasInsurance }) => {
+              patch({ amount, term, hasInsurance })
               next()
             }}
             onBack={back}
@@ -186,6 +187,7 @@ export default function OnboardingPage() {
           <StepCreditSummary
             amount={data.amount ?? 0}
             term={data.term ?? 12}
+            hasInsurance={data.hasInsurance ?? false}
             onNext={next}
             onBack={back}
           />
@@ -195,12 +197,20 @@ export default function OnboardingPage() {
           <StepFinalConfirm
             amount={data.amount ?? 0}
             term={data.term ?? 12}
+            hasInsurance={data.hasInsurance ?? false}
             onConfirm={next}
             onBack={back}
           />
         )}
 
-        {step > TOTAL_STEPS && (
+        {step === 12 && (
+          <StepTermsAcceptance
+            onNext={next}
+            onBack={back}
+          />
+        )}
+
+        {step === 13 && (
           <StepSuccess
             amount={data.amount ?? 0}
             onRestart={goToDashboard}

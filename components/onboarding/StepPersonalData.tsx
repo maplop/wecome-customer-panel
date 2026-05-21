@@ -56,13 +56,11 @@ export default function StepPersonalData({ onNext, onBack }: StepPersonalDataPro
         <DataRow label="Correo electrónico" value={MOCK_DATA.correo} />
       </div>
 
-      <div className="rounded-xl bg-blue-50 p-4 flex items-start gap-3 border border-blue-100">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" className="shrink-0 mt-0.5">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
-        <p className="text-xs text-blue-800 leading-relaxed">
+      <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex gap-3 items-start">
+        <span className="mt-0.5 shrink-0" style={{ color: '#E1941F' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        </span>
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Esta información ha sido extraída de nuestro registro de entidades confiables. Si no coincide, reporta a soporte.
         </p>
       </div>
