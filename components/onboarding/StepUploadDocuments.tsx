@@ -12,29 +12,36 @@ interface DocumentType {
   label: string
   required: boolean
   acceptedTypes: string
-  step: 1 | 2
+  tab: 1 | 2
 }
 
 const DOCUMENT_TYPES: DocumentType[] = [
-  // Step 1: Identity and credit documents
-  { id: 'ine', label: 'INE', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', step: 1 },
-  { id: 'comprobante-domicilio', label: 'Comprobante de domicilio', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', step: 1 },
-  { id: 'autorizacion-historial', label: 'Autorización de historial crediticio', required: true, acceptedTypes: '.pdf', step: 1 },
-  { id: 'reporte-credito', label: 'Reporte de crédito consolidado', required: true, acceptedTypes: '.pdf', step: 1 },
-  { id: 'aviso-privacidad', label: 'Aviso de privacidad wecom', required: true, acceptedTypes: '.pdf', step: 1 },
-  // Step 2: Authorization and agreements
-  { id: 'autorizacion-publicidad', label: 'Autorización de publicidad', required: true, acceptedTypes: '.pdf', step: 2 },
-  { id: 'autorizacion-seguro', label: 'Autorización de seguro Wecom', required: true, acceptedTypes: '.pdf', step: 2 },
-  { id: 'autorizacion-sic', label: 'Autorización SIC 2', required: true, acceptedTypes: '.pdf', step: 2 },
-  { id: 'pagare', label: 'Pagaré', required: true, acceptedTypes: '.pdf', step: 2 },
+  { id: 'ine-frontal', label: 'INE (Parte frontal)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
+  { id: 'ine-trasera', label: 'INE (Parte trasera)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
+  { id: 'comprobante-domicilio', label: 'Comprobante de domicilio', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
+  { id: 'recibo-nomina-1', label: 'Recibo de nómina (1er más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nomina-2', label: 'Recibo de nómina (2do más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nomina-3', label: 'Recibo de nómina (3er más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+]
+
+const TABS = [
+  { id: 1, label: 'Identificación' },
+  { id: 2, label: 'Recibos de nómina' },
 ]
 
 export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocumentsProps) {
-  const [internalStep, setInternalStep] = useState(1)
+  const [activeTab, setActiveTab] = useState<1 | 2>(1)
   const [documents, setDocuments] = useState<Record<string, { name: string; preview: string }>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState<string | null>(null)
   const fileInputs = useRef<Record<string, HTMLInputElement>>({})
+
+  const currentTabDocs = DOCUMENT_TYPES.filter(d => d.tab === activeTab)
+  const tab1Docs = DOCUMENT_TYPES.filter(d => d.tab === 1)
+  const tab2Docs = DOCUMENT_TYPES.filter(d => d.tab === 2)
+  const tab1Complete = tab1Docs.filter(d => d.required).every(d => !!documents[d.id])
+  const tab2Complete = tab2Docs.filter(d => d.required).every(d => !!documents[d.id])
+  const allRequiredUploaded = tab1Complete && tab2Complete
 
   const handleFileChange = (docId: string, file: File | null) => {
     if (!file) return
@@ -53,7 +60,6 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
     }
 
     setUploading(docId)
-
     const reader = new FileReader()
     reader.onload = (e) => {
       const preview = e.target?.result as string
@@ -70,42 +76,21 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
       delete newDocs[docId]
       return newDocs
     })
-    fileInputs.current[docId]?.click()
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const currentStepDocs = DOCUMENT_TYPES.filter(d => d.step === internalStep && d.required)
     const newErrors: Record<string, string> = {}
-
-    currentStepDocs.forEach(d => {
-      if (!documents[d.id]) {
-        newErrors[d.id] = 'Documento requerido'
-      }
+    DOCUMENT_TYPES.filter(d => d.required).forEach(d => {
+      if (!documents[d.id]) newErrors[d.id] = 'Documento requerido'
     })
 
     if (Object.keys(newErrors).length) {
+      // si hay errores en tab 1, cambia a esa tab
+      const hasTab1Errors = tab1Docs.some(d => newErrors[d.id])
+      if (hasTab1Errors) setActiveTab(1)
       setErrors(newErrors)
-      return
-    }
-
-    // If on step 1 and valid, move to step 2
-    if (internalStep === 1) {
-      setInternalStep(2)
-      return
-    }
-
-    // If on step 2, validate all documents and submit
-    const allErrors: Record<string, string> = {}
-    DOCUMENT_TYPES.filter(d => d.required).forEach(d => {
-      if (!documents[d.id]) {
-        allErrors[d.id] = 'Documento requerido'
-      }
-    })
-
-    if (Object.keys(allErrors).length) {
-      setErrors(allErrors)
       return
     }
 
@@ -115,10 +100,6 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
     onNext({ documents: documentData })
   }
 
-  const currentStepDocs = DOCUMENT_TYPES.filter(d => d.step === internalStep)
-  const currentStepComplete = DOCUMENT_TYPES.filter(d => d.step === internalStep && d.required).every(d => documents[d.id])
-  const allComplete = DOCUMENT_TYPES.filter(d => d.required).every(d => documents[d.id])
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -126,18 +107,37 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
           Sube tus documentos
         </h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          {internalStep === 1
-            ? 'Sube tu identidad, domicilio y autorización crediticia.'
-            : 'Ahora sube las autorizaciones y acuerdos finales.'}
+          Sube los documentos requeridos para continuar con tu solicitud.
         </p>
-        <div className="flex gap-2 mt-2">
-          <div className={`h-1 flex-1 rounded-full transition-all ${internalStep >= 1 ? 'bg-accent' : 'bg-border'}`} />
-          <div className={`h-1 flex-1 rounded-full transition-all ${internalStep >= 2 ? 'bg-accent' : 'bg-border'}`} />
-        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-xl bg-secondary">
+        {TABS.map(tab => {
+          const isComplete = tab.id === 1 ? tab1Complete : tab2Complete
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as 1 | 2)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition ${activeTab === tab.id
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              {tab.label}
+              {isComplete && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-500">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {currentStepDocs.map((doc) => (
+        {currentTabDocs.map((doc) => (
           <div key={doc.id} className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">
               {doc.label} {doc.required && <span className="text-destructive">*</span>}
@@ -146,11 +146,7 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
             {documents[doc.id] ? (
               <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/50">
                 {documents[doc.id].preview.startsWith('data:image') ? (
-                  <img
-                    src={documents[doc.id].preview}
-                    alt={doc.label}
-                    className="w-12 h-12 object-cover rounded-lg"
-                  />
+                  <img src={documents[doc.id].preview} alt={doc.label} className="w-12 h-12 object-cover rounded-lg" />
                 ) : (
                   <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
@@ -174,7 +170,7 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition cursor-pointer">
+              <label className="flex flex-col items-center justify-center w-full h-20 rounded-xl border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition cursor-pointer">
                 <input
                   ref={(el) => { fileInputs.current[doc.id] = el! }}
                   type="file"
@@ -204,22 +200,35 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
           </div>
         ))}
 
-        <button
-          type="submit"
-          disabled={!currentStepComplete}
-          className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] ${currentStepComplete ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
-          style={{ backgroundColor: currentStepComplete ? '#E1941F' : '#9ca3af' }}
-        >
-          {internalStep === 1 ? 'Siguiente' : 'Completar'}
-        </button>
+        {/* Navegación entre tabs o submit */}
+        {activeTab === 1 ? (
+          <button
+            type="button"
+            onClick={() => setActiveTab(2)}
+            disabled={!tab1Complete}
+            className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] ${tab1Complete ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
+            style={{ backgroundColor: tab1Complete ? '#E1941F' : '#9ca3af' }}
+          >
+            Siguiente
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!allRequiredUploaded}
+            className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] ${allRequiredUploaded ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
+            style={{ backgroundColor: allRequiredUploaded ? '#E1941F' : '#9ca3af' }}
+          >
+            Completar
+          </button>
+        )}
       </form>
 
       <button
         type="button"
-        onClick={internalStep === 2 ? () => setInternalStep(1) : onBack}
+        onClick={activeTab === 2 ? () => setActiveTab(1) : onBack}
         className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
       >
-        {internalStep === 2 ? 'Atrás' : 'Regresar'}
+        {activeTab === 2 ? 'Atrás' : 'Regresar'}
       </button>
     </div>
   )

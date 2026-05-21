@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Header from '../onboarding/Header'
+import Header from '../Onboarding/Header'
 
 import type { LoggedUser } from '../Auth/types'
-import PaymentModal from '../onboarding/PaymentModal'
-import CreditDetailModal from '../onboarding/CreditDetailModal'
+import PaymentModal from '../Onboarding/PaymentModal'
+import CreditDetailModal from '../Onboarding/CreditDetailModal'
 
 interface DashboardSolicitudProps {
   user: LoggedUser

@@ -18,7 +18,7 @@ interface FormState {
 
 export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountProps) {
   // Email from whitelist (hardcoded for now)
-  const whitelistEmail = 'usuario@wecome.com'
+  const whitelistEmail = 'usuario2@wecome.com'
 
   const [form, setForm] = useState<FormState>({ email: whitelistEmail, password: '', confirm: '' })
   const [errors, setErrors] = useState<Partial<FormState>>({})
@@ -54,11 +54,13 @@ export default function StepCreateAccount({ onNext, onBack }: StepCreateAccountP
     setIsSubmitting(true)
 
     try {
+      /*
       await registerWebClient({
         email: form.email,
         password: form.password,
         username: form.email,
       })
+        */
 
       onNext({ email: form.email, password: form.password })
     } catch (error) {

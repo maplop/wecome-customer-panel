@@ -20,8 +20,8 @@ export default function StepFinancialData({ onNext, onBack }: StepFinancialDataP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const num = Number(salary)
-    if (!salary) { setError('Ingresa tu sueldo mensual'); return }
-    if (num < 3000) { setError('El sueldo mínimo requerido es $3,000'); return }
+    if (!salary) { setError('Ingresa tu salario mensual'); return }
+    if (num < 3000) { setError('El salario mínimo requerido es $3,000'); return }
     if (num > 500000) { setError('Verifica el monto ingresado'); return }
     onNext({ salary: num })
   }
@@ -49,7 +49,7 @@ export default function StepFinancialData({ onNext, onBack }: StepFinancialDataP
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="salary" className="text-sm font-medium text-foreground">
-            Sueldo mensual neto
+            Salario mensual neto
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">$</span>

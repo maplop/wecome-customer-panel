@@ -1,19 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import OnboardingShell from '@/components/onboarding/OnboardingShell'
-import StepLogin from '@/components/onboarding/StepLogin'
-import StepUserConfirm from '@/components/onboarding/StepUserConfirm'
-import StepIdentity from '@/components/onboarding/StepIdentity'
-import StepCreateAccount from '@/components/onboarding/StepCreateAccount'
-import StepPersonalData from '@/components/onboarding/StepPersonalData'
-import StepFinancialData from '@/components/onboarding/StepFinancialData'
-import StepUploadDocuments from '@/components/onboarding/StepUploadDocuments'
-import StepCreditResult from '@/components/onboarding/StepCreditResult'
-import StepCreditSelection from '@/components/onboarding/StepCreditSelection'
-import StepCreditSummary from '@/components/onboarding/StepCreditSummary'
-import StepFinalConfirm from '@/components/onboarding/StepFinalConfirm'
-import StepSuccess from '@/components/onboarding/StepSuccess'
+import OnboardingShell from '@/components/Onboarding/OnboardingShell'
+import StepLogin from '@/components/Onboarding/StepLogin'
+import StepUserConfirm from '@/components/Onboarding/StepUserConfirm'
+import StepIdentity from '@/components/Onboarding/StepIdentity'
+import StepCreateAccount from '@/components/Onboarding/StepCreateAccount'
+import StepPersonalData from '@/components/Onboarding/StepPersonalData'
+import StepFinancialData from '@/components/Onboarding/StepFinancialData'
+import StepUploadDocuments from '@/components/Onboarding/StepUploadDocuments'
+import StepCreditResult from '@/components/Onboarding/StepCreditResult'
+import StepCreditSelection from '@/components/Onboarding/StepCreditSelection'
+import StepCreditSummary from '@/components/Onboarding/StepCreditSummary'
+import StepFinalConfirm from '@/components/Onboarding/StepFinalConfirm'
+import StepSuccess from '@/components/Onboarding/StepSuccess'
 import type { LoggedUser } from '@/components/Auth/types'
 import Auth from '@/components/Auth'
 import DashboardSolicitud from '@/components/Dashbaoard/DashboardSolicitud'
@@ -123,7 +123,7 @@ export default function OnboardingPage() {
 
         {step === 3 && (
           <StepIdentity
-            email={data.email ?? 'usuario@empresa.com'}
+            email={data.email ?? 'usuario2@empresa.com'}
             onNext={() => next()}
             onBack={back}
           />
