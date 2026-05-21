@@ -17,7 +17,7 @@ export default function StepCreditResult({ salary, onNext, onBack }: StepCreditR
           Resultado de tu crédito
         </h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Basándonos en tu sueldo, este es el monto máximo preaprobado para ti.
+          Basándonos en tu salario, este es el monto máximo preaprobado para ti.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default function StepCreditResult({ salary, onNext, onBack }: StepCreditR
           <span className="text-sm text-white/60">MXN</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           <span className="text-xs text-white/70">Preaprobado al instante</span>
         </div>
       </div>
@@ -42,8 +42,9 @@ export default function StepCreditResult({ salary, onNext, onBack }: StepCreditR
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Tasa mensual', value: `${(monthlyRate * 100).toFixed(1)}%` },
-          { label: 'Plazo máx.', value: '24 meses' },
+          { label: 'Tasa mensual', value: '4.0%' },
+          { label: 'Apertura', value: '3.0%' },
+          //{ label: 'Plazo máx.', value: '24 meses' },
           { label: 'Sin aval', value: '100%' },
         ].map((item) => (
           <div key={item.label} className="flex flex-col gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">

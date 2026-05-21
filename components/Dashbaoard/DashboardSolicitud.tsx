@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Header from './Header'
-import { LoggedUser } from './LoginModal'
-import PaymentModal from './PaymentModal'
-import CreditDetailModal from './CreditDetailModal'
+import Header from '../Onboarding/Header'
+
+import type { LoggedUser } from '../Auth/types'
+import PaymentModal from '../Onboarding/PaymentModal'
+import CreditDetailModal from '../Onboarding/CreditDetailModal'
 
 interface DashboardSolicitudProps {
   user: LoggedUser
@@ -41,15 +42,26 @@ const MOCK_DATA: Record<string, {
     extensionCost: 489.00,
     credits: [
       {
-        id: 'CN-2025-004821',
+        id: 'CN-2025-003105',
         type: 'Crédito de nómina',
-        amount: 2268.75,
-        biweeklyPayment: 2268.75,
-        totalPaid: 0,
+        amount: 2772.50,
+        biweeklyPayment: 2772.50,
+        totalPaid: 11090,
         paymentDue: '15 may. 2025',
-        paidPeriods: 0,
-        totalPeriods: 24,
+        paidPeriods: 4,
+        totalPeriods: 12,
         status: 'activo',
+      },
+      {
+        id: 'CN-2024-001234',
+        type: 'Crédito de nómina',
+        amount: 1500.00,
+        biweeklyPayment: 1500.00,
+        totalPaid: 18000,
+        paymentDue: '31 dic. 2024',
+        paidPeriods: 12,
+        totalPeriods: 12,
+        status: 'finalizado',
       },
     ],
   },
@@ -87,6 +99,7 @@ const MOCK_DATA: Record<string, {
 }
 
 type TabFilter = 'todos' | 'actuales' | 'finalizados'
+
 
 export default function DashboardSolicitud({ user, onLogout, onNewRequest }: DashboardSolicitudProps) {
   const [activeTab, setActiveTab] = useState<TabFilter>('todos')
@@ -220,7 +233,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                     type="button"
                     onClick={() => handleOpenPayment(data.totalToPay)}
                     className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#2B2929' }}
+                    style={{ backgroundColor: '#E1941F' }}
                   >
                     Pagar
                   </button>
@@ -248,7 +261,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                     type="button"
                     onClick={() => handleOpenPayment(data.liquidateTotal)}
                     className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#2B2929' }}
+                    style={{ backgroundColor: '#E1941F' }}
                   >
                     Adelantar pago
                   </button>
@@ -279,7 +292,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                     type="button"
                     onClick={() => data.credits[0] && handleOpenDetail(data.credits[0])}
                     className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#2B2929' }}
+                    style={{ backgroundColor: '#E1941F' }}
                   >
                     Ver detalle
                   </button>
@@ -388,7 +401,7 @@ export default function DashboardSolicitud({ user, onLogout, onNewRequest }: Das
                               type="button"
                               onClick={() => handleOpenPayment(credit.amount)}
                               className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                              style={{ backgroundColor: '#E1941F' }}
+                              style={{ backgroundColor: '#2B2929' }}
                             >
                               Pagar
                             </button>

@@ -24,7 +24,7 @@ export default function StepSuccess({ amount, onRestart }: StepSuccessProps) {
           <p className="text-sm text-muted-foreground leading-relaxed">
             Tu solicitud de crédito por{' '}
             <strong className="text-foreground">${amount.toLocaleString('es-MX')} MXN</strong>{' '}
-            ha sido recibida y está en proceso.
+            ha sido enviada a nuestro equipo y se encuentra en proceso de revisión
           </p>
         </div>
       </div>

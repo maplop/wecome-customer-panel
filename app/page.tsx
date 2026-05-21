@@ -1,25 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import OnboardingShell from '@/components/onboarding/OnboardingShell'
-import StepLogin from '@/components/onboarding/StepLogin'
-import StepUserConfirm from '@/components/onboarding/StepUserConfirm'
-import StepIdentity from '@/components/onboarding/StepIdentity'
-import StepCreateAccount from '@/components/onboarding/StepCreateAccount'
-import StepPersonalData from '@/components/onboarding/StepPersonalData'
-import StepFinancialData from '@/components/onboarding/StepFinancialData'
-import StepUploadDocuments from '@/components/onboarding/StepUploadDocuments'
-import StepCreditResult from '@/components/onboarding/StepCreditResult'
-import StepCreditSelection from '@/components/onboarding/StepCreditSelection'
-import StepCreditSummary from '@/components/onboarding/StepCreditSummary'
-import StepFinalConfirm from '@/components/onboarding/StepFinalConfirm'
-import StepSuccess from '@/components/onboarding/StepSuccess'
-import LoginModal from '@/components/onboarding/LoginModal'
-import DashboardSolicitud from '@/components/onboarding/DashboardSolicitud'
-import type { LoggedUser } from '@/components/onboarding/LoginModal'
+import OnboardingShell from '@/components/Onboarding/OnboardingShell'
+import StepLogin from '@/components/Onboarding/StepLogin'
+import StepUserConfirm from '@/components/Onboarding/StepUserConfirm'
+import StepIdentity from '@/components/Onboarding/StepIdentity'
+import StepCreateAccount from '@/components/Onboarding/StepCreateAccount'
+import StepPersonalData from '@/components/Onboarding/StepPersonalData'
+import StepFinancialData from '@/components/Onboarding/StepFinancialData'
+import StepUploadDocuments from '@/components/Onboarding/StepUploadDocuments'
+import StepCreditResult from '@/components/Onboarding/StepCreditResult'
+import StepCreditSelection from '@/components/Onboarding/StepCreditSelection'
+import StepCreditSummary from '@/components/Onboarding/StepCreditSummary'
+import StepFinalConfirm from '@/components/Onboarding/StepFinalConfirm'
+import StepTermsAcceptance from '@/components/Onboarding/StepTermsAcceptance'
+import StepSuccess from '@/components/Onboarding/StepSuccess'
+import type { LoggedUser } from '@/components/Auth/types'
+import Auth from '@/components/Auth'
+import DashboardSolicitud from '@/components/Dashbaoard/DashboardSolicitud'
 
 // Steps that count in the progress indicator (1-indexed, 0 = success/no-indicator)
-const TOTAL_STEPS = 11
+const TOTAL_STEPS = 13
 
 interface FormData {
   curp: string
@@ -27,6 +28,7 @@ interface FormData {
   salary: number
   amount: number
   term: number
+  hasInsurance: boolean
 }
 
 export default function OnboardingPage() {
@@ -60,7 +62,6 @@ export default function OnboardingPage() {
   }
 
   const showIndicator = step >= 1 && step <= TOTAL_STEPS
-  const isSuccess = step > TOTAL_STEPS
 
   const handleNewRequest = () => {
     setShowDashboard(false)
@@ -68,6 +69,9 @@ export default function OnboardingPage() {
   }
 
   const goToDashboard = () => {
+    if (!loggedUser) {
+      setLoggedUser({ name: 'María González', email: 'maria.gonzalez@empresa.com', curp: data.curp ?? '' })
+    }
     setShowDashboard(true)
     setStep(1)
     setData({})
@@ -78,7 +82,7 @@ export default function OnboardingPage() {
     return (
       <>
         {showLoginModal && (
-          <LoginModal
+          <Auth
             onClose={() => setShowLoginModal(false)}
             onSuccess={handleLoginSuccess}
           />
@@ -96,13 +100,13 @@ export default function OnboardingPage() {
     <>
       {/* Login modal — rendered above everything */}
       {showLoginModal && (
-        <LoginModal
+        <Auth
           onClose={() => setShowLoginModal(false)}
           onSuccess={handleLoginSuccess}
         />
       )}
 
-      <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator && !isSuccess}>
+      <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator}>
         {step === 1 && (
           <StepLogin
             onNext={({ curp }) => {
@@ -123,7 +127,7 @@ export default function OnboardingPage() {
 
         {step === 3 && (
           <StepIdentity
-            email={data.email ?? 'usuario@empresa.com'}
+            email={data.email ?? 'usuario2@empresa.com'}
             onNext={() => next()}
             onBack={back}
           />
@@ -174,8 +178,8 @@ export default function OnboardingPage() {
         {step === 9 && (
           <StepCreditSelection
             salary={data.salary ?? 0}
-            onNext={({ amount, term }) => {
-              patch({ amount, term })
+            onNext={({ amount, term, hasInsurance }) => {
+              patch({ amount, term, hasInsurance })
               next()
             }}
             onBack={back}
@@ -186,6 +190,7 @@ export default function OnboardingPage() {
           <StepCreditSummary
             amount={data.amount ?? 0}
             term={data.term ?? 12}
+            hasInsurance={data.hasInsurance ?? false}
             onNext={next}
             onBack={back}
           />
@@ -195,12 +200,20 @@ export default function OnboardingPage() {
           <StepFinalConfirm
             amount={data.amount ?? 0}
             term={data.term ?? 12}
+            hasInsurance={data.hasInsurance ?? false}
             onConfirm={next}
             onBack={back}
           />
         )}
 
-        {step > TOTAL_STEPS && (
+        {step === 12 && (
+          <StepTermsAcceptance
+            onNext={next}
+            onBack={back}
+          />
+        )}
+
+        {step === 13 && (
           <StepSuccess
             amount={data.amount ?? 0}
             onRestart={goToDashboard}
