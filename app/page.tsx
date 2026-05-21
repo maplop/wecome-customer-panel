@@ -69,6 +69,9 @@ export default function OnboardingPage() {
   }
 
   const goToDashboard = () => {
+    if (!loggedUser) {
+      setLoggedUser({ name: 'María González', email: 'maria.gonzalez@empresa.com', curp: data.curp ?? '' })
+    }
     setShowDashboard(true)
     setStep(1)
     setData({})
