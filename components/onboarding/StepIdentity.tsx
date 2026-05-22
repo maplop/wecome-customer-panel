@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
 
 interface StepIdentityProps {
   email: string
@@ -59,66 +60,63 @@ export default function StepIdentity({ email, onNext, onBack }: StepIdentityProp
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Verificación de identidad
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Enviamos un código de verificación de 6 dígitos a:
-        </p>
+        </SubtitleCard>
         <p className="text-sm font-semibold text-foreground">{maskedEmail}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <div className="flex flex-col gap-3">
-          <label className="text-sm font-medium text-foreground">
-            Código de verificación
-          </label>
-          <div className="flex gap-2" onPaste={handlePaste}>
-            {digits.map((d, i) => (
-              <input
-                key={i}
-                ref={refs[i]}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={d}
-                onChange={(e) => handleChange(i, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(i, e)}
-                className={`h-13 w-full rounded-xl border text-center text-lg font-semibold text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border'}`}
-                style={{ minWidth: 0 }}
-                aria-label={`Dígito ${i + 1}`}
-              />
-            ))}
+      <div className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-3">
+            <label className="text-sm font-medium text-foreground">
+              Código de verificación
+            </label>
+            <div className="flex gap-2" onPaste={handlePaste}>
+              {digits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={refs[i]}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={d}
+                  onChange={(e) => handleChange(i, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(i, e)}
+                  className={`h-13 w-full rounded-xl border text-center text-lg font-semibold text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border'}`}
+                  style={{ minWidth: 0 }}
+                  aria-label={`Dígito ${i + 1}`}
+                />
+              ))}
+            </div>
+            {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
-        </div>
 
-        <button
-          type="button"
-          className="text-sm font-medium self-start transition hover:opacity-70"
-          style={{ color: '#E1941F' }}
+          <ButtonCard
+            variant="text"
+          >
+            Reenviar código
+          </ButtonCard>
+
+          <ButtonCard
+            submit
+          >
+            Verificar código
+          </ButtonCard>
+        </form>
+
+        <ButtonCard
+          variant="secondary"
+          onClick={onBack}
         >
-          Reenviar código
-        </button>
-
-        <button
-          type="submit"
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
-          style={{ backgroundColor: '#E1941F' }}
-        >
-          Verificar código
-        </button>
-      </form>
-
-      <button
-        type="button"
-        onClick={onBack}
-        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
-      >
-        Regresar
-      </button>
-    </div>
+          Regresar
+        </ButtonCard>
+      </div>
+    </WrapperCard >
   )
 }

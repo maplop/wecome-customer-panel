@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
 
 interface StepUploadDocumentsProps {
   onNext: (data: { documents: Record<string, string> }) => void
@@ -101,14 +102,14 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Sube tus documentos
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Sube los documentos requeridos para continuar con tu solicitud.
-        </p>
+        </SubtitleCard>
       </div>
 
       {/* Tabs */}
@@ -136,100 +137,97 @@ export default function StepUploadDocuments({ onNext, onBack }: StepUploadDocume
         })}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {currentTabDocs.map((doc) => (
-          <div key={doc.id} className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">
-              {doc.label} {doc.required && <span className="text-destructive">*</span>}
-            </label>
-
-            {documents[doc.id] ? (
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/50">
-                {documents[doc.id].preview.startsWith('data:image') ? (
-                  <img src={documents[doc.id].preview} alt={doc.label} className="w-12 h-12 object-cover rounded-lg" />
-                ) : (
-                  <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{documents[doc.id].name}</p>
-                  <p className="text-xs text-muted-foreground">Cargado exitosamente</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeDocument(doc.id)}
-                  className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center w-full h-20 rounded-xl border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition cursor-pointer">
-                <input
-                  ref={(el) => { fileInputs.current[doc.id] = el! }}
-                  type="file"
-                  accept={doc.acceptedTypes}
-                  className="hidden"
-                  onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
-                />
-                {uploading === doc.id ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Cargando...
-                  </div>
-                ) : (
-                  <>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground mb-2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg>
-                    <span className="text-xs text-muted-foreground">Haz click para subir</span>
-                  </>
-                )}
+      <div className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {currentTabDocs.map((doc) => (
+            <div key={doc.id} className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-foreground">
+                {doc.label} {doc.required && <span className="text-destructive">*</span>}
               </label>
-            )}
-            {errors[doc.id] && <p className="text-xs text-destructive">{errors[doc.id]}</p>}
-          </div>
-        ))}
 
-        {/* Navegación entre tabs o submit */}
-        {activeTab === 1 ? (
-          <button
-            type="button"
-            onClick={() => setActiveTab(2)}
-            disabled={!tab1Complete}
-            className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] ${tab1Complete ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
-            style={{ backgroundColor: tab1Complete ? '#E1941F' : '#9ca3af' }}
-          >
-            Siguiente
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={!allRequiredUploaded}
-            className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] ${allRequiredUploaded ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
-            style={{ backgroundColor: allRequiredUploaded ? '#E1941F' : '#9ca3af' }}
-          >
-            Completar
-          </button>
-        )}
-      </form>
+              {documents[doc.id] ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/50">
+                  {documents[doc.id].preview.startsWith('data:image') ? (
+                    <img src={documents[doc.id].preview} alt={doc.label} className="w-12 h-12 object-cover rounded-lg" />
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{documents[doc.id].name}</p>
+                    <p className="text-xs text-muted-foreground">Cargado exitosamente</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeDocument(doc.id)}
+                    className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-20 rounded-xl border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 transition cursor-pointer">
+                  <input
+                    ref={(el) => { fileInputs.current[doc.id] = el! }}
+                    type="file"
+                    accept={doc.acceptedTypes}
+                    className="hidden"
+                    onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                  />
+                  {uploading === doc.id ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Cargando...
+                    </div>
+                  ) : (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground mb-2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                      </svg>
+                      <span className="text-xs text-muted-foreground">Haz click para subir</span>
+                    </>
+                  )}
+                </label>
+              )}
+              {errors[doc.id] && <p className="text-xs text-destructive">{errors[doc.id]}</p>}
+            </div>
+          ))}
 
-      <button
-        type="button"
-        onClick={activeTab === 2 ? () => setActiveTab(1) : onBack}
-        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
-      >
-        {activeTab === 2 ? 'Atrás' : 'Regresar'}
-      </button>
-    </div>
+          {/* Navegación entre tabs o submit */}
+          {activeTab === 1 ? (
+            <ButtonCard
+              onClick={() => setActiveTab(2)}
+              disabled={!tab1Complete}
+            >
+              Siguiente
+            </ButtonCard>
+          ) : (
+
+            <ButtonCard
+              submit
+              disabled={!allRequiredUploaded}
+            >
+              Completar
+            </ButtonCard>
+          )}
+        </form>
+
+        <ButtonCard
+          variant="secondary"
+          onClick={activeTab === 2 ? () => setActiveTab(1) : onBack}
+        >
+          {activeTab === 2 ? 'Atrás' : 'Regresar'}
+        </ButtonCard>
+      </div>
+    </WrapperCard>
   )
 }

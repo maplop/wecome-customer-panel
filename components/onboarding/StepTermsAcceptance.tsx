@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepTermsAcceptanceProps {
   onNext: () => void
@@ -197,14 +198,14 @@ export default function StepTermsAcceptance({ onNext, onBack }: StepTermsAccepta
 
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <WrapperCard>
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-foreground text-balance">
+          <TitleCard>
             Términos y condiciones
-          </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          </TitleCard>
+          <SubtitleCard>
             Para continuar, lee y acepta los siguientes documentos legales.
-          </p>
+          </SubtitleCard>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -240,24 +241,20 @@ export default function StepTermsAcceptance({ onNext, onBack }: StepTermsAccepta
         </div>
 
         <div className="flex flex-col gap-3">
-          <button
-            type="button"
+          <ButtonCard
             onClick={onNext}
             disabled={!allAccepted}
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#E1941F' }}
           >
             Continuar
-          </button>
-          <button
-            type="button"
+          </ButtonCard>
+          <ButtonCard
+            variant='secondary'
             onClick={onBack}
-            className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
           >
             Regresar
-          </button>
+          </ButtonCard>
         </div>
-      </div>
+      </WrapperCard>
 
       {/* Document modal */}
       {activeDoc && (
@@ -288,21 +285,17 @@ export default function StepTermsAcceptance({ onNext, onBack }: StepTermsAccepta
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-border shrink-0 flex flex-col gap-3">
-              <button
-                type="button"
+              <ButtonCard
                 onClick={handleAcceptInModal}
-                className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                style={{ backgroundColor: '#E1941F' }}
               >
                 Aceptar y cerrar
-              </button>
-              <button
-                type="button"
+              </ButtonCard>
+              <ButtonCard
+                variant="secondary"
                 onClick={() => setModalDoc(null)}
-                className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
               >
                 Cancelar
-              </button>
+              </ButtonCard>
             </div>
           </div>
         </div>

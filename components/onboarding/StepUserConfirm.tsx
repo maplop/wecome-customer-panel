@@ -1,4 +1,5 @@
 'use client'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
 
 interface StepUserConfirmProps {
   curp: string
@@ -12,14 +13,14 @@ export default function StepUserConfirm({ curp, onNext, onBack, isVerified = tru
   const firstName = curp.slice(0, 4)
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Confirmación de usuario
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Verificamos tu CURP en nuestro sistema. ¿Es correcta esta información?
-        </p>
+        </SubtitleCard>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/50 p-5 flex flex-col gap-4">
@@ -58,32 +59,26 @@ export default function StepUserConfirm({ curp, onNext, onBack, isVerified = tru
 
       <div className="flex flex-col gap-3">
         {isVerified ? (
-          <button
-            type="button"
+          <ButtonCard
             onClick={onNext}
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
-            style={{ backgroundColor: '#E1941F' }}
           >
             Iniciar solicitud
-          </button>
+          </ButtonCard>
         ) : (
-          <button
-            type="button"
+          <ButtonCard
+            onClick={onNext}
             disabled
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition cursor-not-allowed opacity-50"
-            style={{ backgroundColor: '#E1941F' }}
           >
             No puedes iniciar la solicitud
-          </button>
+          </ButtonCard>
         )}
-        <button
-          type="button"
+        <ButtonCard
+          variant="secondary"
           onClick={onBack}
-          className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
         >
           No soy yo, regresar
-        </button>
+        </ButtonCard>
       </div>
-    </div>
+    </WrapperCard>
   )
 }

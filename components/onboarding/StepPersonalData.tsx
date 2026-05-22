@@ -2,6 +2,7 @@
 
 import { useClientVerificationStore } from '@/stores/client-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepPersonalDataProps {
   onNext: () => void
@@ -47,7 +48,7 @@ export default function StepPersonalData({ onNext, onBack }: StepPersonalDataPro
 
   if (!data) {
     return (
-      <div className="flex flex-col gap-6">
+      <div>
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold text-foreground text-balance">
             Datos personales
@@ -71,14 +72,14 @@ export default function StepPersonalData({ onNext, onBack }: StepPersonalDataPro
   const edad = calculateAge(data.fecha_de_nacimiento)
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Datos personales
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Verifica que tus datos sean correctos antes de continuar.
-        </p>
+        </SubtitleCard>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
@@ -105,23 +106,19 @@ export default function StepPersonalData({ onNext, onBack }: StepPersonalDataPro
       </div>
 
       <div className="flex flex-col gap-3">
-        <button
-          type="button"
+        <ButtonCard
           onClick={onNext}
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
-          style={{ backgroundColor: '#E1941F' }}
         >
           Continuar
-        </button>
+        </ButtonCard>
 
-        <button
-          type="button"
+        <ButtonCard
+          variant="secondary"
           onClick={onBack}
-          className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
         >
           Regresar
-        </button>
+        </ButtonCard>
       </div>
-    </div>
+    </WrapperCard>
   )
 }

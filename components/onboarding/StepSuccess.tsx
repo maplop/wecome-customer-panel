@@ -1,4 +1,5 @@
 'use client'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepSuccessProps {
   amount: number
@@ -7,7 +8,7 @@ interface StepSuccessProps {
 
 export default function StepSuccess({ amount, onRestart }: StepSuccessProps) {
   return (
-    <div className="flex flex-col items-center gap-8 text-center">
+    <WrapperCard className="gap-8 text-center">
       <div className="flex flex-col items-center gap-4">
         <div
           className="flex h-20 w-20 items-center justify-center rounded-full"
@@ -18,14 +19,14 @@ export default function StepSuccess({ amount, onRestart }: StepSuccessProps) {
           </svg>
         </div>
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-foreground text-balance">
+          <TitleCard>
             ¡Solicitud enviada!
-          </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          </TitleCard>
+          <SubtitleCard>
             Tu solicitud de crédito por{' '}
             <strong className="text-foreground">${amount.toLocaleString('es-MX')} MXN</strong>{' '}
             ha sido enviada a nuestro equipo y se encuentra en proceso de revisión
-          </p>
+          </SubtitleCard>
         </div>
       </div>
 
@@ -50,13 +51,12 @@ export default function StepSuccess({ amount, onRestart }: StepSuccessProps) {
         </div>
       </div>
 
-      <button
-        type="button"
+      <ButtonCard
+        variant='secondary'
         onClick={onRestart}
-        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
       >
-        Volver al inicio
-      </button>
-    </div>
+        Ver solicitud
+      </ButtonCard>
+    </WrapperCard>
   )
 }

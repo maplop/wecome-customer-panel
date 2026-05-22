@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepCreditSelectionProps {
   salary: number
@@ -28,14 +29,14 @@ export default function StepCreditSelection({ salary, onNext, onBack }: StepCred
   const pct = ((amount - minAmount) / (maxAmount - minAmount)) * 100
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Elige tu crédito
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Ajusta el monto y el plazo de acuerdo a tus necesidades.
-        </p>
+        </SubtitleCard>
       </div>
 
       {/* Amount slider */}
@@ -94,11 +95,10 @@ export default function StepCreditSelection({ salary, onNext, onBack }: StepCred
           <button
             type="button"
             onClick={() => setHasInsurance(false)}
-            className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${
-              !hasInsurance
-                ? 'text-white'
-                : 'border border-border text-foreground hover:bg-secondary'
-            }`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${!hasInsurance
+              ? 'text-white'
+              : 'border border-border text-foreground hover:bg-secondary'
+              }`}
             style={!hasInsurance ? { backgroundColor: '#2B2929' } : {}}
           >
             <span className="font-semibold">Esencial</span>
@@ -107,11 +107,10 @@ export default function StepCreditSelection({ salary, onNext, onBack }: StepCred
           <button
             type="button"
             onClick={() => setHasInsurance(true)}
-            className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${
-              hasInsurance
-                ? 'text-white'
-                : 'border border-border text-foreground hover:bg-secondary'
-            }`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance
+              ? 'text-white'
+              : 'border border-border text-foreground hover:bg-secondary'
+              }`}
             style={hasInsurance ? { backgroundColor: '#2B2929' } : {}}
           >
             <span className="font-semibold">Protegido</span>
@@ -144,22 +143,18 @@ export default function StepCreditSelection({ salary, onNext, onBack }: StepCred
       </div>
 
       <div className="flex flex-col gap-3">
-        <button
-          type="button"
+        <ButtonCard
           onClick={() => onNext({ amount, term, hasInsurance })}
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
-          style={{ backgroundColor: '#E1941F' }}
         >
           Continuar
-        </button>
-        <button
-          type="button"
+        </ButtonCard>
+        <ButtonCard
+          variant="secondary"
           onClick={onBack}
-          className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
         >
           Regresar
-        </button>
+        </ButtonCard>
       </div>
-    </div>
+    </WrapperCard>
   )
 }

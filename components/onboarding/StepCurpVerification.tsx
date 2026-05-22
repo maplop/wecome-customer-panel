@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useClientVerificationStore } from '@/stores/client-store'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepLoginProps {
   onNext: (data: { curp: string }) => void
@@ -33,14 +34,14 @@ export default function StepCurpVerification({ onNext, onLoginClick }: StepLogin
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Solicita tu crédito de nómina
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Ingresa tu CURP para comenzar el proceso de solicitud.
-        </p>
+        </SubtitleCard>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -65,14 +66,15 @@ export default function StepCurpVerification({ onNext, onLoginClick }: StepLogin
           )}
         </div>
 
-        <button
-          type="submit"
+        <ButtonCard
+          variant="primary"
+          submit
           disabled={loading}
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:opacity-50"
-          style={{ backgroundColor: '#E1941F' }}
+          loading={loading}
+          loadingText="Verificando..."
         >
-          {loading ? 'Verificando...' : 'Confirmar CURP'}
-        </button>
+          Confirmar CURP
+        </ButtonCard>
       </form>
 
       <div className="relative flex items-center gap-3">
@@ -81,13 +83,12 @@ export default function StepCurpVerification({ onNext, onLoginClick }: StepLogin
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <button
-        type="button"
+      <ButtonCard
+        variant="secondary"
         onClick={onLoginClick}
-        className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
       >
         Ingresa a tu cuenta
-      </button>
-    </div>
+      </ButtonCard>
+    </WrapperCard>
   )
 }

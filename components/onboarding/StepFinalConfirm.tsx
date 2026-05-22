@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 
 interface StepFinalConfirmProps {
   amount: number
@@ -41,7 +42,7 @@ export default function StepFinalConfirm({ amount, term, hasInsurance, onConfirm
   ]
 
   return (
-    <div className="flex flex-col gap-6">
+    <WrapperCard>
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-foreground text-balance">
           Confirmación final
@@ -70,29 +71,21 @@ export default function StepFinalConfirm({ amount, term, hasInsurance, onConfirm
       </div>
 
       <div className="flex flex-col gap-3">
-        <button
-          type="button"
+        <ButtonCard
           onClick={handleConfirm}
           disabled={loading}
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          style={{ backgroundColor: '#E1941F' }}
+          loading={loading}
         >
-          {loading ? (
-            <>
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
-              Procesando...
-            </>
-          ) : 'Confirmar solicitud'}
-        </button>
-        <button
-          type="button"
+          Confirmar solicitud
+        </ButtonCard>
+        <ButtonCard
+          variant='secondary'
           onClick={onBack}
           disabled={loading}
-          className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98] disabled:opacity-50"
         >
           Regresar
-        </button>
+        </ButtonCard>
       </div>
-    </div>
+    </WrapperCard>
   )
 }
