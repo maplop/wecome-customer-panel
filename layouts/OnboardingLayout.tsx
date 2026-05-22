@@ -1,16 +1,16 @@
 'use client'
 
-import StepIndicator from './StepIndicator'
-import Header from './Header'
+import StepIndicator from '@/layouts/components/StepIndicator'
+import Header from '@/layouts/components/Header'
 
-interface OnboardingShellProps {
+interface OnboardingLayoutProps {
   children: React.ReactNode
   step: number
   totalSteps: number
   showIndicator?: boolean
 }
 
-export default function OnboardingShell({ children, step, totalSteps, showIndicator = true }: OnboardingShellProps) {
+export default function OnboardingLayout({ children, step, totalSteps, showIndicator = true }: OnboardingLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />

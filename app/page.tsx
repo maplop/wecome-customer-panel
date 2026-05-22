@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import OnboardingShell from '@/components/Onboarding/OnboardingShell'
+import OnboardingLayout from '@/layouts/OnboardingLayout'
 import StepCurpVerification from '@/components/Onboarding/StepCurpVerification'
 import StepUserConfirm from '@/components/Onboarding/StepUserConfirm'
 import StepIdentity from '@/components/Onboarding/StepIdentity'
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
         />
       )}
 
-      <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator}>
+      <OnboardingLayout step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator}>
         {step === 1 && (
           <StepCurpVerification
             onNext={({ curp }) => {
@@ -219,7 +219,7 @@ export default function OnboardingPage() {
             onRestart={goToDashboard}
           />
         )}
-      </OnboardingShell>
+      </OnboardingLayout>
     </>
   )
 }
