@@ -67,7 +67,7 @@ export default function StepFinancialData({ onNext, onBack }: StepFinancialDataP
           {error && <p className="text-xs text-destructive">{error}</p>}
           {salary && !error && (
             <p className="text-xs text-muted-foreground">
-              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3).toLocaleString('es-MX')}</span> disponible en crédito
+              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3 * 0.6).toLocaleString('es-MX')}</span> disponible en crédito
             </p>
           )}
         </div>

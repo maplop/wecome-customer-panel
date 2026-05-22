@@ -7,7 +7,7 @@ interface StepLoginProps {
   onLoginClick: () => void
 }
 
-export default function StepLogin({ onNext, onLoginClick }: StepLoginProps) {
+export default function StepCurpVerification({ onNext, onLoginClick }: StepLoginProps) {
   const [curp, setCurp] = useState('')
   const [error, setError] = useState('')
 

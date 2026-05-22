@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import OnboardingShell from '@/components/Onboarding/OnboardingShell'
-import StepLogin from '@/components/Onboarding/StepLogin'
+import StepCurpVerification from '@/components/Onboarding/StepCurpVerification'
 import StepUserConfirm from '@/components/Onboarding/StepUserConfirm'
 import StepIdentity from '@/components/Onboarding/StepIdentity'
 import StepCreateAccount from '@/components/Onboarding/StepCreateAccount'
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
 
       <OnboardingShell step={step} totalSteps={TOTAL_STEPS} showIndicator={showIndicator}>
         {step === 1 && (
-          <StepLogin
+          <StepCurpVerification
             onNext={({ curp }) => {
               patch({ curp })
               next()
