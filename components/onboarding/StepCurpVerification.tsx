@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useClientVerificationStore } from '@/stores/client-store'
 
 interface StepLoginProps {
   onNext: (data: { curp: string }) => void
@@ -10,6 +11,7 @@ interface StepLoginProps {
 export default function StepCurpVerification({ onNext, onLoginClick }: StepLoginProps) {
   const [curp, setCurp] = useState('')
   const [error, setError] = useState('')
+  const { loading, error: storeError, verifyCurp } = useClientVerificationStore()
 
   const validate = () => {
     const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/
@@ -18,12 +20,16 @@ export default function StepCurpVerification({ onNext, onLoginClick }: StepLogin
     return ''
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const err = validate()
     if (err) { setError(err); return }
     setError('')
-    onNext({ curp: curp.toUpperCase() })
+
+    const source = await verifyCurp(curp.toUpperCase())
+    if (source) {
+      onNext({ curp: curp.toUpperCase() })
+    }
   }
 
   return (
@@ -54,17 +60,18 @@ export default function StepCurpVerification({ onNext, onLoginClick }: StepLogin
             }}
             className={`w-full rounded-xl border px-4 py-3 text-sm uppercase tracking-widest text-foreground placeholder:text-muted-foreground/60 placeholder:normal-case placeholder:tracking-normal outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border bg-background'}`}
           />
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
+          {(error || storeError) && (
+            <p className="text-xs text-destructive">{error || storeError}</p>
           )}
         </div>
 
         <button
           type="submit"
-          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90"
+          disabled={loading}
+          className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#E1941F' }}
         >
-          Confirmar CURP
+          {loading ? 'Verificando...' : 'Confirmar CURP'}
         </button>
       </form>
 

@@ -1,21 +1,11 @@
 'use client'
+
+import { useClientVerificationStore } from '@/stores/client-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
 
 interface StepPersonalDataProps {
   onNext: () => void
   onBack: () => void
-}
-
-const MOCK_DATA = {
-  nombreCompleto: 'Juan Carlos Pérez González',
-  rfc: 'PEGJ850101HDF',
-  curp: 'PEGJ850101HDFXXXXX',
-  fechaNacimiento: '01/01/1985',
-  edad: '41 años',
-  nacionalidad: 'Mexicana',
-  estadoCivil: 'Casado / Separación de bienes',
-  telefono: '55 1234 5678',
-  correo: 'juan.perez@email.com',
 }
 
 interface DataRowProps {
@@ -32,7 +22,54 @@ function DataRow({ label, value }: DataRowProps) {
   )
 }
 
+function calculateAge(birthDate: string): number {
+  const birth = new Date(birthDate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('es-MX', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
 export default function StepPersonalData({ onNext, onBack }: StepPersonalDataProps) {
+  const { data } = useClientVerificationStore()
+
+  if (!data) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold text-foreground text-balance">
+            Datos personales
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            No hay datos disponibles. Por favor, verifica tu CURP primero.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
+        >
+          Regresar
+        </button>
+      </div>
+    )
+  }
+
+  const nombreCompleto = `${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}`.trim()
+  const edad = calculateAge(data.fecha_de_nacimiento)
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -45,15 +82,17 @@ export default function StepPersonalData({ onNext, onBack }: StepPersonalDataPro
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
-        <DataRow label="Nombre completo" value={MOCK_DATA.nombreCompleto} />
-        <DataRow label="RFC" value={MOCK_DATA.rfc} />
-        <DataRow label="CURP" value={MOCK_DATA.curp} />
-        <DataRow label="Fecha de nacimiento" value={MOCK_DATA.fechaNacimiento} />
-        <DataRow label="Edad" value={MOCK_DATA.edad} />
-        <DataRow label="Nacionalidad" value={MOCK_DATA.nacionalidad} />
-        <DataRow label="Estado civil" value={MOCK_DATA.estadoCivil} />
-        <DataRow label="Teléfono" value={formatMxPhoneNumber(MOCK_DATA.telefono)} />
-        <DataRow label="Correo electrónico" value={MOCK_DATA.correo} />
+        <DataRow label="Nombre completo" value={nombreCompleto} />
+        <DataRow label="RFC" value={data.rfc} />
+        <DataRow label="CURP" value={data.curp} />
+        <DataRow label="Fecha de nacimiento" value={formatDate(data.fecha_de_nacimiento)} />
+        <DataRow label="Edad" value={`${edad} años`} />
+        <DataRow label="Nacionalidad" value={data.nacionalidad} />
+        <DataRow label="Ocupación" value={data.ocupacion} />
+        <DataRow label="Actividad económica" value={data.actividad_economica} />
+        <DataRow label="Empresa" value={data.empresa} />
+        <DataRow label="Teléfono" value={formatMxPhoneNumber(data.telefono)} />
+        <DataRow label="Correo electrónico" value={data.correo_electronico} />
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex gap-3 items-start">
