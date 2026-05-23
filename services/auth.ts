@@ -1,5 +1,5 @@
-import apiClient from "@/lib/api-client";
-import { API_ENDPOINTS } from "@/lib/api-config";
+import apiClient from "@/lib/api/api-client";
+import { API_ENDPOINTS } from "@/lib/api/api-config";
 
 export interface RegisterRequest {
   email: string;

@@ -19,6 +19,10 @@ const MOCK_USERS: MockUser[] = [
 export const RECOVERY_EMAIL = "maria.gonzalez@empresa.com";
 export const RECOVERY_CODE = "123456";
 
+interface UseAuthOptions extends AuthProps {
+  onModeChange?: (mode: ViewMode) => void;
+}
+
 export function maskEmail(email: string) {
   const [user, domain] = email.split("@");
   if (!user || !domain) return email;
@@ -28,8 +32,13 @@ export function maskEmail(email: string) {
   return `${visible}${masked}@${domain}`;
 }
 
-export const useAuth = ({ onClose, onSuccess }: AuthProps) => {
-  const [mode, setMode] = useState<ViewMode>("login");
+export const useAuth = ({ onClose, onSuccess, onModeChange }: UseAuthOptions) => {
+  const [mode, setModeState] = useState<ViewMode>("login");
+
+  const setMode = (nextMode: ViewMode) => {
+    setModeState(nextMode);
+    onModeChange?.(nextMode);
+  };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,7 +69,7 @@ export const useAuth = ({ onClose, onSuccess }: AuthProps) => {
   const [resetError, setResetError] = useState("");
 
   const resetRecoveryState = () => {
-    setMode("login");
+    setModeState("login");
     setRecoveryDigits(["", "", "", "", "", ""]);
     setRecoveryLoading(false);
     setRecoveryError("");

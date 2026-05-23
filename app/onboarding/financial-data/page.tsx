@@ -1,0 +1,14 @@
+'use client'
+
+import FinancialData from '@/components/Onboarding/FinancialData'
+
+export default function FinancialDataPage() {
+  return (
+    <FinancialData
+      onNext={(data) => {
+        console.log('Salary:', data.salary)
+      }}
+      onBack={() => { }}
+    />
+  )
+}

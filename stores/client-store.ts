@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-import { CONNECTOR_BASE_URL, CONNECTOR_ENDPOINTS } from "@/lib/api-config";
+import { CONNECTOR_BASE_URL, CONNECTOR_ENDPOINTS } from "@/lib/api/api-config";
 
 export interface ClientProps {
   actividad_economica: string;
