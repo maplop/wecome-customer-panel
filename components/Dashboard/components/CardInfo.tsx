@@ -18,8 +18,7 @@ export default function CardInfo({ label, amount, description, buttonLabel, icon
       <button
         type="button"
         onClick={onAction}
-        className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-        style={{ backgroundColor: '#E1941F' }}
+        className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
       >
         {buttonLabel}
       </button>

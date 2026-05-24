@@ -16,10 +16,9 @@ export default function CreditSuccess() {
     <WrapperCard className="gap-8 text-center">
       <div className="flex flex-col items-center gap-4">
         <div
-          className="flex h-20 w-20 items-center justify-center rounded-full"
-          style={{ backgroundColor: '#2B2929' }}
+          className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-dark"
         >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E1941F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="stroke-brand-accent" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
@@ -45,8 +44,7 @@ export default function CreditSuccess() {
           ].map(({ step, text }) => (
             <div key={step} className="flex items-start gap-3">
               <span
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                style={{ backgroundColor: '#E1941F' }}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white bg-brand-accent"
               >
                 {step}
               </span>

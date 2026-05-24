@@ -45,10 +45,9 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl"
-              style={{ backgroundColor: '#2B2929' }}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2" />
                 <line x1="2" y1="10" x2="22" y2="10" />
               </svg>
@@ -104,7 +103,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
             </div>
             <div className="rounded-xl bg-secondary/50 p-4">
               <p className="text-xs text-muted-foreground mb-1">Total pagado</p>
-              <p className="text-lg font-bold" style={{ color: '#E1941F' }}>
+              <p className="text-lg font-bold text-brand-accent">
                 ${credit.totalPaid.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
               </p>
             </div>
@@ -120,14 +119,14 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-foreground">Progreso de pagos</span>
-              <span className="text-sm font-semibold" style={{ color: '#E1941F' }}>{progress}%</span>
+              <span className="text-sm font-semibold text-brand-accent">{progress}%</span>
             </div>
             <div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${progress}%`,
-                  backgroundColor: isFinished ? '#2B2929' : '#E1941F',
+                  backgroundColor: isFinished ? 'var(--brand-dark)' : 'var(--brand-accent)',
                 }}
               />
             </div>
@@ -171,7 +170,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
                               Pagado
                             </span>
                           ) : row.isCurrent ? (
-                            <span className="inline-flex items-center gap-1 font-medium" style={{ color: '#E1941F' }}>
+                            <span className="inline-flex items-center gap-1 font-medium text-brand-accent">
                               Pendiente
                             </span>
                           ) : (
@@ -193,8 +192,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
             <button
               type="button"
               onClick={onPay}
-              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-              style={{ backgroundColor: '#E1941F' }}
+              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
             >
               Realizar pago de ${credit.biweeklyPayment.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </button>

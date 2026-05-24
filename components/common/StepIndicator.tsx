@@ -14,7 +14,7 @@ export default function StepIndicator({ current, total }: StepIndicatorProps) {
       <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${pct}%`, backgroundColor: '#E1941F' }}
+          style={{ width: `${pct}%`, backgroundColor: 'var(--brand-accent)' }}
           role="progressbar"
           aria-valuenow={current}
           aria-valuemin={1}
@@ -22,7 +22,7 @@ export default function StepIndicator({ current, total }: StepIndicatorProps) {
         />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium" style={{ color: '#E1941F' }}>
+        <span className="text-xs font-medium text-brand-accent">
           Paso {current} de {total}
         </span>
         <span className="text-xs text-muted-foreground">

@@ -64,8 +64,7 @@ export default function RecoverVerify({
             type="button"
             onClick={handleResendRecoveryCode}
             disabled={recoveryLoading}
-            className="self-start text-sm font-medium transition hover:opacity-70 disabled:opacity-50"
-            style={{ color: '#E1941F' }}
+            className="self-start text-sm font-medium transition hover:opacity-70 disabled:opacity-50 text-brand-accent"
           >
             Reenviar codigo
           </button>
@@ -73,8 +72,7 @@ export default function RecoverVerify({
           <button
             type="submit"
             disabled={recoveryLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ backgroundColor: '#E1941F' }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-brand-accent"
           >
             {recoveryLoading ? (
               <>

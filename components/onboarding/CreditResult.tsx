@@ -22,8 +22,7 @@ export default function CreditResult() {
 
       {/* Hero amount */}
       <div
-        className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center"
-        style={{ backgroundColor: '#2B2929' }}
+        className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark"
       >
         <span className="text-xs font-medium text-white/60 uppercase tracking-widest">Monto máximo aprobado</span>
         <div className="flex flex-col gap-1">
@@ -33,7 +32,7 @@ export default function CreditResult() {
           <span className="text-sm text-white/60">MXN</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-brand-success-light" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           <span className="text-xs text-white/70">Preaprobado al instante</span>
         </div>
       </div>

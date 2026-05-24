@@ -220,10 +220,11 @@ export default function TermsAcceptance() {
                 <div className="relative mt-0.5 shrink-0">
                   <div
                     className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent' : 'border-border'}`}
-                    style={checked ? { backgroundColor: '#E1941F' } : {}}
+                    className={checked ? 'bg-brand-accent' : ''}
+                    style={checked ? {} : undefined}
                   >
                     {checked && (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     )}

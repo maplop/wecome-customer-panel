@@ -56,8 +56,7 @@ export default function Login({ email, password, showPassword, error, loading, s
                     setSuccessMessage('')
                     setMode('recover-request')
                   }}
-                  className="text-xs font-medium transition hover:opacity-70"
-                  style={{ color: '#E1941F' }}
+                  className="text-xs font-medium transition hover:opacity-70 text-brand-accent"
                 >
                   Olvide mi contraseña
                 </button>
@@ -90,8 +89,7 @@ export default function Login({ email, password, showPassword, error, loading, s
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ backgroundColor: '#E1941F' }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-brand-accent"
             >
               {loading ? (
                 <>

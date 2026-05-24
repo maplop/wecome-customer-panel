@@ -11,8 +11,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <header
-      className="flex items-center justify-between px-5 py-4 border-b border-border/60 md:px-6"
-      style={{ backgroundColor: '#2B2929' }}
+      className="flex items-center justify-between px-5 py-4 border-b border-border/60 md:px-6 bg-brand-dark"
     >
       <img
         src="/wecome-log.png"

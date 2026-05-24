@@ -54,9 +54,9 @@ export default function FinalConfirm() {
 
       {/* Final card */}
       <div className="rounded-2xl overflow-hidden border border-border">
-        <div className="px-5 py-4 flex flex-col items-center gap-2 text-center" style={{ backgroundColor: '#2B2929' }}>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: '#E1941F' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+        <div className="px-5 py-4 flex flex-col items-center gap-2 text-center bg-brand-dark">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           </div>
           <span className="text-white font-semibold text-base">Solicitud lista para confirmar</span>
         </div>

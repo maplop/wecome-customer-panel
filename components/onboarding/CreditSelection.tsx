@@ -26,10 +26,9 @@ function RiskModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl"
-              style={{ backgroundColor: '#E1941F' }}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -58,12 +57,7 @@ function RiskModal({
               id="risk-accept"
               checked={checked}
               onCheckedChange={(val) => setChecked(val === true)}
-              className="mt-0.5"
-              style={
-                checked
-                  ? { backgroundColor: '#E1941F', borderColor: '#E1941F' }
-                  : { borderColor: '#E1941F' }
-              }
+              className={`mt-0.5 ${checked ? 'bg-brand-accent border-brand-accent' : 'border-brand-accent'}`}
             />
             <Label
               htmlFor="risk-accept"
@@ -79,8 +73,7 @@ function RiskModal({
             type="button"
             disabled={!checked}
             onClick={onAccept}
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#E1941F' }}
+            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed bg-brand-accent"
           >
             Continuar
           </button>
@@ -172,7 +165,7 @@ export default function CreditSelection() {
                 onChange={(e) => setAmount(Number(e.target.value))}
                 className="w-full appearance-none h-2 rounded-full outline-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, #E1941F 0%, #E1941F ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
+                  background: `linear-gradient(to right, var(--brand-accent) 0%, var(--brand-accent) ${pct}%, var(--brand-inactive) ${pct}%, var(--brand-inactive) 100%)`,
                 }}
               />
             </div>
@@ -192,10 +185,9 @@ export default function CreditSelection() {
                   type="button"
                   onClick={() => setTerm(t)}
                   className={`rounded-xl py-2.5 text-sm font-medium transition active:scale-[0.97] ${term === t
-                    ? 'text-white'
+                    ? 'bg-brand-dark text-white'
                     : 'border border-border text-foreground hover:bg-secondary'
                     }`}
-                  style={term === t ? { backgroundColor: '#2B2929' } : {}}
                 >
                   {t}m
                 </button>
@@ -212,10 +204,9 @@ export default function CreditSelection() {
               type="button"
               onClick={() => handleInsuranceClick(true)}
               className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance
-                ? 'text-white'
+                ? 'bg-brand-dark text-white'
                 : 'border border-border text-foreground hover:bg-secondary'
                 }`}
-              style={hasInsurance ? { backgroundColor: '#2B2929' } : {}}
             >
               <span className="font-semibold">Protegido</span>
               <span className={`text-xs ${hasInsurance ? 'text-white/70' : 'text-muted-foreground'}`}>Con seguro</span>
@@ -224,10 +215,9 @@ export default function CreditSelection() {
               type="button"
               onClick={() => handleInsuranceClick(false)}
               className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${!hasInsurance
-                ? 'text-white'
+                ? 'bg-brand-dark text-white'
                 : 'border border-border text-foreground hover:bg-secondary'
                 }`}
-              style={!hasInsurance ? { backgroundColor: '#2B2929' } : {}}
             >
               <span className="font-semibold">Esencial</span>
               <span className={`text-xs ${!hasInsurance ? 'text-white/70' : 'text-muted-foreground'}`}>Sin seguro</span>

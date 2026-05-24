@@ -25,8 +25,7 @@ export default function UserConfirm() {
       <div className="rounded-2xl border border-border bg-secondary/50 p-5 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-full text-white text-sm font-bold shrink-0"
-            style={{ backgroundColor: '#2B2929' }}
+            className="flex h-12 w-12 items-center justify-center rounded-full text-white text-sm font-bold shrink-0 bg-brand-dark"
           >
             {firstName.slice(0, 2)}
           </div>

@@ -94,7 +94,7 @@ export default function CreateAccount() {
   })()
 
   const strengthLabel = ['', 'Débil', 'Regular', 'Fuerte', 'Muy fuerte'][strength]
-  const strengthColor = ['', '#ef4444', '#f59e0b', '#22c55e', '#16a34a'][strength]
+  const strengthColor = ['', 'var(--brand-error)', 'var(--brand-warning)', 'var(--brand-success)', 'var(--brand-strong)'][strength]
 
   return (
     <WrapperCard>
@@ -159,7 +159,7 @@ export default function CreateAccount() {
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1 flex-1">
                     {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="h-1 flex-1 rounded-full transition-all" style={{ backgroundColor: i <= strength ? strengthColor : '#e5e7eb' }} />
+                      <div key={i} className="h-1 flex-1 rounded-full transition-all" style={{ backgroundColor: i <= strength ? strengthColor : 'var(--brand-inactive)' }} />
                     ))}
                   </div>
                   <span className="text-xs font-medium" style={{ color: strengthColor }}>{strengthLabel}</span>

@@ -181,8 +181,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
             <button
               type="button"
               onClick={onNewRequest}
-              className="flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary active:scale-[0.98]"
-              style={{ borderColor: '#E1941F', color: '#E1941F' }}
+              className="flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary active:scale-[0.98] border-brand-accent text-brand-accent"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -232,8 +231,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                   <button
                     type="button"
                     onClick={() => handleOpenPayment(data.totalToPay)}
-                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#E1941F' }}
+                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
                   >
                     Pagar
                   </button>
@@ -260,8 +258,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                   <button
                     type="button"
                     onClick={() => handleOpenPayment(data.liquidateTotal)}
-                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#E1941F' }}
+                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
                   >
                     Adelantar pago
                   </button>
@@ -291,8 +288,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                   <button
                     type="button"
                     onClick={() => data.credits[0] && handleOpenDetail(data.credits[0])}
-                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: '#E1941F' }}
+                    className="w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
                   >
                     Ver detalle
                   </button>
@@ -357,9 +353,9 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                         {/* Amount / Status */}
                         <div className="flex flex-col flex-1 items-start md:items-end md:w-32">
                           {isFinished ? (
-                            <span className="text-sm font-semibold" style={{ color: '#2B2929' }}>Finalizado</span>
+                            <span className="text-sm font-semibold text-brand-dark">Finalizado</span>
                           ) : (
-                            <span className="text-sm font-bold" style={{ color: '#E1941F' }}>
+                            <span className="text-sm font-bold text-brand-accent">
                               ${credit.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                             </span>
                           )}
@@ -378,7 +374,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                               className="h-full rounded-full transition-all"
                               style={{
                                 width: `${progress}%`,
-                                backgroundColor: isFinished ? '#2B2929' : '#E1941F',
+                                backgroundColor: isFinished ? 'var(--brand-dark)' : 'var(--brand-accent)',
                               }}
                             />
                           </div>
@@ -400,8 +396,7 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
                             <button
                               type="button"
                               onClick={() => handleOpenPayment(credit.amount)}
-                              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                              style={{ backgroundColor: '#2B2929' }}
+                              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-dark"
                             >
                               Pagar
                             </button>

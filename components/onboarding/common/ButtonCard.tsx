@@ -39,8 +39,7 @@ export function ButtonCard({
         type={submit ? 'submit' : 'button'}
         onClick={onClick}
         disabled={disabled || loading}
-        className="text-sm font-medium transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-2"
-        style={{ color: '#E1941F' }}
+        className="text-sm font-medium transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-2 text-brand-accent"
       >
         {content}
       </button>
@@ -65,8 +64,7 @@ export function ButtonCard({
       type={submit ? 'submit' : 'button'}
       onClick={onClick}
       disabled={disabled || loading}
-      className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
-      style={{ backgroundColor: '#E1941F' }}
+      className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2 bg-brand-accent"
     >
       {content}
     </button>

@@ -85,8 +85,7 @@ export default function RecoverReset({
           <button
             type="submit"
             disabled={recoveryLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ backgroundColor: '#E1941F' }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-brand-accent"
           >
             {recoveryLoading ? (
               <>

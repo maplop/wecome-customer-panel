@@ -72,10 +72,9 @@ export default function PaymentModal({ amount, onClose, onSuccess }: PaymentModa
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: '#2B2929' }}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
                     <line x1="8" y1="2" x2="8" y2="6" />
@@ -135,7 +134,7 @@ export default function PaymentModal({ amount, onClose, onSuccess }: PaymentModa
                       ? 'border-2 bg-secondary/60'
                       : 'border-border bg-card hover:bg-secondary/30'
                   }`}
-                  style={isSelected ? { borderColor: '#E1941F' } : undefined}
+                  className={isSelected ? 'border-brand-accent' : ''}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
@@ -171,8 +170,7 @@ export default function PaymentModal({ amount, onClose, onSuccess }: PaymentModa
             type="button"
             onClick={handleSubmit}
             disabled={!selectedMethod || isProcessing}
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            style={{ backgroundColor: '#2B2929' }}
+            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-brand-dark"
           >
             {isProcessing ? (
               <>
