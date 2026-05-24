@@ -5,11 +5,9 @@ import { useState } from 'react'
 import { isApiClientError } from '@/lib/api/api-client'
 import { registerWebClient } from '@/services/auth'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard } from './common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
-interface CreateAccountProps {
-  onNext: (data: { email: string; password: string }) => void
-  onBack: () => void
-}
 
 interface FormState {
   email: string
@@ -17,8 +15,9 @@ interface FormState {
   confirm: string
 }
 
-export default function CreateAccount({ onNext, onBack }: CreateAccountProps) {
-  // Email from whitelist (hardcoded for now)
+export default function CreateAccount() {
+  const router = useRouter()
+
   const whitelistEmail = 'usuario2@wecome.com'
 
   const [form, setForm] = useState<FormState>({ email: whitelistEmail, password: '', confirm: '' })
@@ -63,7 +62,7 @@ export default function CreateAccount({ onNext, onBack }: CreateAccountProps) {
       })
         */
 
-      onNext({ email: form.email, password: form.password })
+      router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
     } catch (error) {
       if (isApiClientError(error)) {
         setSubmitError(
@@ -221,7 +220,7 @@ export default function CreateAccount({ onNext, onBack }: CreateAccountProps) {
 
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.back()}
           disabled={isSubmitting}
         >
           Regresar

@@ -1,16 +1,14 @@
 'use client'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
-interface CreditResultProps {
-  salary: number
-  onNext: () => void
-  onBack: () => void
-}
+export default function CreditResult() {
+  const router = useRouter()
 
-export default function CreditResult({ salary, onNext, onBack }: CreditResultProps) {
+  const salary = 3500
   const maxCredit = salary * 3
   const monthlyRate = 0.028
-
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
@@ -57,13 +55,13 @@ export default function CreditResult({ salary, onNext, onBack }: CreditResultPro
 
       <div className="flex flex-col gap-3">
         <ButtonCard
-          onClick={onNext}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
         >
           Continuar
         </ButtonCard>
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.back()}
         >
           Regresar
         </ButtonCard>

@@ -2,16 +2,14 @@
 
 import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
-interface FinancialDataProps {
-  onNext: (data: { salary: number }) => void
-  onBack: () => void
-}
+export default function FinancialData() {
+  const router = useRouter()
 
-export default function FinancialData({ onNext, onBack }: FinancialDataProps) {
   const salary = 3500
   const [error, setError] = useState('')
-
   const formatMXN = (value: string) => {
     const numeric = value.replace(/\D/g, '')
     return numeric ? Number(numeric).toLocaleString('es-MX') : ''
@@ -24,18 +22,19 @@ export default function FinancialData({ onNext, onBack }: FinancialDataProps) {
     if (!salary) { setError('Ingresa tu salario mensual'); return }
     if (num < 3000) { setError('El salario mínimo requerido es $3,000'); return }
     if (num > 500000) { setError('Verifica el monto ingresado'); return }
-    onNext({ salary: num })
+
+    router.push(ROUTES.ONBOARDING.CREDIT_RESULT)
   }
 
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Datos financieros
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Con base en la información registrada, calculamos el monto de crédito disponible para ti.
-        </p>
+        </SubtitleCard>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex gap-3 items-start">
@@ -83,7 +82,7 @@ export default function FinancialData({ onNext, onBack }: FinancialDataProps) {
 
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.back()}
         >
           Regresar
         </ButtonCard>

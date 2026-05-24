@@ -2,14 +2,16 @@
 
 import { useState, useRef } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { useClientVerificationStore } from '@/stores/client-store'
+import { useRouter } from 'next/navigation'
+import { ROUTES } from '@/lib/routes'
 
-interface IdentityVerificationProps {
-  email: string
-  onNext: (data: { code: string }) => void
-  onBack: () => void
-}
+export default function IdentityVerification() {
+  const router = useRouter()
 
-export default function IdentityVerification({ email, onNext, onBack }: IdentityVerificationProps) {
+  const { data } = useClientVerificationStore()
+  const email = data?.correo_electronico || ''
+
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState('')
   const refs = [
@@ -22,7 +24,7 @@ export default function IdentityVerification({ email, onNext, onBack }: Identity
   ]
 
   const maskedEmail = (() => {
-    const [user, domain] = email.split('@')
+    const [user, domain] = email?.split('@')
     if (!user || !domain) return email
     const visible = user.slice(0, 2)
     const masked = '*'.repeat(Math.max(user.length - 2, 3))
@@ -56,7 +58,8 @@ export default function IdentityVerification({ email, onNext, onBack }: Identity
     e.preventDefault()
     const code = digits.join('')
     if (code.length < 6) { setError('Ingresa los 6 dígitos del código'); return }
-    onNext({ code })
+
+    router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT)
   }
 
   return (
@@ -112,7 +115,7 @@ export default function IdentityVerification({ email, onNext, onBack }: Identity
 
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.back()}
         >
           Regresar
         </ButtonCard>

@@ -2,20 +2,20 @@
 
 import { useState } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
-
-interface FinalConfirmProps {
-  amount: number
-  term: number
-  hasInsurance: boolean
-  onConfirm: () => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
 
-export default function FinalConfirm({ amount, term, hasInsurance, onConfirm, onBack }: FinalConfirmProps) {
+export default function FinalConfirm() {
+  const router = useRouter()
+
   const [loading, setLoading] = useState(false)
+
+  const amount = 15000
+  const term = 12
+  const hasInsurance = true
 
   const totalInterest = Math.round(amount * MONTHLY_RATE * term)
   const insuranceCost = hasInsurance ? Math.round(amount * 0.02) : 0
@@ -30,7 +30,7 @@ export default function FinalConfirm({ amount, term, hasInsurance, onConfirm, on
     setLoading(true)
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false)
-    onConfirm()
+    router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)
   }
 
   const details = [
@@ -44,12 +44,12 @@ export default function FinalConfirm({ amount, term, hasInsurance, onConfirm, on
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground text-balance">
+        <TitleCard>
           Confirmación final
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        </TitleCard>
+        <SubtitleCard>
           Revisa los datos finales y confirma tu solicitud de crédito.
-        </p>
+        </SubtitleCard>
       </div>
 
       {/* Final card */}
@@ -80,7 +80,7 @@ export default function FinalConfirm({ amount, term, hasInsurance, onConfirm, on
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={onBack}
+          onClick={() => router.back()}
           disabled={loading}
         >
           Regresar

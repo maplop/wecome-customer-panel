@@ -1,12 +1,17 @@
 'use client'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
-interface CreditSuccessProps {
-  amount: number
-  onRestart: () => void
-}
 
-export default function CreditSuccess({ amount, onRestart }: CreditSuccessProps) {
+export default function CreditSuccess() {
+  const router = useRouter()
+
+  const onRestart = () => {
+    router.push(ROUTES.DASHBOARD.ROOT)
+  }
+
+  const amount = 15000
   return (
     <WrapperCard className="gap-8 text-center">
       <div className="flex flex-col items-center gap-4">

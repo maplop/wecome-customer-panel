@@ -1,19 +1,19 @@
 'use client'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
-
-interface CreditSummaryProps {
-  amount: number
-  term: number
-  hasInsurance: boolean
-  onNext: () => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
 
+export default function CreditSummary() {
+  const router = useRouter()
 
-export default function CreditSummary({ amount, term, hasInsurance, onNext, onBack }: CreditSummaryProps) {
+  // In a real app, these would come from context or props
+  const amount = 15000
+  const term = 12
+  const hasInsurance = true
+
   const commission = Math.round(amount * COMMISSION_RATE)
   const netAmount = amount - commission
   const totalInterest = Math.round(amount * MONTHLY_RATE * term)
@@ -100,13 +100,13 @@ export default function CreditSummary({ amount, term, hasInsurance, onNext, onBa
 
       <div className="flex flex-col gap-3">
         <ButtonCard
-          onClick={onNext}
+          onClick={() => router.push(ROUTES.ONBOARDING.FINAL_CONFIRM)}
         >
           Continuar con mi crédito
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={onBack}
+          onClick={() => router.back()}
         >
           Regresar
         </ButtonCard>

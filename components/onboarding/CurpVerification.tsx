@@ -4,13 +4,11 @@ import { useState } from 'react'
 import { useClientVerificationStore } from '@/stores/client-store'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
 import { useRouter } from 'next/navigation'
+import { ROUTES } from '@/lib/routes'
 
-interface StepLoginProps {
-  onNext: (data: { curp: string }) => void
-  onLoginClick: () => void
-}
+export default function CurpVerification() {
+  const router = useRouter()
 
-export default function CurpVerification({ onNext, onLoginClick }: StepLoginProps) {
   const [curp, setCurp] = useState('')
   const [error, setError] = useState('')
   const { loading, error: storeError, verifyCurp } = useClientVerificationStore()
@@ -30,7 +28,7 @@ export default function CurpVerification({ onNext, onLoginClick }: StepLoginProp
 
     const source = await verifyCurp(curp.toUpperCase())
     if (source) {
-      onNext({ curp: curp.toUpperCase() })
+      router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)
     }
   }
 
@@ -86,7 +84,7 @@ export default function CurpVerification({ onNext, onLoginClick }: StepLoginProp
 
       <ButtonCard
         variant="secondary"
-        onClick={onLoginClick}
+        onClick={() => router.push(ROUTES.AUTH.LOGIN)}
       >
         Ingresa a tu cuenta
       </ButtonCard>

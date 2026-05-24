@@ -4,12 +4,8 @@ import { useState, useEffect } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
-
-interface CreditSelectionProps {
-  salary: number
-  onNext: (data: { amount: number; term: number; hasInsurance: boolean }) => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
 const TERMS = [6, 12, 18, 24]
 const MONTHLY_RATE = 0.028
@@ -101,7 +97,10 @@ function RiskModal({
   )
 }
 
-export default function CreditSelection({ salary, onNext, onBack }: CreditSelectionProps) {
+export default function CreditSelection() {
+  const router = useRouter()
+
+  const salary = 3500
   const maxAmount = salary * 3
   const minAmount = 1000
   const [amount, setAmount] = useState(Math.round(maxAmount / 2))
@@ -261,13 +260,13 @@ export default function CreditSelection({ salary, onNext, onBack }: CreditSelect
 
         <div className="flex flex-col gap-3">
           <ButtonCard
-            onClick={() => onNext({ amount, term, hasInsurance })}
+            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)}
           >
             Continuar
           </ButtonCard>
           <ButtonCard
             variant="secondary"
-            onClick={onBack}
+            onClick={() => router.back()}
           >
             Regresar
           </ButtonCard>
