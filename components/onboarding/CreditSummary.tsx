@@ -106,7 +106,7 @@ export default function CreditSummary() {
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
         >
           Regresar
         </ButtonCard>

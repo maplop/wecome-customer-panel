@@ -3,5 +3,5 @@
 import TermsAcceptance from '@/components/Onboarding/TermsAcceptance'
 
 export default function TermsAcceptancePage() {
-  return <TermsAcceptance onNext={() => { }} onBack={() => { }} />
+  return <TermsAcceptance />
 }

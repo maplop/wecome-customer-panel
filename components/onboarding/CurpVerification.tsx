@@ -28,7 +28,7 @@ export default function CurpVerification() {
 
     const source = await verifyCurp(curp.toUpperCase())
     if (source) {
-      router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)
+      router.push(ROUTES.ONBOARDING.USER_CONFIRM)
     }
   }
 

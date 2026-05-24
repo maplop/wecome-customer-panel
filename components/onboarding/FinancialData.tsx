@@ -82,7 +82,7 @@ export default function FinancialData() {
 
         <ButtonCard
           variant="secondary"
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
         >
           Regresar
         </ButtonCard>

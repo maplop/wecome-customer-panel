@@ -30,7 +30,7 @@ export default function FinalConfirm() {
     setLoading(true)
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false)
-    router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)
+    router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)
   }
 
   const details = [
@@ -80,7 +80,7 @@ export default function FinalConfirm() {
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)}
           disabled={loading}
         >
           Regresar

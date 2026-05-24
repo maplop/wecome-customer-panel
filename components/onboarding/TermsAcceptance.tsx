@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
-
-interface TermsAcceptanceProps {
-  onNext: () => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
 const DOCUMENTS = [
   {
@@ -167,7 +164,9 @@ Al aceptar el presente documento, confirmo que he leído y entendido el alcance 
   },
 ]
 
-export default function TermsAcceptance({ onNext, onBack }: TermsAcceptanceProps) {
+export default function TermsAcceptance() {
+  const router = useRouter()
+
   const [accepted, setAccepted] = useState<Record<string, boolean>>({
     advertising: false,
     privacy: false,
@@ -242,14 +241,14 @@ export default function TermsAcceptance({ onNext, onBack }: TermsAcceptanceProps
 
         <div className="flex flex-col gap-3">
           <ButtonCard
-            onClick={onNext}
+            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)}
             disabled={!allAccepted}
           >
             Continuar
           </ButtonCard>
           <ButtonCard
             variant='secondary'
-            onClick={onBack}
+            onClick={() => router.push(ROUTES.ONBOARDING.FINAL_CONFIRM)}
           >
             Regresar
           </ButtonCard>

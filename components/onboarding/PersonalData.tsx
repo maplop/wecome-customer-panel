@@ -3,11 +3,8 @@
 import { useClientVerificationStore } from '@/stores/client-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
-
-interface PersonalDataProps {
-  onNext: () => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
 interface DataRowProps {
   label: string
@@ -43,7 +40,9 @@ function formatDate(dateStr: string): string {
   })
 }
 
-export default function PersonalData({ onNext, onBack }: PersonalDataProps) {
+export default function PersonalData() {
+  const router = useRouter()
+
   const { data } = useClientVerificationStore()
 
   if (!data) {
@@ -59,7 +58,7 @@ export default function PersonalData({ onNext, onBack }: PersonalDataProps) {
         </div>
         <button
           type="button"
-          onClick={onBack}
+          onClick={() => router.back()}
           className="w-full rounded-xl border border-border py-3.5 text-sm font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
         >
           Regresar
@@ -107,14 +106,14 @@ export default function PersonalData({ onNext, onBack }: PersonalDataProps) {
 
       <div className="flex flex-col gap-3">
         <ButtonCard
-          onClick={onNext}
+          onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
         >
           Continuar
         </ButtonCard>
 
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT)}
         >
           Regresar
         </ButtonCard>

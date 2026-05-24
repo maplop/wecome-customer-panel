@@ -62,7 +62,7 @@ export default function CreateAccount() {
       })
         */
 
-      router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
+      router.push(ROUTES.ONBOARDING.PERSONAL_DATA)
     } catch (error) {
       if (isApiClientError(error)) {
         setSubmitError(
@@ -220,7 +220,7 @@ export default function CreateAccount() {
 
         <ButtonCard
           variant="secondary"
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)}
           disabled={isSubmitting}
         >
           Regresar

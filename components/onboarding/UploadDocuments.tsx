@@ -2,11 +2,9 @@
 
 import { useState, useRef } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
-
-interface UploadDocumentsProps {
-  onNext: (data: { documents: Record<string, string> }) => void
-  onBack: () => void
-}
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
+import router from 'next/dist/shared/lib/router/router'
 
 interface DocumentType {
   id: string
@@ -30,7 +28,9 @@ const TABS = [
   { id: 2, label: 'Recibos de nómina' },
 ]
 
-export default function UploadDocuments({ onNext, onBack }: UploadDocumentsProps) {
+export default function UploadDocuments() {
+  const router = useRouter()
+
   const [activeTab, setActiveTab] = useState<1 | 2>(1)
   const [documents, setDocuments] = useState<Record<string, { name: string; preview: string }>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -88,17 +88,13 @@ export default function UploadDocuments({ onNext, onBack }: UploadDocumentsProps
     })
 
     if (Object.keys(newErrors).length) {
-      // si hay errores en tab 1, cambia a esa tab
       const hasTab1Errors = tab1Docs.some(d => newErrors[d.id])
       if (hasTab1Errors) setActiveTab(1)
       setErrors(newErrors)
       return
     }
 
-    const documentData = Object.fromEntries(
-      Object.entries(documents).map(([key, value]) => [key, value.name])
-    )
-    onNext({ documents: documentData })
+    router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
   }
 
   return (
@@ -223,7 +219,7 @@ export default function UploadDocuments({ onNext, onBack }: UploadDocumentsProps
 
         <ButtonCard
           variant="secondary"
-          onClick={activeTab === 2 ? () => setActiveTab(1) : onBack}
+          onClick={activeTab === 2 ? () => setActiveTab(1) : () => router.push(ROUTES.ONBOARDING.PERSONAL_DATA)}
         >
           {activeTab === 2 ? 'Atrás' : 'Regresar'}
         </ButtonCard>

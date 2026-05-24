@@ -61,7 +61,7 @@ export default function CreditResult() {
         </ButtonCard>
         <ButtonCard
           variant="secondary"
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)}
         >
           Regresar
         </ButtonCard>

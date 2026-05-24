@@ -115,7 +115,7 @@ export default function IdentityVerification() {
 
         <ButtonCard
           variant="secondary"
-          onClick={() => router.back()}
+          onClick={() => router.push(ROUTES.ONBOARDING.USER_CONFIRM)}
         >
           Regresar
         </ButtonCard>

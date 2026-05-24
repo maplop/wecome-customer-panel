@@ -3,5 +3,5 @@
 import PersonalData from '@/components/Onboarding/PersonalData'
 
 export default function PersonalDataPage() {
-  return <PersonalData onNext={() => { }} onBack={() => { }} />
+  return <PersonalData />
 }

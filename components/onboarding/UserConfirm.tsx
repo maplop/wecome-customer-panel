@@ -1,15 +1,14 @@
 'use client'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
 
-interface UserConfirmProps {
-  curp: string
-  onNext: () => void
-  onBack: () => void
-  isVerified?: boolean
-}
-
-export default function UserConfirm({ curp, onNext, onBack, isVerified = true }: UserConfirmProps) {
+export default function UserConfirm() {
   // Derive a display name from CURP (first 4 letters → initials)
+  const router = useRouter()
+
+  const curp = 'GARC850101HDFRRL09' // This would come from props or context in a real app
+  const isVerified = true // This would also come from props or context
   const firstName = curp.slice(0, 4)
 
   return (
@@ -60,13 +59,13 @@ export default function UserConfirm({ curp, onNext, onBack, isVerified = true }:
       <div className="flex flex-col gap-3">
         {isVerified ? (
           <ButtonCard
-            onClick={onNext}
+            onClick={() => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)}
           >
             Iniciar solicitud
           </ButtonCard>
         ) : (
           <ButtonCard
-            onClick={onNext}
+            onClick={() => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)}
             disabled
           >
             No puedes iniciar la solicitud
@@ -74,7 +73,7 @@ export default function UserConfirm({ curp, onNext, onBack, isVerified = true }:
         )}
         <ButtonCard
           variant="secondary"
-          onClick={onBack}
+          onClick={() => router.push(ROUTES.ONBOARDING.CURP_VERIFICATION)}
         >
           No soy yo, regresar
         </ButtonCard>
