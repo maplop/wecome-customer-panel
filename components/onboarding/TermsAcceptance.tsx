@@ -220,7 +220,6 @@ export default function TermsAcceptance() {
                 <div className="relative mt-0.5 shrink-0">
                   <div
                     className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent' : 'border-border'}`}
-                    className={checked ? 'bg-brand-accent' : ''}
                     style={checked ? {} : undefined}
                   >
                     {checked && (
