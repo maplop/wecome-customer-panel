@@ -13,13 +13,7 @@ export default function AuthLayout({
   children,
 }: AuthLayoutProps) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="login-title"
-    >
+    <div className="w-full">
       <div className="w-full max-w-105 rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between px-6 pb-2 pt-6">
           <div className="flex flex-col gap-1">
