@@ -5,6 +5,9 @@ import { Header } from '@/components/common/Header'
 import PaymentModal from './components/PaymentModal'
 import CreditDetailModal from './components/CreditDetailModal'
 import { Calendar, CircleDollarSign, CreditCard, HandCoins, Plus } from '@/lib/icons'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
+import { ButtonCard } from '../common'
 
 export interface LoggedUser {
   name: string
@@ -15,7 +18,6 @@ export interface LoggedUser {
 interface CreditDashboardProps {
   user: LoggedUser
   onLogout: () => void
-  onNewRequest: () => void
 }
 
 interface Credit {
@@ -106,7 +108,9 @@ const MOCK_DATA: Record<string, {
 type TabFilter = 'todos' | 'actuales' | 'finalizados'
 
 
-export default function CreditDashboard({ user, onLogout, onNewRequest }: CreditDashboardProps) {
+export default function CreditDashboard({ user, onLogout }: CreditDashboardProps) {
+  const router = useRouter()
+
   const [activeTab, setActiveTab] = useState<TabFilter>('todos')
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; amount: number }>({ open: false, amount: 0 })
   const [detailModal, setDetailModal] = useState<{ open: boolean; credit: Credit | null }>({ open: false, credit: null })
@@ -183,14 +187,14 @@ export default function CreditDashboard({ user, onLogout, onNewRequest }: Credit
             <h1 className="text-2xl font-bold text-foreground">
               ¡Bienvenido {user.name.split(' ')[0]}!
             </h1>
-            <button
-              type="button"
-              onClick={onNewRequest}
-              className="flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary active:scale-[0.98] border-brand-accent text-brand-accent"
+            <ButtonCard
+              variant='secondary'
+              onClick={() => router.push(ROUTES.ONBOARDING.CURP_VERIFICATION)}
+              className='w-auto px-4 hover:bg-secondary  border-brand-accent text-brand-accent'
             >
               <Plus />
               Nueva solicitud de crédito
-            </button>
+            </ButtonCard>
           </div>
 
           {!data ? (

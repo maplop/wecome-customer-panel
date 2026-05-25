@@ -185,6 +185,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
           <div className="px-6 py-4 border-t border-border shrink-0">
             <ButtonCard
               onClick={onPay}
+              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
             >
               Realizar pago de ${credit.biweeklyPayment.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </ButtonCard>

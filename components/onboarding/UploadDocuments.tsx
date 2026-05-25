@@ -131,7 +131,7 @@ export default function UploadDocuments() {
         })}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {currentTabDocs.map((doc) => (
           <div key={doc.id} className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">

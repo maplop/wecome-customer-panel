@@ -41,7 +41,7 @@ export default function FinancialData() {
         text=' La información mostrada es confidencial y se utiliza únicamente para calcular tu línea de crédito.'
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="salary" className="text-sm font-medium text-foreground">
             Salario mensual neto

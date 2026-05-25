@@ -8,7 +8,7 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from '@/lib/icons'
 
-const TERMS = [6, 12, 18, 24]
+const TERMS = [6, 12, 18]
 const MONTHLY_RATE = 0.028
 const INSURANCE_RATE = 0.02
 
@@ -67,7 +67,7 @@ function RiskModal({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-border flex flex-col gap-2">
+        <div className="px-6 py-4 border-t border-border flex flex-col gap-3">
           <button
             type="button"
             disabled={!checked}
@@ -177,7 +177,7 @@ export default function CreditSelection() {
           {/* Term selection */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">Plazo</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {TERMS.map((t) => (
                 <button
                   key={t}

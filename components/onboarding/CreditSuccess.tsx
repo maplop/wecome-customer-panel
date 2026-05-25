@@ -14,7 +14,7 @@ export default function CreditSuccess() {
 
   const amount = 15000
   return (
-    <WrapperCard className="gap-8 text-center">
+    <WrapperCard className="text-center">
       <div className="flex flex-col items-center gap-4">
         <div
           className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-dark"

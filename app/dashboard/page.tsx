@@ -6,7 +6,6 @@ export default function DashboardPage() {
   return (
     <CreditDashboard
       onLogout={() => { }}
-      onNewRequest={() => { }}
       user={{
         name: 'María González',
         email: 'maria.gonzalez@empresa.com',
