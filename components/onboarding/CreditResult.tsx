@@ -2,6 +2,7 @@
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { Check } from '@/lib/icons'
 
 export default function CreditResult() {
   const router = useRouter()
@@ -32,7 +33,7 @@ export default function CreditResult() {
           <span className="text-sm text-white/60">MXN</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-brand-success-light" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <Check className="stroke-brand-success-light w-5 h-5" />
           <span className="text-xs text-white/70">Preaprobado al instante</span>
         </div>
       </div>

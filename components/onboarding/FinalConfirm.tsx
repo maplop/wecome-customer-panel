@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { Check } from '@/lib/icons'
 
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
@@ -56,7 +57,7 @@ export default function FinalConfirm() {
       <div className="rounded-2xl overflow-hidden border border-border">
         <div className="px-5 py-4 flex flex-col items-center gap-2 text-center bg-brand-dark">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <Check className="stroke-white w-6 h-6" />
           </div>
           <span className="text-white font-semibold text-base">Solicitud lista para confirmar</span>
         </div>

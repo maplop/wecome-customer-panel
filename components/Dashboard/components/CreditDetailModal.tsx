@@ -1,4 +1,7 @@
 'use client'
+import { Check, CreditCard, X } from '@/lib/icons'
+import { ButtonCard } from '@/components/common'
+
 
 interface CreditDetailModalProps {
   credit: {
@@ -47,10 +50,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
             <div
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark"
             >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2" />
-                <line x1="2" y1="10" x2="22" y2="10" />
-              </svg>
+              <CreditCard className="stroke-white w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">Detalle del crédito</h2>
@@ -63,10 +63,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
             className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-secondary transition"
             aria-label="Cerrar"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X />
           </button>
         </div>
 
@@ -75,11 +72,10 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
           {/* Status badge */}
           <div className="flex items-center gap-2 mb-5">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                isFinished
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-amber-100 text-amber-700'
-              }`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${isFinished
+                ? 'bg-green-100 text-green-700'
+                : 'bg-amber-100 text-amber-700'
+                }`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${isFinished ? 'bg-green-500' : 'bg-amber-500'}`} />
               {isFinished ? 'Finalizado' : 'Activo'}
@@ -164,9 +160,7 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
                         <td className="py-2.5 px-4 text-center">
                           {row.isPaid ? (
                             <span className="inline-flex items-center gap-1 text-green-600">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
+                              <Check className="w-4 h-4" />
                               Pagado
                             </span>
                           ) : row.isCurrent ? (
@@ -189,13 +183,11 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
         {/* Footer */}
         {!isFinished && (
           <div className="px-6 py-4 border-t border-border shrink-0">
-            <button
-              type="button"
+            <ButtonCard
               onClick={onPay}
-              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
             >
               Realizar pago de ${credit.biweeklyPayment.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-            </button>
+            </ButtonCard>
           </div>
         )}
       </div>

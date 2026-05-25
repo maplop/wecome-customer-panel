@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { X, Check } from '@/lib/icons'
 
 const DOCUMENTS = [
   {
@@ -222,9 +223,7 @@ export default function TermsAcceptance() {
                     className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent bg-brand-accent' : 'border-border'}`}
                   >
                     {checked && (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
+                      <Check className="stroke-white w-4 h-4" />
                     )}
                   </div>
                 </div>
@@ -267,10 +266,7 @@ export default function TermsAcceptance() {
                 className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-secondary transition"
                 aria-label="Cerrar"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X />
               </button>
             </div>
 

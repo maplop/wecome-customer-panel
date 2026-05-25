@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { AlertTriangle } from '@/lib/icons'
 
 const TERMS = [6, 12, 18, 24]
 const MONTHLY_RATE = 0.028
@@ -28,23 +29,19 @@ function RiskModal({
             <div
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+              <AlertTriangle className="stroke-white w-5 h-5" />
             </div>
             <h2 className="text-lg font-bold text-foreground">Crédito sin seguro</h2>
           </div>
         </div>
 
         <div className="px-6 py-5 flex flex-col gap-4">
-          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex flex-col gap-2">
-            <p className="text-sm font-semibold text-amber-800">Aviso importante</p>
-            <p className="text-sm text-amber-700 leading-relaxed">
+          <div className="rounded-xl bg-brand-warning/10 border border-brand-warning/30 p-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold text-brand-warning">Aviso importante</p>
+            <p className="text-sm text-brand-warning/80 leading-relaxed">
               Al seleccionar un crédito <strong>sin seguro</strong>, asumes los siguientes riesgos:
             </p>
-            <ul className="text-sm text-amber-700 space-y-1.5 list-disc list-inside">
+            <ul className="text-sm text-brand-warning/80 space-y-1.5 list-disc list-inside">
               <li>En caso de incapacidad temporal, el pago del crédito sigue siendo tu responsabilidad.</li>
               <li>En caso de fallecimiento, el saldo pendiente será cobrado a tus beneficiarios o avales.</li>
               <li>No cuentas con protección ante pérdida involuntaria de empleo.</li>
@@ -56,8 +53,10 @@ function RiskModal({
             <Checkbox
               id="risk-accept"
               checked={checked}
-              onCheckedChange={(val) => setChecked(val === true)}
-              className={`mt-0.5 ${checked ? 'bg-brand-accent border-brand-accent' : 'border-brand-accent'}`}
+              onCheckedChange={(val) =>
+                setChecked(val === true)
+              }
+              className="mt-0.5 border-brand-accent bg-transparent data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent data-[state=checked]:text-white"
             />
             <Label
               htmlFor="risk-accept"

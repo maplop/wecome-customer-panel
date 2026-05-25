@@ -2,6 +2,7 @@
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { Check } from '@/lib/icons'
 
 
 export default function CreditSuccess() {
@@ -18,9 +19,7 @@ export default function CreditSuccess() {
         <div
           className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-dark"
         >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="stroke-brand-accent" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <Check className="stroke-brand-accent w-10 h-10" />
         </div>
         <div className="flex flex-col gap-2">
           <TitleCard>
