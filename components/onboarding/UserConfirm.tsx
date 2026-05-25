@@ -1,5 +1,5 @@
 'use client'
-import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 

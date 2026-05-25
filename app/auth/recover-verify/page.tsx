@@ -1,5 +1,5 @@
-import AuthRouteView from '@/components/Auth/AuthRouteView'
+import RecoverVerify from '@/components/Auth/RecoverVerify'
 
 export default function RecoverVerifyPage() {
-  return <AuthRouteView mode="recover-verify" />
+  return <RecoverVerify />
 }

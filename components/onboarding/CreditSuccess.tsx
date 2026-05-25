@@ -1,5 +1,5 @@
 'use client'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 
@@ -55,7 +55,6 @@ export default function CreditSuccess() {
       </div>
 
       <ButtonCard
-        variant='secondary'
         onClick={onRestart}
       >
         Ver solicitud

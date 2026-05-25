@@ -5,7 +5,7 @@ interface StepIndicatorProps {
   total: number
 }
 
-export default function StepIndicator({ current, total }: StepIndicatorProps) {
+export function StepIndicator({ current, total }: StepIndicatorProps) {
   const pct = ((current - 1) / (total - 1)) * 100
 
   return (

@@ -1,5 +1,5 @@
-import AuthRouteView from '@/components/Auth/AuthRouteView'
+import RecoverReset from "@/components/Auth/RecoverReset"
 
 export default function RecoverResetPage() {
-  return <AuthRouteView mode="recover-reset" />
+  return <RecoverReset />
 }

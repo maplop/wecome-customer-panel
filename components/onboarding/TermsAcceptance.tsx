@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 
@@ -219,8 +219,7 @@ export default function TermsAcceptance() {
               >
                 <div className="relative mt-0.5 shrink-0">
                   <div
-                    className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent' : 'border-border'}`}
-                    style={checked ? {} : undefined}
+                    className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent bg-brand-accent' : 'border-border'}`}
                   >
                     {checked && (
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="stroke-white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

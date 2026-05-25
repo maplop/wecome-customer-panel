@@ -5,7 +5,7 @@ interface HeaderProps {
   onLogout?: () => void
 }
 
-export default function Header({
+export function Header({
   showLogout = false,
   onLogout
 }: HeaderProps) {

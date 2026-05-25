@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import Header from '@/components/common/Header'
-
-import type { LoggedUser } from '../Auth/types'
+import { Header } from '@/components/common/Header'
 import PaymentModal from './components/PaymentModal'
 import CreditDetailModal from './components/CreditDetailModal'
+
+export interface LoggedUser {
+  name: string
+  email: string
+  curp: string
+}
 
 interface CreditDashboardProps {
   user: LoggedUser

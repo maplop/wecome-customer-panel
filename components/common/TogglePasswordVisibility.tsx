@@ -1,4 +1,4 @@
-export default function PasswordToggle({
+export function TogglePasswordVisibility({
   visible,
   onToggle,
   label,

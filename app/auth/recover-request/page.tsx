@@ -1,5 +1,4 @@
-import AuthRouteView from '@/components/Auth/AuthRouteView'
-
+import RecoveryRequest from "@/components/Auth/RecoverRequest";
 export default function RecoverRequestPage() {
-  return <AuthRouteView mode="recover-request" />
+  return <RecoveryRequest />
 }

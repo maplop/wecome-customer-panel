@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 

@@ -1,5 +1,4 @@
-import AuthRouteView from '@/components/Auth/AuthRouteView'
-
+import Login from "@/components/Auth/Login"
 export default function LoginPage() {
-  return <AuthRouteView mode="login" />
+  return <Login />
 }

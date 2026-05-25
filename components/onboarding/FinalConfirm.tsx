@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 

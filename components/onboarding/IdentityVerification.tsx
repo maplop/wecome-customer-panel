@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from './common'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { useClientVerificationStore } from '@/stores/client-store'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'

@@ -2,7 +2,7 @@
 
 import { useClientVerificationStore } from '@/stores/client-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 

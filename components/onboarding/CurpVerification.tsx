@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useClientVerificationStore } from '@/stores/client-store'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from './common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 
