@@ -1,9 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import axios from "axios";
-
-import { CONNECTOR_BASE_URL, CONNECTOR_ENDPOINTS } from "@/lib/api/api-config";
+import { connectorApiClient } from "@/api/dynamicore/connector";
 
 export interface ClientProps {
   actividad_economica: string;
@@ -49,7 +47,7 @@ interface ClientVerificationState {
   reset: () => void;
 }
 
-const CONNECTOR_SEARCH_URL = `${CONNECTOR_BASE_URL}${CONNECTOR_ENDPOINTS.SEARCH_CURP}`;
+const CONNECTOR_SEARCH_URL = "/search/703c3650a69c4ff2869a1075dc24f156";
 
 export const useClientVerificationStore = create<ClientVerificationState>(
   (set) => ({
@@ -61,7 +59,7 @@ export const useClientVerificationStore = create<ClientVerificationState>(
       set({ loading: true, error: null, data: null });
 
       try {
-        const response = await axios.post<ClientResponse>(
+        const response = await connectorApiClient.post<ClientResponse>(
           CONNECTOR_SEARCH_URL,
           {
             fields: [`curp:${curp}`],
@@ -94,3 +92,5 @@ export const useClientVerificationStore = create<ClientVerificationState>(
     reset: () => set({ loading: false, error: null, data: null }),
   }),
 );
+
+

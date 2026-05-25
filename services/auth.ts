@@ -1,5 +1,4 @@
-import apiClient from "@/lib/api/api-client";
-import { API_ENDPOINTS } from "@/lib/api/api-config";
+import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
 
 export interface RegisterRequest {
   email: string;

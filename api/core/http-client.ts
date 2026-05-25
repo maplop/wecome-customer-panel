@@ -1,7 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-import { API_ENDPOINTS } from "@/lib/api/api-config";
-
 export interface ApiErrorResponse {
   object?: string;
   code?: number;
@@ -27,23 +25,22 @@ export type ApiClientError = Error & {
   apiStatus?: string;
 };
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://front.dynamicore.io";
-const CONTEXT = process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT || "";
-let isRedirectingToHome = false;
+export interface CreateHttpClientOptions {
+  baseURL: string;
+  context?: string;
+  timeout?: number;
+  authEndpoints?: string[];
+  redirectOnUnauthorized?: boolean;
+}
 
-const AUTH_ENDPOINTS = new Set<string>([
-  API_ENDPOINTS.AUTH.LOGIN,
-  API_ENDPOINTS.AUTH.LOGOUT,
-  API_ENDPOINTS.AUTH.REGISTER,
-]);
+let isRedirectingToHome = false;
 
 export function isApiClientError(error: unknown): error is ApiClientError {
   return Boolean(
     error &&
-    typeof error === "object" &&
-    "isApiClientError" in error &&
-    (error as ApiClientError).isApiClientError,
+      typeof error === "object" &&
+      "isApiClientError" in error &&
+      (error as ApiClientError).isApiClientError,
   );
 }
 
@@ -129,20 +126,24 @@ function normalizeAxiosError(error: AxiosError): ApiClientError {
   return normalizedError;
 }
 
-function isAuthRequest(url?: string): boolean {
+function shouldMatchEndpoint(url: string, endpoint: string): boolean {
+  const normalizedUrl = url.toLowerCase();
+  const normalizedEndpoint = endpoint.toLowerCase();
+
+  return (
+    normalizedUrl === normalizedEndpoint ||
+    normalizedUrl.endsWith(normalizedEndpoint) ||
+    normalizedUrl.includes(normalizedEndpoint)
+  );
+}
+
+function isAuthRequest(url: string | undefined, authEndpoints: string[]): boolean {
   if (!url) {
     return false;
   }
 
-  const normalizedUrl = url.toLowerCase();
-
-  for (const endpoint of AUTH_ENDPOINTS) {
-    const normalizedEndpoint = endpoint.toLowerCase();
-    if (
-      normalizedUrl === normalizedEndpoint ||
-      normalizedUrl.endsWith(normalizedEndpoint) ||
-      normalizedUrl.includes(normalizedEndpoint)
-    ) {
+  for (const endpoint of authEndpoints) {
+    if (shouldMatchEndpoint(url, endpoint)) {
       return true;
     }
   }
@@ -163,47 +164,57 @@ function redirectToHomeOnUnauthorized(): void {
   window.location.assign("/");
 }
 
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-    context: CONTEXT,
-  },
-});
+export function createHttpClient(
+  options: CreateHttpClientOptions,
+): AxiosInstance {
+  const {
+    baseURL,
+    context = "",
+    timeout = 10000,
+    authEndpoints = [],
+    redirectOnUnauthorized = true,
+  } = options;
 
-// Interceptor for requests
-apiClient.interceptors.request.use(
-  (config) => {
-    // Ensure context header is always set
-    if (!config.headers["context"]) {
-      config.headers["context"] = CONTEXT;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+  const httpClient = axios.create({
+    baseURL,
+    timeout,
+    headers: {
+      "Content-Type": "application/json",
+      ...(context ? { context } : {}),
+    },
+  });
 
-// Interceptor for responses
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (!axios.isAxiosError(error)) {
-      console.error("API Error:", error);
-      return Promise.reject(error);
-    }
+  httpClient.interceptors.request.use(
+    (config) => {
+      if (context && !config.headers["context"]) {
+        config.headers["context"] = context;
+      }
 
-    const normalizedError = normalizeAxiosError(error);
+      return config;
+    },
+    (error) => Promise.reject(error),
+  );
 
-    if (normalizedError.status === 401 && !isAuthRequest(error.config?.url)) {
-      redirectToHomeOnUnauthorized();
-    }
+  httpClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (!axios.isAxiosError(error)) {
+        return Promise.reject(error);
+      }
 
-    console.error("API Error:", normalizedError);
-    return Promise.reject(normalizedError);
-  },
-);
+      const normalizedError = normalizeAxiosError(error);
 
-export default apiClient;
+      if (
+        redirectOnUnauthorized &&
+        normalizedError.status === 401 &&
+        !isAuthRequest(error.config?.url, authEndpoints)
+      ) {
+        redirectToHomeOnUnauthorized();
+      }
+
+      return Promise.reject(normalizedError);
+    },
+  );
+
+  return httpClient;
+}

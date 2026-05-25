@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { isApiClientError } from '@/lib/api/api-client'
+import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerWebClient } from '@/services/auth'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
