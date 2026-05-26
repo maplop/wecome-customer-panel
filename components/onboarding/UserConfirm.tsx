@@ -4,32 +4,8 @@ import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import {
-  connectorApiClient,
-  CONNECTOR_SERVICES,
-  NOTIFICATION_TEMPLATE,
-} from '@/api/dynamicore/connector'
 import { useClientVerificationStore } from '@/stores/client-store'
-
-const OTP_CLIENT = 142296
-const OTP_TYPE = 'client'
-
-interface SendOtpResult {
-  channel: string
-  success: boolean
-  template: number
-}
-
-interface SendOtpData {
-  code_length: number
-  channels: string[]
-  sent_to: string
-  all_results: SendOtpResult[]
-}
-
-interface SendOtpResponse {
-  data?: SendOtpData
-}
+import { sendOtp } from '@/services/onboarding'
 
 export default function UserConfirm() {
   const router = useRouter()
@@ -48,26 +24,17 @@ export default function UserConfirm() {
     if (!isVerified || isSendingOtp) {
       return
     }
+    if (!email) {
+      setOtpError('No se encontró un correo de lista blanca para enviar el código.')
+      return
+    }
 
     setOtpError('')
     setIsSendingOtp(true)
 
     try {
-      const response = await connectorApiClient.post<SendOtpResponse>(
-        CONNECTOR_SERVICES.SEND_OTP,
-        {
-          email,
-          client: OTP_CLIENT,
-          template: NOTIFICATION_TEMPLATE,
-          type: OTP_TYPE,
-        },
-      )
-
-      const emailResult = response.data?.data?.all_results?.find(
-        (item) => item.channel === 'EMAIL',
-      )
-
-      if (!emailResult?.success) {
+      const sent = await sendOtp(email)
+      if (!sent) {
         setOtpError('No fue posible enviar el código al correo. Intenta nuevamente.')
         return
       }

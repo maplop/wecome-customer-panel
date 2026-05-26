@@ -1,5 +1,8 @@
 export const API_URL = process.env.NEXT_PUBLIC_AWS_COGNITO_API_URL || "";
-export const API_CLIENT_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID || "";
+export const API_CLIENT_ID =
+  process.env.NEXT_PUBLIC_AWS_USER_POOLS_WEB_CLIENT_ID ||
+  process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID ||
+  "";
 
 export const SERVICES = {
   // ADMIN_ADD_USER_TO_GROUP: 'AdminAddUserToGroup',

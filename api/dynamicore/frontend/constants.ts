@@ -1,10 +1,11 @@
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://front.dynamicore.io";
-export const API_CONTEXT = process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT || "";
+export const API_CONTEXT =
+  process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT || "";
 
 export const API_ENDPOINTS = {
   AUTH: {
-    REGISTER: "/users/webclients",
+    REGISTER: "/users/new_webclients",
     LOGIN: "/auth/login",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
@@ -23,7 +24,8 @@ export const SERVICES = {
   ACCOUNTS_DESTINATION_V2: "/marketplace/apps/destination",
   ACCOUNTS_FILTER: "/private/public/clients_accounts/filter",
   ACCOUNTS_BY_CLIENTS: "/private/clients/accounts_by_client",
-  ACCOUNTS_PROCESSOR: "/internal/connector/4034/flows/0c247947a3834c758e4f6428949729b0",
+  ACCOUNTS_PROCESSOR:
+    "/internal/connector/4034/flows/0c247947a3834c758e4f6428949729b0",
   ACCOUNTS_SIMULATOR: "/private/accounts/v2/table_virtual",
 
   ALERTS: "/private/v2/notifications/alerts",

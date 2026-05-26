@@ -13,34 +13,13 @@ import { useClientVerificationStore } from '@/stores/client-store'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import {
-  CONNECTOR_SERVICES,
-  NOTIFICATION_TEMPLATE,
-  connectorApiClient,
-} from '@/api/dynamicore/connector'
+  sendOtp,
+  validateOtp,
+} from '@/services/onboarding'
 
 const OTP_LENGTH = 6
-const OTP_CLIENT = 142296
-const OTP_TYPE = 'client'
 const RESEND_WAIT_SECONDS = 60
 const MAX_RESEND_ATTEMPTS = 3
-
-interface ValidateOtpResponse {
-  data?: {
-    client?: number
-    valid?: boolean
-  }
-}
-
-interface SendOtpResult {
-  channel: string
-  success: boolean
-}
-
-interface SendOtpResponse {
-  data?: {
-    all_results?: SendOtpResult[]
-  }
-}
 
 export default function IdentityVerification() {
   const router = useRouter()
@@ -114,16 +93,8 @@ export default function IdentityVerification() {
     setIsVerifying(true)
 
     try {
-      const response = await connectorApiClient.post<ValidateOtpResponse>(
-        CONNECTOR_SERVICES.VALIDATE_OTP,
-        {
-          client: OTP_CLIENT,
-          type: OTP_TYPE,
-          otp,
-        },
-      )
-
-      if (response.data?.data?.valid !== true) {
+      const isValid = await validateOtp(otp)
+      if (!isValid) {
         setError('El código no es válido. Verifica e intenta nuevamente.')
         return
       }
@@ -151,21 +122,13 @@ export default function IdentityVerification() {
     setIsResending(true)
 
     try {
-      const response = await connectorApiClient.post<SendOtpResponse>(
-        CONNECTOR_SERVICES.SEND_OTP,
-        {
-          email,
-          client: OTP_CLIENT,
-          template: NOTIFICATION_TEMPLATE,
-          type: OTP_TYPE,
-        },
-      )
+      if (!email) {
+        setError('No se encontró un correo de lista blanca para reenviar el código.')
+        return
+      }
 
-      const emailResult = response.data?.data?.all_results?.find(
-        (item) => item.channel === 'EMAIL',
-      )
-
-      if (!emailResult?.success) {
+      const sent = await sendOtp(email)
+      if (!sent) {
         setError('No fue posible reenviar el código. Intenta nuevamente.')
         return
       }
