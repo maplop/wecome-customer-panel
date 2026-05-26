@@ -7,3 +7,5 @@ export const CONNECTOR_SERVICES = {
   SEND_OTP: "/send_otp/6c9c8fba1a38470f83d5e0813241ac53",
   VALIDATE_OTP: "/validate-otp/8d19321b7b93442d9eda8dfb7bb55274",
 };
+
+export const NOTIFICATION_TEMPLATE = 1917;

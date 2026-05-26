@@ -101,7 +101,7 @@ export default function RecoverReset() {
               <TogglePasswordVisibility
                 visible={showConfirmPassword}
                 onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                label={showConfirmPassword ? 'Ocultar confirmacion de contraseña' : 'Mostrar confirmacion de contraseña'}
+                label={showConfirmPassword ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
               />
             </div>
             {resetError && <p className="text-xs text-destructive">{resetError}</p>}

@@ -77,9 +77,9 @@ export default function RecoverVerify() {
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <TitleCard>Verifica el codigo</TitleCard>
+        <TitleCard>Verifica el código</TitleCard>
         <SubtitleCard>
-          Captura el codigo que enviamos al correo registrado para continuar.
+          Captura el código que enviamos al correo registrado para continuar.
         </SubtitleCard>
       </div>
 
@@ -89,13 +89,13 @@ export default function RecoverVerify() {
             <p className="text-sm leading-relaxed text-muted-foreground">Correo verificado</p>
             <p className="mt-1 text-sm font-semibold text-foreground">{maskEmail(RECOVERY_EMAIL)}</p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Codigo demo: <span className="font-mono text-foreground">{RECOVERY_CODE}</span>
+              Código demo: <span className="font-mono text-foreground">{RECOVERY_CODE}</span>
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <label className="text-sm font-medium text-foreground">
-              Codigo de verificacion
+              Código de verificacion
             </label>
             <div className="flex gap-2" onPaste={handlePaste}>
               {digits.map((digit, index) => (
@@ -120,10 +120,10 @@ export default function RecoverVerify() {
 
           <div className="flex flex-col gap-3">
             <ButtonCard variant="text" onClick={handleResend} disabled={loading} loading={loading} loadingText="Reenviando...">
-              Reenviar codigo
+              Reenviar código
             </ButtonCard>
             <ButtonCard submit disabled={loading} loading={loading} loadingText="Validando...">
-              Validar codigo
+              Validar código
             </ButtonCard>
             <ButtonCard variant="secondary" onClick={() => router.push(ROUTES.AUTH.LOGIN)}>
               Regresar

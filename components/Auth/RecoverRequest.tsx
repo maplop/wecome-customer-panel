@@ -22,7 +22,7 @@ export default function RecoverRequest() {
           Recupera tu contraseña
         </TitleCard>
         <SubtitleCard>
-          Enviaremos un codigo de 6 digitos al correo registrado para esta demo..
+          Enviaremos un código de 6 digitos al correo registrado para esta demo..
         </SubtitleCard>
       </div>
 
@@ -35,7 +35,7 @@ export default function RecoverRequest() {
         </div>
 
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Te enviaremos un codigo temporal de 6 digitos para validar tu identidad y permitir el cambio de contraseña.
+          Te enviaremos un código temporal de 6 digitos para validar tu identidad y permitir el cambio de contraseña.
         </p>
 
         <div className="flex flex-col gap-3">
@@ -43,9 +43,9 @@ export default function RecoverRequest() {
             onClick={handleSendRecoveryCode}
             disabled={recoveryLoading}
             loading={recoveryLoading}
-            loadingText="Enviando codigo..."
+            loadingText="Enviando código..."
           >
-            Enviar codigo
+            Enviar código
           </ButtonCard>
 
           <ButtonCard

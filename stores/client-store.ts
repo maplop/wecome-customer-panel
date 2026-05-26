@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { connectorApiClient } from "@/api/dynamicore/connector";
 
 export interface ClientProps {
@@ -49,48 +50,57 @@ interface ClientVerificationState {
 
 const CONNECTOR_SEARCH_URL = "/search/703c3650a69c4ff2869a1075dc24f156";
 
-export const useClientVerificationStore = create<ClientVerificationState>(
-  (set) => ({
-    loading: false,
-    error: null,
-    data: null,
+export const useClientVerificationStore = create<ClientVerificationState>()(
+  persist(
+    (set) => ({
+      loading: false,
+      error: null,
+      data: null,
 
-    verifyCurp: async (curp: string): Promise<ClientProps | null> => {
-      set({ loading: true, error: null, data: null });
+      verifyCurp: async (curp: string): Promise<ClientProps | null> => {
+        set({ loading: true, error: null, data: null });
 
-      try {
-        const response = await connectorApiClient.post<ClientResponse>(
-          CONNECTOR_SEARCH_URL,
-          {
-            fields: [`curp:${curp}`],
-            page: 1,
-            limit: 10,
-          },
-        );
+        try {
+          const response = await connectorApiClient.post<ClientResponse>(
+            CONNECTOR_SEARCH_URL,
+            {
+              fields: [`curp:${curp}`],
+              page: 1,
+              limit: 10,
+            },
+          );
 
-        const hit = response.data.hits?.[0];
+          const hit = response.data.hits?.[0];
 
-        if (!hit?._source) {
+          if (!hit?._source) {
+            set({
+              loading: false,
+              error: "No se encontraron datos para la CURP ingresada.",
+            });
+            return null;
+          }
+
+          set({ loading: false, data: hit._source });
+          return hit._source;
+        } catch {
           set({
             loading: false,
-            error: "No se encontraron datos para la CURP ingresada.",
+            error: "Error al verificar la CURP. Intenta nuevamente.",
           });
           return null;
         }
+      },
 
-        set({ loading: false, data: hit._source });
-        return hit._source;
-      } catch {
-        set({
-          loading: false,
-          error: "Error al verificar la CURP. Intenta nuevamente.",
-        });
-        return null;
-      }
+      reset: () => set({ loading: false, error: null, data: null }),
+    }),
+    {
+      name: "client-verification-store",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        data: state.data,
+      }),
     },
-
-    reset: () => set({ loading: false, error: null, data: null }),
-  }),
+  ),
 );
 
 
