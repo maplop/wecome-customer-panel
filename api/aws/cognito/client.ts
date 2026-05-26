@@ -6,6 +6,7 @@ import { ClientResponse, Payload } from "./types";
 export const cognitoApiClient = createHttpClient({
   baseURL: API_URL,
   redirectOnUnauthorized: false,
+  includeAuthToken: false,
 });
 
 export async function client(

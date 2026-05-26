@@ -1,4 +1,10 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
+import {
+  clearCognitoAuthSession,
+  getAccessToken,
+  refreshAccessToken,
+} from "@/lib/auth-session";
+import { ROUTES } from "@/lib/routes";
 
 export interface ApiErrorResponse {
   object?: string;
@@ -31,6 +37,7 @@ export interface CreateHttpClientOptions {
   timeout?: number;
   authEndpoints?: string[];
   redirectOnUnauthorized?: boolean;
+  includeAuthToken?: boolean;
 }
 
 let isRedirectingToHome = false;
@@ -38,9 +45,9 @@ let isRedirectingToHome = false;
 export function isApiClientError(error: unknown): error is ApiClientError {
   return Boolean(
     error &&
-      typeof error === "object" &&
-      "isApiClientError" in error &&
-      (error as ApiClientError).isApiClientError,
+    typeof error === "object" &&
+    "isApiClientError" in error &&
+    (error as ApiClientError).isApiClientError,
   );
 }
 
@@ -137,7 +144,10 @@ function shouldMatchEndpoint(url: string, endpoint: string): boolean {
   );
 }
 
-function isAuthRequest(url: string | undefined, authEndpoints: string[]): boolean {
+function isAuthRequest(
+  url: string | undefined,
+  authEndpoints: string[],
+): boolean {
   if (!url) {
     return false;
   }
@@ -151,18 +161,25 @@ function isAuthRequest(url: string | undefined, authEndpoints: string[]): boolea
   return false;
 }
 
-function redirectToHomeOnUnauthorized(): void {
+function redirectToLoginOnUnauthorized(): void {
   if (typeof window === "undefined") {
     return;
   }
 
-  if (isRedirectingToHome || window.location.pathname === "/") {
+  if (
+    isRedirectingToHome ||
+    window.location.pathname === ROUTES.ONBOARDING.CURP_VERIFICATION
+  ) {
     return;
   }
 
   isRedirectingToHome = true;
-  window.location.assign("/");
+  window.location.assign(ROUTES.ONBOARDING.CURP_VERIFICATION);
 }
+
+type RetryableRequestConfig = NonNullable<AxiosError["config"]> & {
+  _retry?: boolean;
+};
 
 export function createHttpClient(
   options: CreateHttpClientOptions,
@@ -173,6 +190,7 @@ export function createHttpClient(
     timeout = 10000,
     authEndpoints = [],
     redirectOnUnauthorized = true,
+    includeAuthToken = true,
   } = options;
 
   const httpClient = axios.create({
@@ -186,6 +204,13 @@ export function createHttpClient(
 
   httpClient.interceptors.request.use(
     (config) => {
+      if (includeAuthToken && typeof window !== "undefined") {
+        const accessToken = getAccessToken();
+        if (accessToken && !config.headers["Authorization"]) {
+          config.headers["Authorization"] = `Bearer ${accessToken}`;
+        }
+      }
+
       if (context && !config.headers["context"]) {
         config.headers["context"] = context;
       }
@@ -197,19 +222,41 @@ export function createHttpClient(
 
   httpClient.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
       if (!axios.isAxiosError(error)) {
         return Promise.reject(error);
+      }
+
+      const requestConfig = error.config as RetryableRequestConfig | undefined;
+      const shouldAttemptRefresh =
+        includeAuthToken &&
+        error.response?.status === 401 &&
+        Boolean(requestConfig) &&
+        !requestConfig?._retry &&
+        !isAuthRequest(error.config?.url, authEndpoints);
+
+      if (shouldAttemptRefresh && requestConfig) {
+        requestConfig._retry = true;
+        const refreshedAccessToken = await refreshAccessToken();
+
+        if (refreshedAccessToken) {
+          requestConfig.headers = requestConfig.headers || {};
+          requestConfig.headers["Authorization"] =
+            `Bearer ${refreshedAccessToken}`;
+          return httpClient.request(requestConfig);
+        }
+
+        clearCognitoAuthSession();
       }
 
       const normalizedError = normalizeAxiosError(error);
 
       if (
         redirectOnUnauthorized &&
-        normalizedError.status === 401 &&
+        (normalizedError.status === 401 || normalizedError.status === 403) &&
         !isAuthRequest(error.config?.url, authEndpoints)
       ) {
-        redirectToHomeOnUnauthorized();
+        redirectToLoginOnUnauthorized();
       }
 
       return Promise.reject(normalizedError);

@@ -1,5 +1,10 @@
 ﻿import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
 import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
+import {
+  clearCognitoAuthSession,
+  getAccessToken,
+  setCognitoAuthSession,
+} from "@/lib/auth-session";
 
 export interface RegisterRequest {
   email: string;
@@ -77,10 +82,7 @@ async function initiateCognitoAuth(
 
 export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   const auth = await initiateCognitoAuth(data);
-
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("cognito_auth", JSON.stringify(auth));
-  }
+  setCognitoAuthSession(auth);
 
   return auth;
 }
@@ -95,4 +97,19 @@ export async function registerAndLogin(
   });
 
   return { register: registerResp, auth };
+}
+
+export async function logout(): Promise<void> {
+  try {
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      await AwsCognito(COGNITO_SERVICES.GLOBAL_SIGN_OUT, {
+        AccessToken: accessToken,
+      });
+    }
+  } catch {
+    // Even if Cognito sign out fails, clear local session data.
+  } finally {
+    clearCognitoAuthSession();
+  }
 }

@@ -20,6 +20,7 @@ export const SERVICES = {
   CONFIRM_SIGN_UP: "ConfirmSignUp",
   // FORGOT_DEVICE: 'ForgotDevice',
   FORGOT_PASSWORD: "ForgotPassword",
+  GLOBAL_SIGN_OUT: "GlobalSignOut",
   INITIATE_AUTH: "InitiateAuth",
   // LIST_GROUPS: 'ListGroups',
   RESPOND_TO_AUTH_CHALLENGE: "RespondToAuthChallenge",
