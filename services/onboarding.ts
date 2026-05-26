@@ -9,10 +9,12 @@ export const ONBOARDING_OTP_TYPE = "client";
 
 export interface ClientWhitelistData {
   actividad_economica: string;
+  antiguedad: string;
   correo_electronico: string;
   curp: string;
   datos_de_contacto: string;
   domicilio_fiscal_y_particular: string;
+  edad: number;
   empresa: string;
   fecha_de_nacimiento: string;
   nacionalidad: string;
@@ -22,11 +24,11 @@ export interface ClientWhitelistData {
   ocupacion: string;
   primer_apellido: string;
   rfc: string;
+  salario: number;
   segundo_apellido: string;
   telefono: string;
   tipo_identificacion_oficial: string;
   created_at: string;
-  _ingested_timestamp: number;
 }
 
 interface WhitelistHit {

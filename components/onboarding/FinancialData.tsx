@@ -4,11 +4,14 @@ import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { useClientVerificationStore } from '@/stores/client-store'
 
 export default function FinancialData() {
   const router = useRouter()
 
-  const salary = 3500
+  const { data } = useClientVerificationStore()
+
+  const salary = data?.salario
   const [error, setError] = useState('')
   const formatMXN = (value: string) => {
     const numeric = value.replace(/\D/g, '')
@@ -54,7 +57,8 @@ export default function FinancialData() {
               inputMode="numeric"
               placeholder="0"
               readOnly
-              value={formatMXN(salary.toString())}
+              value={formatMXN(salary?.toString() ?? '')}
+              disabled
               className={`w-full rounded-xl border px-4 py-3 pl-7 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border bg-background'}`}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">MXN</span>
@@ -62,7 +66,7 @@ export default function FinancialData() {
           {error && <p className="text-xs text-destructive">{error}</p>}
           {salary && !error && (
             <p className="text-xs text-muted-foreground">
-              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3 * 0.6).toLocaleString('es-MX')}</span> disponible en crédito
+              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3 * 0.6).toLocaleString('es-MX')} MXN</span> disponible en crédito
             </p>
           )}
         </div>

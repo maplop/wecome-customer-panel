@@ -5,7 +5,6 @@ import { formatMxPhoneNumber } from '@/utils/phone'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { Info } from '@/lib/icons'
 
 interface DataRowProps {
   label: string
@@ -21,30 +20,12 @@ function DataRow({ label, value }: DataRowProps) {
   )
 }
 
-function calculateAge(birthDate: string): number {
-  const birth = new Date(birthDate)
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
-  }
-  return age
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
 export default function PersonalData() {
   const router = useRouter()
 
   const { data } = useClientVerificationStore()
+
+  console.log("data ", data)
 
   if (!data) {
     return (
@@ -69,7 +50,6 @@ export default function PersonalData() {
   }
 
   const nombreCompleto = `${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}`.trim()
-  const edad = calculateAge(data.fecha_de_nacimiento)
 
   return (
     <WrapperCard className="flex flex-col gap-6">
@@ -83,15 +63,22 @@ export default function PersonalData() {
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
+        {/* Identificación oficial */}
         <DataRow label="Nombre completo" value={nombreCompleto} />
         <DataRow label="RFC" value={data.rfc} />
         <DataRow label="CURP" value={data.curp} />
-        <DataRow label="Fecha de nacimiento" value={formatDate(data.fecha_de_nacimiento)} />
-        <DataRow label="Edad" value={`${edad} años`} />
+
+        {/* Datos personales */}
+        <DataRow label="Edad" value={`${data.edad} años`} />
         <DataRow label="Nacionalidad" value={data.nacionalidad} />
-        <DataRow label="Ocupación" value={data.ocupacion} />
-        <DataRow label="Actividad económica" value={data.actividad_economica} />
+
+        {/* Empleo y economía */}
         <DataRow label="Empresa" value={data.empresa} />
+        <DataRow label="Ocupación" value={data.ocupacion} />
+        <DataRow label="Salario" value={`${data.salario} MXN`} />
+        <DataRow label="Antigüedad" value={data.antiguedad} />
+
+        {/* Contacto */}
         <DataRow label="Teléfono" value={formatMxPhoneNumber(data.telefono)} />
         <DataRow label="Correo electrónico" value={data.correo_electronico} />
       </div>
