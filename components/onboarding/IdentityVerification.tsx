@@ -4,7 +4,6 @@ import {
   ClipboardEvent,
   FormEvent,
   KeyboardEvent,
-  useEffect,
   useRef,
   useState,
 } from 'react'
@@ -12,40 +11,34 @@ import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { useClientVerificationStore } from '@/stores/client-store'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
-import {
-  sendOtp,
-  validateOtp,
-} from '@/services/onboarding'
-
-const OTP_LENGTH = 6
-const RESEND_WAIT_SECONDS = 60
-const MAX_RESEND_ATTEMPTS = 3
+import { useOtpVerificationFlow } from '@/hooks/use-onboarding-otp'
+import { ONBOARDING_OTP_LENGTH } from '@/services/onboarding.constants'
 
 export default function IdentityVerification() {
   const router = useRouter()
   const { data } = useClientVerificationStore()
   const email = data?.correo_electronico
 
-  const [digits, setDigits] = useState(Array.from({ length: OTP_LENGTH }, () => ''))
-  const [error, setError] = useState('')
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [resendAttempts, setResendAttempts] = useState(0)
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_WAIT_SECONDS)
-
+  const [digits, setDigits] = useState(Array.from({ length: ONBOARDING_OTP_LENGTH }, () => ''))
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
 
-  useEffect(() => {
-    if (secondsLeft <= 0) {
-      return
-    }
-
-    const timer = window.setInterval(() => {
-      setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0))
-    }, 1000)
-
-    return () => window.clearInterval(timer)
-  }, [secondsLeft])
+  const {
+    error,
+    isVerifying,
+    isResending,
+    resendAttempts,
+    maxResendAttempts,
+    secondsLeft,
+    canResend,
+    resendLimitReached,
+    clearError,
+    verifyCode,
+    resendCode,
+  } = useOtpVerificationFlow({
+    email,
+    onVerified: () => router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT),
+    otpLength: ONBOARDING_OTP_LENGTH,
+  })
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return
@@ -53,9 +46,9 @@ export default function IdentityVerification() {
     const next = [...digits]
     next[index] = value
     setDigits(next)
-    setError('')
+    clearError()
 
-    if (value && index < OTP_LENGTH - 1) {
+    if (value && index < ONBOARDING_OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus()
     }
   }
@@ -67,82 +60,23 @@ export default function IdentityVerification() {
   }
 
   const handlePaste = (e: ClipboardEvent) => {
-    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH)
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, ONBOARDING_OTP_LENGTH)
 
-    if (text.length === OTP_LENGTH) {
+    if (text.length === ONBOARDING_OTP_LENGTH) {
       setDigits(text.split(''))
-      setError('')
-      inputRefs.current[OTP_LENGTH - 1]?.focus()
+      clearError()
+      inputRefs.current[ONBOARDING_OTP_LENGTH - 1]?.focus()
     }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-
-    if (isVerifying) {
-      return
-    }
-
-    const otp = digits.join('')
-    if (otp.length < OTP_LENGTH) {
-      setError('Ingresa los 6 dígitos del código.')
-      return
-    }
-
-    setError('')
-    setIsVerifying(true)
-
-    try {
-      const isValid = await validateOtp(otp)
-      if (!isValid) {
-        setError('El código no es válido. Verifica e intenta nuevamente.')
-        return
-      }
-
-      router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT)
-    } catch {
-      setError('No fue posible validar el código. Intenta nuevamente.')
-    } finally {
-      setIsVerifying(false)
-    }
+    await verifyCode(digits.join(''))
   }
-
-  const canResend =
-    secondsLeft === 0 &&
-    resendAttempts < MAX_RESEND_ATTEMPTS &&
-    !isResending &&
-    !isVerifying
 
   const handleResend = async () => {
-    if (!canResend) {
-      return
-    }
-
-    setError('')
-    setIsResending(true)
-
-    try {
-      if (!email) {
-        setError('No se encontró un correo de lista blanca para reenviar el código.')
-        return
-      }
-
-      const sent = await sendOtp(email)
-      if (!sent) {
-        setError('No fue posible reenviar el código. Intenta nuevamente.')
-        return
-      }
-
-      setResendAttempts((prev) => prev + 1)
-      setSecondsLeft(RESEND_WAIT_SECONDS)
-    } catch {
-      setError('No fue posible reenviar el código. Intenta nuevamente.')
-    } finally {
-      setIsResending(false)
-    }
+    await resendCode()
   }
-
-  const resendLimitReached = resendAttempts >= MAX_RESEND_ATTEMPTS
 
   return (
     <WrapperCard>
@@ -193,7 +127,7 @@ export default function IdentityVerification() {
                 ? 'Llegaste al máximo de 3 reenvíos.'
                 : secondsLeft > 0
                   ? `Podrás reenviar el código en ${secondsLeft} segundos.`
-                  : `Reenvíos usados: ${resendAttempts}/${MAX_RESEND_ATTEMPTS}.`}
+                  : `Reenvíos usados: ${resendAttempts}/${maxResendAttempts}.`}
             </p>
           </div>
 

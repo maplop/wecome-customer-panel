@@ -4,7 +4,6 @@ import {
   getAccessToken,
   refreshAccessToken,
 } from "@/lib/auth-session";
-import { ROUTES } from "@/lib/routes";
 
 export interface ApiErrorResponse {
   object?: string;
@@ -38,9 +37,8 @@ export interface CreateHttpClientOptions {
   authEndpoints?: string[];
   redirectOnUnauthorized?: boolean;
   includeAuthToken?: boolean;
+  onUnauthorized?: () => void;
 }
-
-let isRedirectingToHome = false;
 
 export function isApiClientError(error: unknown): error is ApiClientError {
   return Boolean(
@@ -161,22 +159,6 @@ function isAuthRequest(
   return false;
 }
 
-function redirectToLoginOnUnauthorized(): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (
-    isRedirectingToHome ||
-    window.location.pathname === ROUTES.ONBOARDING.CURP_VERIFICATION
-  ) {
-    return;
-  }
-
-  isRedirectingToHome = true;
-  window.location.assign(ROUTES.ONBOARDING.CURP_VERIFICATION);
-}
-
 type RetryableRequestConfig = NonNullable<AxiosError["config"]> & {
   _retry?: boolean;
 };
@@ -191,6 +173,7 @@ export function createHttpClient(
     authEndpoints = [],
     redirectOnUnauthorized = true,
     includeAuthToken = true,
+    onUnauthorized,
   } = options;
 
   const httpClient = axios.create({
@@ -256,7 +239,7 @@ export function createHttpClient(
         (normalizedError.status === 401 || normalizedError.status === 403) &&
         !isAuthRequest(error.config?.url, authEndpoints)
       ) {
-        redirectToLoginOnUnauthorized();
+        onUnauthorized?.();
       }
 
       return Promise.reject(normalizedError);

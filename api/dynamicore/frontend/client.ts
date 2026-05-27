@@ -1,9 +1,28 @@
 import { AxiosResponse } from "axios";
 
 import { createHttpClient } from "@/api/core";
+import { ROUTES } from "@/lib/routes";
 
 import { API_CONTEXT, API_ENDPOINTS, API_URL } from "./constants";
 import { ClientBody, ClientMethod, ClientResponse } from "./types";
+
+let isRedirectingUnauthorized = false;
+
+function redirectToCurpVerification(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (
+    isRedirectingUnauthorized ||
+    window.location.pathname === ROUTES.ONBOARDING.CURP_VERIFICATION
+  ) {
+    return;
+  }
+
+  isRedirectingUnauthorized = true;
+  window.location.assign(ROUTES.ONBOARDING.CURP_VERIFICATION);
+}
 
 export const apiClient = createHttpClient({
   baseURL: API_URL,
@@ -14,6 +33,7 @@ export const apiClient = createHttpClient({
     API_ENDPOINTS.AUTH.REGISTER,
   ],
   redirectOnUnauthorized: true,
+  onUnauthorized: redirectToCurpVerification,
 });
 
 function toClientResponse<T>(response: AxiosResponse<T>): ClientResponse {

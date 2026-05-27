@@ -3,9 +3,10 @@ import {
   NOTIFICATION_TEMPLATE,
   connectorApiClient,
 } from "@/api/dynamicore/connector";
-
-export const ONBOARDING_OTP_CLIENT = 142296;
-export const ONBOARDING_OTP_TYPE = "client";
+import {
+  ONBOARDING_OTP_CLIENT,
+  ONBOARDING_OTP_TYPE,
+} from "@/services/onboarding.constants";
 
 export interface ClientWhitelistData {
   actividad_economica: string;

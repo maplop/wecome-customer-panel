@@ -1,11 +1,10 @@
 ﻿'use client'
 
-import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientVerificationStore } from '@/stores/client-store'
-import { sendOtp } from '@/services/onboarding'
+import { useInitialOtpSend } from '@/hooks/use-onboarding-otp'
 
 export default function UserConfirm() {
   const router = useRouter()
@@ -14,38 +13,13 @@ export default function UserConfirm() {
   const curp = data?.curp
   const email = data?.correo_electronico
 
-  const [isSendingOtp, setIsSendingOtp] = useState(false)
-  const [otpError, setOtpError] = useState('')
-
-  const isVerified = true
+  const isVerified = Boolean(data?.curp)
   const firstName = curp?.slice(0, 4)
 
-  const sendOtpToEmail = async () => {
-    if (!isVerified || isSendingOtp) {
-      return
-    }
-    if (!email) {
-      setOtpError('No se encontró un correo de lista blanca para enviar el código.')
-      return
-    }
-
-    setOtpError('')
-    setIsSendingOtp(true)
-
-    try {
-      const sent = await sendOtp(email)
-      if (!sent) {
-        setOtpError('No fue posible enviar el código al correo. Intenta nuevamente.')
-        return
-      }
-
-      router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)
-    } catch {
-      setOtpError('No fue posible enviar el código al correo. Intenta nuevamente.')
-    } finally {
-      setIsSendingOtp(false)
-    }
-  }
+  const { isSendingOtp, otpError, sendInitialOtp } = useInitialOtpSend({
+    email,
+    onSuccess: () => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION),
+  })
 
   return (
     <WrapperCard>
@@ -95,7 +69,7 @@ export default function UserConfirm() {
       <div className="flex flex-col gap-3">
         {isVerified ? (
           <ButtonCard
-            onClick={sendOtpToEmail}
+            onClick={sendInitialOtp}
             disabled={isSendingOtp}
             loading={isSendingOtp}
             loadingText="Enviando el código..."

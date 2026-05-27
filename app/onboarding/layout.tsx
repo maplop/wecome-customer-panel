@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 
 import { Header, StepIndicator, Footer } from '@/components/common'
-import { ONBOARDING_STEPS, ROUTES } from '@/lib/routes'
+import { ONBOARDING_STEPS, PROTECTED_ONBOARDING_ROUTES } from '@/lib/routes'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 
 interface OnboardingLayoutProps {
@@ -15,18 +15,7 @@ export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
   const currentStep = ONBOARDING_STEPS.find((item) => item.route === pathname)
   const current = currentStep?.step ?? 0
   const total = ONBOARDING_STEPS.length
-  const protectedOnboardingRoutes = new Set<string>([
-    ROUTES.ONBOARDING.PERSONAL_DATA,
-    ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
-    ROUTES.ONBOARDING.FINANCIAL_DATA,
-    ROUTES.ONBOARDING.CREDIT_RESULT,
-    ROUTES.ONBOARDING.CREDIT_SELECTION,
-    ROUTES.ONBOARDING.CREDIT_SUMMARY,
-    ROUTES.ONBOARDING.FINAL_CONFIRM,
-    ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
-    ROUTES.ONBOARDING.CREDIT_SUCCESS,
-  ])
-  const shouldProtectRoute = protectedOnboardingRoutes.has(pathname)
+  const shouldProtectRoute = PROTECTED_ONBOARDING_ROUTES.has(pathname)
 
   useAuthGuard(shouldProtectRoute)
 
