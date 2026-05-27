@@ -36,6 +36,9 @@ export const SERVICES = {
     "/internal/connector/4034/flows/ab06cf4ad67143419212735730df484a",
 
   PEOPLE: "/private/clients",
+  PEOPLE_TYPES: "/private/clients_types",
+  PEOPLE_ORGANIZATIONAL: "/private/clients/organizational",
+  PEOPLE_ORGANIZATIONAL_OLD: "/private/clients/get_people_organizational",
 
   USERS_GET_INFO: "/private/users/get_info",
 

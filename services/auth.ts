@@ -1,10 +1,13 @@
 ﻿import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
 import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
+import { isApiClientError } from "@/api/core";
 import {
   clearCognitoAuthSession,
   getAccessToken,
   setCognitoAuthSession,
 } from "@/lib/auth-session";
+import { clearUserInfoSession } from "@/lib/user-session";
+import { getUserInfo } from "@/services/user-info";
 
 export interface RegisterRequest {
   email: string;
@@ -83,6 +86,15 @@ async function initiateCognitoAuth(
 export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   const auth = await initiateCognitoAuth(data);
   setCognitoAuthSession(auth);
+  try {
+    await getUserInfo("company", "people");
+  } catch (error) {
+    if (isApiClientError(error) && (error.status === 401 || error.status === 403)) {
+      console.warn("No se pudo obtener user info por permisos/contexto:", error.status);
+    } else {
+      console.warn("No se pudo obtener user info post-login.", error);
+    }
+  }
 
   return auth;
 }
@@ -111,5 +123,6 @@ export async function logout(): Promise<void> {
     // Even if Cognito sign out fails, clear local session data.
   } finally {
     clearCognitoAuthSession();
+    clearUserInfoSession();
   }
 }

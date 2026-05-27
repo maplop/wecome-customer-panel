@@ -27,6 +27,7 @@ function redirectToCurpVerification(): void {
 export const apiClient = createHttpClient({
   baseURL: API_URL,
   context: API_CONTEXT,
+  authTokenPrefix: "",
   authEndpoints: [
     API_ENDPOINTS.AUTH.LOGIN,
     API_ENDPOINTS.AUTH.LOGOUT,

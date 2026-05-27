@@ -38,6 +38,7 @@ export interface CreateHttpClientOptions {
   redirectOnUnauthorized?: boolean;
   includeAuthToken?: boolean;
   onUnauthorized?: () => void;
+  authTokenPrefix?: "Bearer" | "";
 }
 
 export function isApiClientError(error: unknown): error is ApiClientError {
@@ -174,6 +175,7 @@ export function createHttpClient(
     redirectOnUnauthorized = true,
     includeAuthToken = true,
     onUnauthorized,
+    authTokenPrefix = "Bearer",
   } = options;
 
   const httpClient = axios.create({
@@ -190,7 +192,9 @@ export function createHttpClient(
       if (includeAuthToken && typeof window !== "undefined") {
         const accessToken = getAccessToken();
         if (accessToken && !config.headers["Authorization"]) {
-          config.headers["Authorization"] = `Bearer ${accessToken}`;
+          config.headers["Authorization"] = authTokenPrefix
+            ? `${authTokenPrefix} ${accessToken}`
+            : accessToken;
         }
       }
 
@@ -224,8 +228,9 @@ export function createHttpClient(
 
         if (refreshedAccessToken) {
           requestConfig.headers = requestConfig.headers || {};
-          requestConfig.headers["Authorization"] =
-            `Bearer ${refreshedAccessToken}`;
+          requestConfig.headers["Authorization"] = authTokenPrefix
+            ? `${authTokenPrefix} ${refreshedAccessToken}`
+            : refreshedAccessToken;
           return httpClient.request(requestConfig);
         }
 
