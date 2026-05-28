@@ -1,14 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Header } from '@/components/common/Header'
+import { ButtonCard } from '@/components/common'
 import PaymentModal from './components/PaymentModal'
 import CreditDetailModal from './components/CreditDetailModal'
 import { Calendar, CircleDollarSign, CreditCard, HandCoins, Plus } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { ButtonCard } from '../common'
-import { logout } from '@/services/auth'
 import { useClientDataStore } from '@/stores/client-data-store'
 
 interface Credit {
@@ -150,11 +148,6 @@ export default function CreditDashboard() {
     }
   }
 
-  const handleLogout = async () => {
-    await logout()
-    router.replace(ROUTES.AUTH.LOGIN)
-  }
-
   return (
     <>
       {/* Payment Modal */}
@@ -187,13 +180,8 @@ export default function CreditDashboard() {
         </div>
       )}
 
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header showLogout onLogout={handleLogout} userEmail={user.email} />
-
-        {/* Main */}
-        <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
-          {/* Welcome + New Request */}
-          <div className="flex items-center justify-between mb-8">
+      {/* Welcome + New Request */}
+      <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl font-bold text-foreground">
               ¡Bienvenido {user.name.split(' ')[0]}!
             </h1>
@@ -207,8 +195,8 @@ export default function CreditDashboard() {
             </ButtonCard>
           </div>
 
-          {!data ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
+      {!data ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-4">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
                   <path d="M9 12h6" />
@@ -221,8 +209,8 @@ export default function CreditDashboard() {
                 Aún no tienes ningún crédito. Solicita uno ahora y recibe tu dinero en minutos.
               </p>
             </div>
-          ) : (
-            <>
+      ) : (
+        <>
               {/* 3 summary cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {/* Card 1: Valor total a pagar */}
@@ -402,19 +390,9 @@ export default function CreditDashboard() {
                   })
                 )}
               </div>
-            </>
-          )}
-        </main>
+        </>
+      )}
 
-        {/* Footer */}
-        <footer className="py-5 border-t border-border/60 text-center">
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition underline">Aviso de privacidad</a>
-            <span>|</span>
-            <a href="#" className="hover:text-foreground transition underline">Términos y condiciones</a>
-          </div>
-        </footer>
-      </div>
     </>
   )
 }
