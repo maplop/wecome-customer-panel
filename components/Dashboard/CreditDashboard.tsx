@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Header } from '@/components/common/Header'
 import PaymentModal from './components/PaymentModal'
 import CreditDetailModal from './components/CreditDetailModal'
@@ -8,17 +8,8 @@ import { Calendar, CircleDollarSign, CreditCard, HandCoins, Plus } from '@/lib/i
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { ButtonCard } from '../common'
-
-export interface LoggedUser {
-  name: string
-  email: string
-  curp: string
-}
-
-interface CreditDashboardProps {
-  user: LoggedUser
-  onLogout: () => void
-}
+import { getUserInfoSession } from '@/lib/user-session'
+import { logout } from '@/services/auth'
 
 interface Credit {
   id: string
@@ -107,9 +98,38 @@ const MOCK_DATA: Record<string, {
 
 type TabFilter = 'todos' | 'actuales' | 'finalizados'
 
+interface UserInfoSession {
+  data?: {
+    people?: {
+      username?: string
+      pii?: {
+        name?: string
+        fullname?: string
+        email?: string
+        curp?: string
+      }
+    }
+  }
+}
 
-export default function CreditDashboard({ user, onLogout }: CreditDashboardProps) {
+export default function CreditDashboard() {
   const router = useRouter()
+
+  const session = getUserInfoSession<UserInfoSession>()
+
+  const user = useMemo(() => {
+    const people = session?.data?.people
+    const pii = people?.pii
+    const email = pii?.email || people?.username || 'usuario@wecome.mx'
+    const fullName = pii?.name || pii?.fullname || email.split('@')[0]
+    console.log("pii ", pii)
+    return {
+      name: fullName,
+      email,
+    }
+  }, [session?.data?.people])
+
+  console.log("user ---", user)
 
   const [activeTab, setActiveTab] = useState<TabFilter>('todos')
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; amount: number }>({ open: false, amount: 0 })
@@ -145,6 +165,11 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
     }
   }
 
+  const handleLogout = async () => {
+    await logout()
+    router.replace(ROUTES.AUTH.LOGIN)
+  }
+
   return (
     <>
       {/* Payment Modal */}
@@ -178,7 +203,7 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
       )}
 
       <div className="min-h-screen bg-background flex flex-col">
-        <Header showLogout onLogout={onLogout} />
+        <Header showLogout onLogout={handleLogout} userEmail={user.email} />
 
         {/* Main */}
         <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
