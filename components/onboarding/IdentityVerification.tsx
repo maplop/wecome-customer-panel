@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import {
   ClipboardEvent,
@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import { useOtpVerificationFlow } from '@/hooks/use-onboarding-otp'
@@ -16,7 +16,7 @@ import { ONBOARDING_OTP_LENGTH } from '@/services/onboarding.constants'
 
 export default function IdentityVerification() {
   const router = useRouter()
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
   const email = data?.correo_electronico
 
   const [digits, setDigits] = useState(Array.from({ length: ONBOARDING_OTP_LENGTH }, () => ''))
@@ -147,3 +147,4 @@ export default function IdentityVerification() {
     </WrapperCard>
   )
 }
+

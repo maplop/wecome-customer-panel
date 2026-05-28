@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
@@ -11,7 +11,7 @@ export default function CurpVerification() {
 
   const [curp, setCurp] = useState('')
   const [error, setError] = useState('')
-  const { loading, error: storeError, verifyCurp } = useClientVerificationStore()
+  const { loading, error: storeError, verifyCurp } = useClientProfileStore()
 
   const validate = () => {
     const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/
@@ -92,3 +92,4 @@ export default function CurpVerification() {
     </WrapperCard>
   )
 }
+

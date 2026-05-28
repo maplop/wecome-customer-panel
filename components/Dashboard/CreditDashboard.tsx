@@ -8,8 +8,8 @@ import { Calendar, CircleDollarSign, CreditCard, HandCoins, Plus } from '@/lib/i
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { ButtonCard } from '../common'
-import { getUserInfoSession } from '@/lib/user-session'
 import { logout } from '@/services/auth'
+import { useClientDataStore } from '@/stores/client-data-store'
 
 interface Credit {
   id: string
@@ -98,24 +98,9 @@ const MOCK_DATA: Record<string, {
 
 type TabFilter = 'todos' | 'actuales' | 'finalizados'
 
-interface UserInfoSession {
-  data?: {
-    people?: {
-      username?: string
-      pii?: {
-        name?: string
-        fullname?: string
-        email?: string
-        curp?: string
-      }
-    }
-  }
-}
-
 export default function CreditDashboard() {
   const router = useRouter()
-
-  const session = getUserInfoSession<UserInfoSession>()
+  const session = useClientDataStore((state) => state)
 
   const user = useMemo(() => {
     const people = session?.data?.people
@@ -433,3 +418,4 @@ export default function CreditDashboard() {
     </>
   )
 }
+

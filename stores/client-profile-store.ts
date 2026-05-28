@@ -2,29 +2,25 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import {
-  ClientWhitelistData,
-  verifyCurpInWhitelist,
-} from "@/services/onboarding";
+import { verifyCurpInWhitelist } from "@/services/onboarding";
+import { ClientProfileType } from "@/types/client-profile";
 
-export type ClientProps = ClientWhitelistData;
-
-interface ClientVerificationState {
+interface ClientProfileState {
   loading: boolean;
   error: string | null;
-  data: ClientProps | null;
-  verifyCurp: (curp: string) => Promise<ClientProps | null>;
+  data: ClientProfileType | null;
+  verifyCurp: (curp: string) => Promise<ClientProfileType | null>;
   reset: () => void;
 }
 
-export const useClientVerificationStore = create<ClientVerificationState>()(
+export const useClientProfileStore = create<ClientProfileState>()(
   persist(
     (set) => ({
       loading: false,
       error: null,
       data: null,
 
-      verifyCurp: async (curp: string): Promise<ClientProps | null> => {
+      verifyCurp: async (curp: string): Promise<ClientProfileType | null> => {
         set({ loading: true, error: null, data: null });
 
         try {

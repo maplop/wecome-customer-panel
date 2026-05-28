@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 import { useInitialOtpSend } from '@/hooks/use-onboarding-otp'
 
 export default function UserConfirm() {
   const router = useRouter()
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
 
   const curp = data?.curp
   const email = data?.correo_electronico
@@ -96,3 +96,4 @@ export default function UserConfirm() {
     </WrapperCard>
   )
 }
+

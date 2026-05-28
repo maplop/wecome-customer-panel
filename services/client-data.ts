@@ -1,6 +1,7 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { isApiClientError } from "@/api/core";
-import { setUserInfoSession } from "@/lib/user-session";
+import { useClientDataStore } from "@/stores/client-data-store";
+import { ClientSessionData } from "@/types/client-data";
 
 const MAX_RETRIES = 10;
 
@@ -25,29 +26,17 @@ interface GatewayEnvelope<T> {
   status?: string;
 }
 
-interface UserInfo {
-  id: number | string | undefined;
-  data?: Record<string, unknown>;
-  entities: {
-    accountIds: number[];
-    companyId: number | undefined;
-    groupId: number | undefined;
-    peopleId: number;
-    peopleTypeId?: number;
-  };
-}
-
 function hasDataRequests(
   args: Array<string | Record<string, unknown>>,
 ): boolean {
   return args.length > 0;
 }
 
-export async function getUserInfo(
+export async function getClientData(
   ...args: Array<string | Record<string, unknown>>
-): Promise<UserInfo> {
+): Promise<ClientSessionData> {
   let retries = 0;
-  let user: UserInfo | null = null;
+  let clientData: ClientSessionData | null = null;
   const completedRequests: Record<string, boolean> = {};
   const options =
     args.find((arg) => arg && typeof arg === "object" && !Array.isArray(arg)) ||
@@ -55,7 +44,7 @@ export async function getUserInfo(
 
   while (retries < MAX_RETRIES) {
     try {
-      if (!user) {
+      if (!clientData) {
         const { data: infoResponse } = await apiClient.get<
           GatewayEnvelope<InfoResponse>
         >(
@@ -71,7 +60,7 @@ export async function getUserInfo(
         );
         const peopleId = Number.parseInt(peopleResource.replace(key, ""), 10);
 
-        user = {
+        clientData = {
           id: info?.user,
           data: hasDataRequests(args) ? {} : undefined,
           entities: {
@@ -83,36 +72,32 @@ export async function getUserInfo(
         };
       }
 
-      console.log("user-info", user);
-
-      console.log("company --", user?.entities?.companyId);
-
       if (args.includes("company") && !completedRequests.company) {
-        user.data = user.data || {};
+        clientData.data = clientData.data || {};
         const { data: companyResponse } = await apiClient.get<
           GatewayEnvelope<Array<Record<string, unknown>> | Record<string, unknown>>
         >(SERVICES.COMPANY, {
-          params: { id: user?.entities?.companyId },
+          params: { id: clientData?.entities?.companyId },
         });
         const companyData = companyResponse?.data;
-        user.data.company = Array.isArray(companyData)
+        clientData.data.company = Array.isArray(companyData)
           ? (companyData[0] ?? null)
           : (companyData ?? null);
         completedRequests.company = true;
       }
 
       if (args.includes("people") && !completedRequests.people) {
-        user.data = user.data || {};
+        clientData.data = clientData.data || {};
         const { data: peopleResponse } = await apiClient.get<
           GatewayEnvelope<{ client_type?: number } | Array<{ client_type?: number }>>
         >(SERVICES.PEOPLE, {
-          params: { id: user?.entities?.peopleId },
+          params: { id: clientData?.entities?.peopleId },
         });
         const peopleData = peopleResponse?.data;
         const people = Array.isArray(peopleData)
           ? (peopleData[0] ?? {})
           : (peopleData ?? {});
-        user.data.people = people;
+        clientData.data.people = people;
 
         const { data: peopleTypeResponse } = await apiClient.get<
           GatewayEnvelope<{ id?: number } | Array<{ id?: number }>>
@@ -123,8 +108,8 @@ export async function getUserInfo(
         const peopleType = Array.isArray(peopleTypeData)
           ? (peopleTypeData[0] ?? {})
           : (peopleTypeData ?? {});
-        user.data.peopleType = peopleType;
-        user.entities.peopleTypeId = peopleType?.id;
+        clientData.data.peopleType = peopleType;
+        clientData.entities.peopleTypeId = peopleType?.id;
         completedRequests.people = true;
       }
 
@@ -132,7 +117,7 @@ export async function getUserInfo(
         args.includes("legal_representative_document_upload") &&
         !completedRequests.legal_representative_document_upload
       ) {
-        user.data = user.data || {};
+        clientData.data = clientData.data || {};
         const relationshipId = Number(
           (options as { relationship_id?: unknown })?.relationship_id,
         );
@@ -144,14 +129,14 @@ export async function getUserInfo(
         const { data: legalRepresentativeResp } = await apiClient.get<
           GatewayEnvelope<{ values?: Array<Record<string, unknown>> }>
         >(SERVICES.PEOPLE_ORGANIZATIONAL_OLD, {
-          params: { borrower: user?.entities?.peopleId },
+          params: { borrower: clientData?.entities?.peopleId },
         });
 
         const { data: relatedPeopleResp } = await apiClient.get<
           GatewayEnvelope<{ values?: Array<Record<string, unknown>> }>
         >(SERVICES.PEOPLE_ORGANIZATIONAL, {
           params: {
-            borrower: user?.entities?.peopleId,
+            borrower: clientData?.entities?.peopleId,
             limit: 1000,
             page: 1,
             ...relationshipFilter,
@@ -177,12 +162,12 @@ export async function getUserInfo(
           return itemRecord;
         });
 
-        user.data.legal_representative_document_upload = normalized;
+        clientData.data.legal_representative_document_upload = normalized;
         completedRequests.legal_representative_document_upload = true;
       }
 
-      setUserInfoSession(user);
-      return user;
+      useClientDataStore.getState().setClientData(clientData);
+      return clientData;
     } catch (error: unknown) {
       if (
         isApiClientError(error) &&
@@ -195,7 +180,7 @@ export async function getUserInfo(
 
       if (retries === MAX_RETRIES) {
         throw new Error(
-          "No se pudo obtener toda la informacion del usuario despues de varios intentos.",
+          "No se pudo obtener toda la informacion del cliente despues de varios intentos.",
         );
       }
 
@@ -203,5 +188,6 @@ export async function getUserInfo(
     }
   }
 
-  throw new Error("No se pudo obtener la informacion del usuario.");
+  throw new Error("No se pudo obtener la informacion del cliente.");
 }
+

@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { updateCurrentUserClientData } from '@/services/user-client'
+import { updateCurrentUserClientData } from '@/services/client-profile'
 
 interface DataRowProps {
   label: string
@@ -27,7 +27,7 @@ export default function PersonalData() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
 
   if (!data) {
     return (
@@ -156,3 +156,5 @@ export default function PersonalData() {
     </WrapperCard>
   )
 }
+
+

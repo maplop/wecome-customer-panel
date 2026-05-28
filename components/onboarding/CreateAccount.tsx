@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
-import { updateCurrentUserClientData } from '@/services/user-client'
+import { updateCurrentUserClientData } from '@/services/client-profile'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 
 interface FormState {
   email: string
@@ -18,7 +18,7 @@ interface FormState {
 
 export default function CreateAccount() {
   const router = useRouter()
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
 
   const whitelistEmail = data?.correo_electronico || ''
 
@@ -250,3 +250,5 @@ export default function CreateAccount() {
     </WrapperCard>
   )
 }
+
+

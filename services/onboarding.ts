@@ -7,33 +7,10 @@ import {
   ONBOARDING_OTP_CLIENT,
   ONBOARDING_OTP_TYPE,
 } from "@/services/onboarding.constants";
-
-export interface ClientWhitelistData {
-  actividad_economica: string;
-  antiguedad: string;
-  correo_electronico: string;
-  curp: string;
-  datos_de_contacto: string;
-  domicilio_fiscal_y_particular: string;
-  edad: number;
-  empresa: string;
-  fecha_de_nacimiento: string;
-  nacionalidad: string;
-  nivel_de_estudios: string;
-  nombres: string;
-  numero_identificacion_oficial: string;
-  ocupacion: string;
-  primer_apellido: string;
-  rfc: string;
-  salario: number;
-  segundo_apellido: string;
-  telefono: string;
-  tipo_identificacion_oficial: string;
-  created_at: string;
-}
+import { ClientProfileType } from "@/types/client-profile";
 
 interface WhitelistHit {
-  _source?: ClientWhitelistData;
+  _source?: ClientProfileType;
 }
 
 interface SearchCurpResponse {
@@ -59,7 +36,7 @@ interface ValidateOtpResponse {
 
 export async function verifyCurpInWhitelist(
   curp: string,
-): Promise<ClientWhitelistData | null> {
+): Promise<ClientProfileType | null> {
   const response = await connectorApiClient.post<SearchCurpResponse>(
     CONNECTOR_SERVICES.SEARCH_CURP,
     {

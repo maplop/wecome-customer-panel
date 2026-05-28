@@ -1,23 +1,6 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-import { getUserInfoSession, setUserInfoSession } from "@/lib/user-session";
-
-interface UserSessionShape {
-  data?: {
-    people?: {
-      id?: number;
-      client_type?: number;
-      pii?: Record<string, unknown>;
-      [key: string]: unknown;
-    };
-    [key: string]: unknown;
-  };
-  entities?: {
-    groupId?: number;
-    peopleId?: number;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
+import { useClientDataStore } from "@/stores/client-data-store";
+import { getClientData } from "@/services/client-data";
 
 interface UpdateCurrentUserClientDataInput {
   pii: Record<string, unknown>;
@@ -43,20 +26,20 @@ function getCurrentStep(step?: string): string {
 export async function updateCurrentUserClientData(
   clientData: UpdateCurrentUserClientDataInput,
 ): Promise<unknown> {
-  const session = getUserInfoSession<UserSessionShape>();
+  const session = useClientDataStore.getState();
   const peopleId = session?.entities?.peopleId;
   const groupId = session?.entities?.groupId;
   const clientType = session?.data?.people?.client_type;
 
   if (!peopleId || !groupId) {
     throw new Error(
-      "No se encontro peopleId/groupId en sesion. Ejecuta getUserInfo antes de actualizar el cliente.",
+      "No se encontro peopleId/groupId en sesion. Ejecuta getClientData antes de actualizar el cliente.",
     );
   }
 
   if (!clientType) {
     throw new Error(
-      "No se encontro client_type en sesion. Envia client_type o carga people en getUserInfo.",
+      "No se encontro client_type en sesion. Envia client_type o carga people en getClientData.",
     );
   }
 
@@ -76,19 +59,9 @@ export async function updateCurrentUserClientData(
     payload,
   );
 
-  const nextSession: UserSessionShape = {
-    ...(session || {}),
-    data: {
-      ...(session?.data || {}),
-      people: {
-        ...(session?.data?.people || {}),
-        id: peopleId,
-        client_type: clientType,
-        pii: payload.pii,
-      },
-    },
-  };
-  setUserInfoSession(nextSession);
+  await getClientData("company", "people");
 
   return response?.data ?? response;
 }
+
+

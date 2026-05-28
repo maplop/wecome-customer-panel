@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 
 export default function FinancialData() {
   const router = useRouter()
 
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
 
   const salary = data?.salario
   const [error, setError] = useState('')
@@ -89,3 +89,4 @@ export default function FinancialData() {
     </WrapperCard>
   )
 }
+
