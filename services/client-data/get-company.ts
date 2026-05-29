@@ -1,14 +1,11 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-
-interface GatewayEnvelope<T> {
-  data?: T;
-}
+import { Company, GatewayEnvelope } from "@/types/client-data";
 
 export async function getCompany(
   companyId?: number,
-): Promise<Record<string, unknown> | null> {
+): Promise<Company | null> {
   const { data: companyResponse } = await apiClient.get<
-    GatewayEnvelope<Array<Record<string, unknown>> | Record<string, unknown>>
+    GatewayEnvelope<Company[] | Company>
   >(SERVICES.COMPANY, {
     params: { id: companyId },
   });

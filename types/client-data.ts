@@ -102,15 +102,87 @@ export interface ClientPii {
 }
 
 export interface ClientPeopleRecord extends Record<string, unknown> {
-  client_type?: number;
+  id?: number;
+  company?: number;
+  status?: string;
+  external_id?: string | null;
   pii?: ClientPii;
+  client_type?: number;
+  created_at?: string;
+  pd?: number;
   username?: string;
+  group?: number;
+}
+
+export interface CompanyLogo {
+  imagotipoDarkH?: string | null;
+  imagotipoHorizontal?: string | null;
+  [key: string]: unknown;
+}
+
+export interface CompanyTheme {
+  primary?: string;
+  [key: string]: unknown;
+}
+
+export interface CompanySiteSecurity {
+  recommendMFA?: boolean;
+  global_sign_out?: boolean;
+  [key: string]: unknown;
+}
+
+export interface CompanySitePaymentMethods {
+  cards?: unknown[];
+  [key: string]: unknown;
+}
+
+export interface CompanySiteConfig {
+  security?: CompanySiteSecurity;
+  payment_methods?: CompanySitePaymentMethods;
+  [key: string]: unknown;
+}
+
+export interface CompanySite {
+  config?: CompanySiteConfig;
+  [key: string]: unknown;
+}
+
+export interface Company extends Record<string, unknown> {
+  id: number;
+  name: string;
+  timezone?: number | null;
+  date_format?: string | null;
+  street_address?: string | null;
+  city?: string | null;
+  zipcode?: string | null;
+  state?: string | null;
+  country?: string | null;
+  email?: string | null;
+  logo?: CompanyLogo | null;
+  icon?: string | null;
+  tax_id?: string | null;
+  lgd?: number | null;
+  theme?: CompanyTheme | null;
+  public_key?: string | null;
+  url?: string | null;
+  site?: CompanySite | null;
+  headers?: unknown[];
+  user_key?: string | null;
+  config?: Record<string, unknown> | null;
+  entity_type?: string;
+  cnbv_auth_number?: string | null;
+  status?: string;
+  tier?: string;
+}
+
+export interface ClientPeopleType extends Record<string, unknown> {
+  id?: number;
 }
 
 export interface ClientSessionDataPayload extends Record<string, unknown> {
-  company?: Record<string, unknown> | null;
+  company?: Company | null;
   people?: ClientPeopleRecord;
-  peopleType?: Record<string, unknown>;
+  peopleType?: ClientPeopleType;
   legal_representative_document_upload?: Array<Record<string, unknown>>;
 }
 
@@ -134,4 +206,39 @@ export interface ClientDataState {
   entities?: ClientSessionEntities;
   setClientData: (clientData: ClientSessionData) => void;
   clearClientData: () => void;
+}
+
+export interface GatewayEnvelope<T> {
+  object?: string;
+  code?: number;
+  status?: string;
+  message?: string;
+  request?: number;
+  url?: string;
+  data?: T;
+  total?: number;
+}
+
+export interface InfoStatement {
+  Action?: string[];
+  Effect?: string;
+  Resource?: string;
+}
+
+export interface InfoResponse {
+  user?: number | string;
+  group?: number;
+  company?: number;
+  objects?: Record<string, unknown>;
+  json_rol?: {
+    Version?: number;
+    Statement?: InfoStatement[];
+  };
+}
+
+export interface ClientInfo {
+  user?: number | string;
+  company?: number;
+  group?: number;
+  peopleId: number;
 }

@@ -1,8 +1,5 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-
-interface GatewayEnvelope<T> {
-  data?: T;
-}
+import { GatewayEnvelope } from "@/types/client-data";
 
 function buildRelationshipFilter(options: Record<string, unknown>): {
   relationshipFilter: Record<string, unknown>;

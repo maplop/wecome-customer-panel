@@ -1,5 +1,4 @@
-import { ClientSessionData } from "@/types/client-data";
-import { ClientInfo } from "./get-client-info";
+import { ClientSessionData, ClientInfo } from "@/types/client-data";
 
 type ClientDataArgs = Array<string | Record<string, unknown>>;
 

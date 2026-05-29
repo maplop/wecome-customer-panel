@@ -1,28 +1,5 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-
-interface InfoStatement {
-  Resource?: string;
-}
-
-interface InfoResponse {
-  user?: number | string;
-  company?: number;
-  group?: number;
-  json_rol?: {
-    Statement?: InfoStatement[];
-  };
-}
-
-interface GatewayEnvelope<T> {
-  data?: T;
-}
-
-export interface ClientInfo {
-  user?: number | string;
-  company?: number;
-  group?: number;
-  peopleId: number;
-}
+import { GatewayEnvelope, InfoResponse, ClientInfo } from "@/types/client-data";
 
 function extractPeopleId(info: InfoResponse): number {
   const key = `dcore:${info?.company}:client:`;
