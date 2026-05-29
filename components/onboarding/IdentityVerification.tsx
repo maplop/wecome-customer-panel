@@ -12,7 +12,7 @@ import { useClientProfileStore } from '@/stores/client-profile-store'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import { useOtpVerificationFlow } from '@/hooks/use-onboarding-otp'
-import { ONBOARDING_OTP_LENGTH } from '@/services/onboarding.constants'
+import { ONBOARDING_OTP_LENGTH } from '@/services/onboarding/onboarding.constants'
 
 export default function IdentityVerification() {
   const router = useRouter()

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sendOtp, validateOtp } from "@/services/onboarding";
+import { sendOtp, validateOtp } from "@/services/onboarding/onboarding";
 import {
   ONBOARDING_MAX_RESEND_ATTEMPTS,
   ONBOARDING_OTP_LENGTH,
   ONBOARDING_RESEND_WAIT_SECONDS,
-} from "@/services/onboarding.constants";
+} from "@/services/onboarding/onboarding.constants";
 
 interface UseInitialOtpSendOptions {
   email?: string;
@@ -32,7 +32,9 @@ export function useInitialOtpSend(options: UseInitialOtpSendOptions) {
     }
 
     if (!email) {
-      setOtpError("No se encontró un correo de lista blanca para enviar el código.");
+      setOtpError(
+        "No se encontró un correo de lista blanca para enviar el código.",
+      );
       return;
     }
 
@@ -42,13 +44,17 @@ export function useInitialOtpSend(options: UseInitialOtpSendOptions) {
     try {
       const sent = await sendOtp(email);
       if (!sent) {
-        setOtpError("No fue posible enviar el código al correo. Intenta nuevamente.");
+        setOtpError(
+          "No fue posible enviar el código al correo. Intenta nuevamente.",
+        );
         return;
       }
 
       onSuccess();
     } catch {
-      setOtpError("No fue posible enviar el código al correo. Intenta nuevamente.");
+      setOtpError(
+        "No fue posible enviar el código al correo. Intenta nuevamente.",
+      );
     } finally {
       setIsSendingOtp(false);
     }
@@ -132,7 +138,9 @@ export function useOtpVerificationFlow(options: UseOtpVerificationOptions) {
     }
 
     if (!email) {
-      setError("No se encontró un correo de lista blanca para reenviar el código.");
+      setError(
+        "No se encontró un correo de lista blanca para reenviar el código.",
+      );
       return false;
     }
 

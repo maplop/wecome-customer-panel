@@ -1,10 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
-import { updateCurrentUserClientData } from '@/services/client-profile'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -65,27 +63,13 @@ export default function CreateAccount() {
         password: form.password,
         username: form.email,
       })
-      console.log("dtata", data)
-
-      if (data) {
-        try {
-          await updateCurrentUserClientData({
-            step: ROUTES.ONBOARDING.CREATE_ACCOUNT,
-            pii: {
-              curp_verification: data,
-            },
-          })
-        } catch (piiError) {
-          console.warn('No se pudo guardar data CURP en pii tras crear cuenta.', piiError)
-        }
-      }
 
       router.push(ROUTES.ONBOARDING.PERSONAL_DATA)
     } catch (error) {
       if (isApiClientError(error)) {
         if (
           error.apiError === 'UsernameExistsException' ||
-          (error.status === 409 && error.apiDetail === 'User already exists')
+          (error.status === 409 && error.apiDetail === 'El usuario ya existe')
         ) {
           setSubmitError('Ya existe una cuenta registrada con este correo electrónico.')
           return
@@ -250,5 +234,3 @@ export default function CreateAccount() {
     </WrapperCard>
   )
 }
-
-

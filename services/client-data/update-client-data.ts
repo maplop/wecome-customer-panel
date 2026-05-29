@@ -1,14 +1,10 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { useClientDataStore } from "@/stores/client-data-store";
-import { getClientData } from "@/services/client-data";
+import { ClientPii, GatewayEnvelope } from "@/types/client-data";
 
-interface UpdateCurrentUserClientDataInput {
-  pii: Record<string, unknown>;
+interface UpdateClientDataInput {
+  pii: Partial<ClientPii> & Record<string, unknown>;
   step?: string;
-}
-
-interface GatewayEnvelope<T> {
-  data?: T;
 }
 
 function getCurrentStep(step?: string): string {
@@ -23,8 +19,8 @@ function getCurrentStep(step?: string): string {
   return "unknown";
 }
 
-export async function updateCurrentUserClientData(
-  clientData: UpdateCurrentUserClientDataInput,
+export async function updateClientData(
+  clientData: UpdateClientDataInput,
 ): Promise<unknown> {
   const session = useClientDataStore.getState();
   const peopleId = session?.entities?.peopleId;
@@ -59,9 +55,22 @@ export async function updateCurrentUserClientData(
     payload,
   );
 
-  await getClientData("company", "people");
+  if (session.data && session.data.people) {
+    const updatedPeople = {
+      ...session.data.people,
+      pii: {
+        ...session.data.people.pii,
+        ...clientData.pii,
+        step,
+      },
+    };
+    useClientDataStore.setState({
+      data: {
+        ...session.data,
+        people: updatedPeople,
+      },
+    });
+  }
 
   return response?.data ?? response;
 }
-
-

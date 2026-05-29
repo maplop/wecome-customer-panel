@@ -6,7 +6,7 @@ import { formatMxPhoneNumber } from '@/utils/phone'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { updateCurrentUserClientData } from '@/services/client-profile'
+import { updateClientData } from '@/services/client-data'
 
 interface DataRowProps {
   label: string
@@ -63,7 +63,7 @@ export default function PersonalData() {
       setIsSubmitting(true)
       setSubmitError(null)
 
-      await updateCurrentUserClientData({
+      await updateClientData({
         pii: {
           name: primerNombre,
           secondname: segundoNombre,

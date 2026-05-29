@@ -87,15 +87,23 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   const auth = await initiateCognitoAuth(data);
   setCognitoAuthSession(auth);
   try {
-    await getClientData("company", "people");
+    const clientData = await getClientData("company", "people");
+    console.log("clientData", clientData);
+    useClientDataStore.getState().setClientData(clientData);
   } catch (error) {
-    if (isApiClientError(error) && (error.status === 401 || error.status === 403)) {
-      console.warn("No se pudo obtener user info por permisos/contexto:", error.status);
+    if (
+      isApiClientError(error) &&
+      (error.status === 401 || error.status === 403)
+    ) {
+      console.warn(
+        "No se pudo obtener user info por permisos/contexto:",
+        error.status,
+      );
     } else {
       console.warn("No se pudo obtener user info post-login.", error);
     }
   }
-
+  console.log("auth", auth);
   return auth;
 }
 
@@ -126,5 +134,3 @@ export async function logout(): Promise<void> {
     useClientDataStore.getState().clearClientData();
   }
 }
-
-

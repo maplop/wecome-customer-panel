@@ -6,7 +6,7 @@ import {
 import {
   ONBOARDING_OTP_CLIENT,
   ONBOARDING_OTP_TYPE,
-} from "@/services/onboarding.constants";
+} from "@/services/onboarding/onboarding.constants";
 import { ClientProfileType } from "@/types/client-profile";
 
 interface WhitelistHit {
