@@ -1,3 +1,5 @@
+// types/client-data.ts
+
 export interface ClientPii {
   cat?: string;
   ine?: string;
@@ -101,11 +103,11 @@ export interface ClientPii {
   relacion_del_garante_con_el_acreditado?: string;
 }
 
-export interface ClientPeopleRecord extends Record<string, unknown> {
+export interface ClientData {
   id?: number;
   company?: number;
   status?: string;
-  external_id?: string | null;
+  external_id?: string;
   pii?: ClientPii;
   client_type?: number;
   created_at?: string;
@@ -181,7 +183,7 @@ export interface ClientPeopleType extends Record<string, unknown> {
 
 export interface ClientSessionDataPayload extends Record<string, unknown> {
   company?: Company | null;
-  people?: ClientPeopleRecord;
+  people?: ClientData;
   peopleType?: ClientPeopleType;
   legal_representative_document_upload?: Array<Record<string, unknown>>;
 }

@@ -7,7 +7,6 @@ import {
   setCognitoAuthSession,
 } from "@/lib/auth-session";
 import { getClientData } from "@/services/client-data";
-import { useClientDataStore } from "@/stores/client-data-store";
 
 export interface RegisterRequest {
   email: string;
@@ -89,7 +88,6 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   try {
     const clientData = await getClientData("company", "people");
     console.log("clientData", clientData);
-    useClientDataStore.getState().setClientData(clientData);
   } catch (error) {
     if (
       isApiClientError(error) &&
@@ -131,6 +129,5 @@ export async function logout(): Promise<void> {
     // Even if Cognito sign out fails, clear local session data.
   } finally {
     clearCognitoAuthSession();
-    useClientDataStore.getState().clearClientData();
   }
 }

@@ -1,5 +1,4 @@
 import { isApiClientError } from "@/api/core";
-import { useClientDataStore } from "@/stores/client-data-store";
 import { ClientSessionData } from "@/types/client-data";
 import { buildClientSession } from "./build-client-session";
 import { getClientInfo } from "./get-client-info";
@@ -12,9 +11,9 @@ const MAX_RETRIES = 10;
 type ClientDataArgs = Array<string | Record<string, unknown>>;
 
 function getOptions(args: ClientDataArgs): Record<string, unknown> {
-  return (
-    args.find((arg) => arg && typeof arg === "object" && !Array.isArray(arg)) || {}
-  ) as Record<string, unknown>;
+  return (args.find(
+    (arg) => arg && typeof arg === "object" && !Array.isArray(arg),
+  ) || {}) as Record<string, unknown>;
 }
 
 export async function getClientData(
@@ -34,7 +33,9 @@ export async function getClientData(
 
       if (args.includes("company") && !completedRequests.company) {
         clientData.data = clientData.data || {};
-        clientData.data.company = await getCompany(clientData.entities.companyId);
+        clientData.data.company = await getCompany(
+          clientData.entities.companyId,
+        );
         completedRequests.company = true;
       }
 
@@ -58,7 +59,6 @@ export async function getClientData(
         completedRequests.legal_representative_document_upload = true;
       }
 
-      useClientDataStore.getState().setClientData(clientData);
       return clientData;
     } catch (error: unknown) {
       if (

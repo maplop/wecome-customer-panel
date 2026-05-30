@@ -8,38 +8,34 @@ interface UpdateClientDataInput {
 }
 
 function getCurrentStep(step?: string): string {
-  if (step) {
-    return step;
-  }
-
-  if (typeof window !== "undefined") {
-    return window.location.pathname;
-  }
-
+  if (step) return step;
+  if (typeof window !== "undefined") return window.location.pathname;
   return "unknown";
 }
 
 export async function updateClientData(
   clientData: UpdateClientDataInput,
 ): Promise<unknown> {
-  const session = useClientDataStore.getState();
-  const peopleId = session?.entities?.peopleId;
-  const groupId = session?.entities?.groupId;
-  const clientType = session?.data?.people?.client_type;
+  const { people } = useClientDataStore.getState();
+
+  const peopleId = people?.id;
+  const groupId = people?.group;
+  const clientType = people?.client_type;
 
   if (!peopleId || !groupId) {
     throw new Error(
-      "No se encontro peopleId/groupId en sesion. Ejecuta getClientData antes de actualizar el cliente.",
+      "No se encontró id/group en sesión. Ejecuta getClientData antes de actualizar el cliente.",
     );
   }
 
   if (!clientType) {
     throw new Error(
-      "No se encontro client_type en sesion. Envia client_type o carga people en getClientData.",
+      "No se encontró client_type en sesión. Carga people en getClientData.",
     );
   }
 
   const step = getCurrentStep(clientData.step);
+
   const payload = {
     client_type: clientType,
     id: peopleId,
@@ -55,22 +51,16 @@ export async function updateClientData(
     payload,
   );
 
-  if (session.data && session.data.people) {
-    const updatedPeople = {
-      ...session.data.people,
+  // Actualizar pii en el store después del PUT
+  useClientDataStore.setState({
+    people: {
+      ...people,
       pii: {
-        ...session.data.people.pii,
+        ...people?.pii,
         ...clientData.pii,
-        step,
       },
-    };
-    useClientDataStore.setState({
-      data: {
-        ...session.data,
-        people: updatedPeople,
-      },
-    });
-  }
+    },
+  });
 
   return response?.data ?? response;
 }
