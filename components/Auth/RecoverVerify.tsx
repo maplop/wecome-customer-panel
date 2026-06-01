@@ -1,30 +1,30 @@
 'use client'
 
-import { useState, useRef } from "react"
-import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from "@/components/common"
-import { ROUTES } from "@/lib/routes"
-import { useRouter } from "next/navigation"
-
-const RECOVERY_EMAIL = "maria.gonzalez@empresa.com"
-const RECOVERY_CODE = "123456"
-
-function maskEmail(email: string) {
-  const [user, domain] = email.split("@")
-  if (!user || !domain) return email
-  const visible = user.slice(0, 2)
-  const masked = "*".repeat(Math.max(user.length - 2, 3))
-  return `${visible}${masked}@${domain}`
-}
+import { useRef, useState } from 'react'
+import {
+  WrapperCard,
+  TitleCard,
+  SubtitleCard,
+  ButtonCard,
+  TogglePasswordVisibility,
+} from '@/components/common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { isApiClientError } from '@/api/dynamicore/frontend'
+import { confirmForgotPassword, forgotPassword } from '@/services/auth'
 
 export default function RecoverVerify() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const recoveryEmail = searchParams.get('email')?.trim() || ''
 
-  const [digits, setDigits] = useState(["", "", "", "", "", ""])
+  const [digits, setDigits] = useState(['', '', '', '', '', ''])
+  const [newPassword, setNewPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [info, setInfo] = useState("")
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
 
-  // ✅ Un solo useRef con array en lugar de Array.from con useRef adentro
   const refs = useRef<(HTMLInputElement | null)[]>([null, null, null, null, null, null])
 
   const handleDigitChange = (index: number, value: string) => {
@@ -32,98 +32,195 @@ export default function RecoverVerify() {
     const next = [...digits]
     next[index] = value
     setDigits(next)
-    setError("")
-    // ✅ Salta al siguiente input al escribir
+    setError('')
     if (value && index < 5) refs.current[index + 1]?.focus()
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    // ✅ Regresa al anterior al borrar
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
+    if (e.key === 'Backspace' && !digits[index] && index > 0) {
       refs.current[index - 1]?.focus()
     }
   }
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
     if (pasted.length !== 6) return
-    setDigits(pasted.split(""))
-    setError("")
+    setDigits(pasted.split(''))
+    setError('')
     refs.current[5]?.focus()
   }
 
   const handleResend = async () => {
-    setDigits(["", "", "", "", "", ""])
-    setError("")
-    setInfo("")
+    if (!recoveryEmail) {
+      setError('Falta el correo del proceso de recuperacion. Vuelve a solicitar el código.')
+      return
+    }
+
+    setDigits(['', '', '', '', '', ''])
+    setError('')
+    setInfo('')
     setLoading(true)
-    await new Promise(r => setTimeout(r, 700))
-    setLoading(false)
-    setInfo(`Reenviamos el código a ${maskEmail(RECOVERY_EMAIL)}`)
-    refs.current[0]?.focus()
+
+    try {
+      await forgotPassword({ username: recoveryEmail })
+      setInfo(`Reenviamos el código a ${recoveryEmail}`)
+      refs.current[0]?.focus()
+    } catch (err) {
+      if (isApiClientError(err)) {
+        const rawType =
+          typeof (err.data as { __type?: unknown })?.__type === 'string'
+            ? String((err.data as { __type?: string }).__type)
+            : ''
+
+        if (rawType.includes('UserNotFoundException')) {
+          setError('No encontramos una cuenta con ese correo.')
+        } else if (rawType.includes('LimitExceededException')) {
+          setError('Has intentado demasiadas veces. Intenta de nuevo mas tarde.')
+        } else {
+          setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
+        }
+      } else {
+        setError('No fue posible reenviar el código. Intenta nuevamente.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const code = digits.join("")
-    if (code.length !== 6) { setError("Ingresa los 6 dígitos."); return }
+
+    if (!recoveryEmail) {
+      setError('Falta el correo del proceso de recuperacion. Vuelve a solicitar el código.')
+      return
+    }
+
+    const code = digits.join('')
+    if (code.length !== 6) {
+      setError('Ingresa los 6 digitos.')
+      return
+    }
+
+    if (!newPassword) {
+      setError('Ingresa una nueva contraseña.')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
+
     setLoading(true)
-    await new Promise(r => setTimeout(r, 700))
-    setLoading(false)
-    if (code !== RECOVERY_CODE) { setError("Código inválido. Usa 123456 para esta demo."); return }
-    router.push(ROUTES.AUTH.RECOVER_RESET)
+    setError('')
+    setInfo('')
+
+    try {
+      await confirmForgotPassword({
+        username: recoveryEmail,
+        code,
+        password: newPassword,
+      })
+
+      router.push(ROUTES.AUTH.LOGIN)
+    } catch (err) {
+      if (isApiClientError(err)) {
+        const rawType =
+          typeof (err.data as { __type?: unknown })?.__type === 'string'
+            ? String((err.data as { __type?: string }).__type)
+            : ''
+
+        if (rawType.includes('CodeMismatchException')) {
+          setError('El código es incorrecto. Verificalo e intenta de nuevo.')
+        } else if (rawType.includes('ExpiredCodeException')) {
+          setError('El código expiro. Solicita uno nuevo.')
+        } else if (rawType.includes('InvalidPasswordException')) {
+          setError('La contraseña no cumple con la politica de seguridad.')
+        } else if (rawType.includes('UserNotFoundException')) {
+          setError('No encontramos una cuenta con ese correo.')
+        } else {
+          setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
+        }
+      } else {
+        setError('No fue posible actualizar la contraseña. Intenta nuevamente.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <TitleCard>Verifica el código</TitleCard>
+        <TitleCard>Código de verificación</TitleCard>
         <SubtitleCard>
-          Captura el código que enviamos al correo registrado para continuar.
+          Ingresa el código de 6 dígitos que enviamos a: <strong>{recoveryEmail}</strong>
         </SubtitleCard>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-5 px-6 pb-6 pt-5">
-          <div className="rounded-xl border border-border bg-secondary/60 px-4 py-4">
-            <p className="text-sm leading-relaxed text-muted-foreground">Correo verificado</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">{maskEmail(RECOVERY_EMAIL)}</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Código demo: <span className="font-mono text-foreground">{RECOVERY_CODE}</span>
-            </p>
-          </div>
-
+        <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-medium text-foreground">
-              Código de verificacion
-            </label>
+            <label className="text-sm font-medium text-foreground">Código de verificación</label>
             <div className="flex gap-2" onPaste={handlePaste}>
               {digits.map((digit, index) => (
                 <input
                   key={index}
-                  ref={el => { refs.current[index] = el }} // ✅ ref callback
+                  ref={(el) => {
+                    refs.current[index] = el
+                  }}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
                   value={digit}
-                  onChange={e => handleDigitChange(index, e.target.value)}
-                  onKeyDown={e => handleKeyDown(index, e)}
+                  onChange={(e) => handleDigitChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
                   className={`h-13 w-full rounded-xl border text-center text-lg font-semibold text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border'}`}
                   style={{ minWidth: 0 }}
                   aria-label={`Digito ${index + 1}`}
                 />
               ))}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-password" className="text-sm font-medium text-foreground">
+              Nueva contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="new-password"
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="Minimo 8 caracteres"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value)
+                  setError('')
+                }}
+                className={`w-full rounded-xl border px-4 py-3 pr-11 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-accent focus:ring-2 focus:ring-accent/20 bg-background ${error ? 'border-destructive' : 'border-border'}`}
+              />
+              <TogglePasswordVisibility
+                visible={showNewPassword}
+                onToggle={() => setShowNewPassword(!showNewPassword)}
+                label={showNewPassword ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
+              />
+            </div>
             {error && <p className="text-xs text-destructive">{error}</p>}
             {info && <p className="text-xs text-emerald-700">{info}</p>}
           </div>
 
           <div className="flex flex-col gap-3">
-            <ButtonCard variant="text" onClick={handleResend} disabled={loading} loading={loading} loadingText="Reenviando...">
+            <ButtonCard
+              variant="text"
+              onClick={handleResend}
+              disabled={loading}
+              loading={loading}
+              loadingText="Reenviando..."
+            >
               Reenviar código
             </ButtonCard>
-            <ButtonCard submit disabled={loading} loading={loading} loadingText="Validando...">
-              Validar código
+            <ButtonCard submit disabled={loading} loading={loading} loadingText="Guardando...">
+              Cambiar contraseña
             </ButtonCard>
             <ButtonCard variant="secondary" onClick={() => router.push(ROUTES.AUTH.LOGIN)}>
               Regresar

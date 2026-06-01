@@ -1,61 +1,99 @@
 'use client'
 
-import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from "@/components/common"
-import { ROUTES } from "@/lib/routes"
-import { useRouter } from "next/navigation"
+import { useState } from 'react'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '@/components/common'
+import { ROUTES } from '@/lib/routes'
+import { useRouter } from 'next/navigation'
+import { isApiClientError } from '@/api/dynamicore/frontend'
+import { forgotPassword } from '@/services/auth'
+
 export default function RecoverRequest() {
   const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [recoveryLoading, setRecoveryLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const recoveryEmail = 'maria.gonzalez@empresa.com';
-  const recoveryLoading = false;
+  const handleSendRecoveryCode = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError('')
 
-  const handleSendRecoveryCode = async () => {
-    // Simula el envío del código de recuperación
-    alert('Código de recuperación enviado al correo registrado.');
-    router.push(ROUTES.AUTH.RECOVER_VERIFY);
+    const username = email.trim()
+
+    if (!username) {
+      setError('Ingresa tu correo electrónico.')
+      return
+    }
+
+    if (!/\S+@\S+\.\S+/.test(username)) {
+      setError('Ingresa un correo electrónico válido.')
+      return
+    }
+
+    setRecoveryLoading(true)
+    try {
+      await forgotPassword({ username })
+      router.push(`${ROUTES.AUTH.RECOVER_VERIFY}?email=${encodeURIComponent(username)}`)
+    } catch (err) {
+      if (isApiClientError(err)) {
+        const rawType =
+          typeof (err.data as { __type?: unknown })?.__type === 'string'
+            ? String((err.data as { __type?: string }).__type)
+            : ''
+
+        if (rawType.includes('UserNotFoundException')) {
+          setError('No encontramos una cuenta con ese correo electrónico.')
+        } else if (rawType.includes('LimitExceededException')) {
+          setError('Has intentado demasiadas veces. Intenta de nuevo más tarde.')
+        } else {
+          setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
+        }
+      } else {
+        setError('No fue posible enviar el código. Intenta nuevamente.')
+      }
+    } finally {
+      setRecoveryLoading(false)
+    }
   }
 
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <TitleCard>
-          Recupera tu contraseña
-        </TitleCard>
-        <SubtitleCard>
-          Enviaremos un código de 6 digitos al correo registrado para esta demo..
-        </SubtitleCard>
+        <TitleCard>Recupera tu contraseña</TitleCard>
+        <SubtitleCard>Ingresa tu correo y te enviaremos un código de 6 dígitos.</SubtitleCard>
       </div>
 
-      <div className="flex flex-col gap-5">
-        <div className="rounded-xl border border-border bg-secondary/60 px-4 py-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Correo registrado para recuperacion
-          </p>
-          <p className="mt-1 text-sm font-semibold text-foreground">{recoveryEmail}</p>
+      <form onSubmit={handleSendRecoveryCode} noValidate>
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="recover-email" className="text-sm font-medium text-foreground">
+              Correo electrónico
+            </label>
+            <input
+              id="recover-email"
+              type="email"
+              autoComplete="email"
+              placeholder="tu@correo.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setError('')
+              }}
+              className={`w-full rounded-xl border px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-accent focus:ring-2 focus:ring-accent/20 bg-background ${error ? 'border-destructive' : 'border-border'}`}
+            />
+            {error && <p className="text-xs text-destructive">{error}</p>}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <ButtonCard submit disabled={recoveryLoading || !email} loading={recoveryLoading} loadingText="Enviando código...">
+              Enviar código
+            </ButtonCard>
+
+            <ButtonCard disabled={recoveryLoading} variant="secondary" onClick={() => router.push(ROUTES.AUTH.LOGIN)}>
+              Volver al login
+            </ButtonCard>
+          </div>
         </div>
-
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Te enviaremos un código temporal de 6 digitos para validar tu identidad y permitir el cambio de contraseña.
-        </p>
-
-        <div className="flex flex-col gap-3">
-          <ButtonCard
-            onClick={handleSendRecoveryCode}
-            disabled={recoveryLoading}
-            loading={recoveryLoading}
-            loadingText="Enviando código..."
-          >
-            Enviar código
-          </ButtonCard>
-
-          <ButtonCard
-            variant="secondary"
-            onClick={() => router.push(ROUTES.AUTH.LOGIN)}
-          >
-            Volver al login
-          </ButtonCard>
-        </div>
-      </div>
+      </form>
     </WrapperCard>
-  );
+  )
 }

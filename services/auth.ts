@@ -31,6 +31,16 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ForgotPasswordRequest {
+  username: string;
+}
+
+export interface ConfirmForgotPasswordRequest {
+  username: string;
+  code: string;
+  password: string;
+}
+
 export interface CognitoAuthResponse {
   AuthenticationResult?: {
     AccessToken?: string;
@@ -115,6 +125,24 @@ export async function registerAndLogin(
   });
 
   return { register: registerResp, auth };
+}
+
+export async function forgotPassword(
+  data: ForgotPasswordRequest,
+): Promise<void> {
+  await AwsCognito(COGNITO_SERVICES.FORGOT_PASSWORD, {
+    Username: data.username,
+  });
+}
+
+export async function confirmForgotPassword(
+  data: ConfirmForgotPasswordRequest,
+): Promise<void> {
+  await AwsCognito(COGNITO_SERVICES.CONFIRM_FORGOT_PASSWORD, {
+    ConfirmationCode: data.code,
+    Password: data.password,
+    Username: data.username,
+  });
 }
 
 export async function logout(): Promise<void> {

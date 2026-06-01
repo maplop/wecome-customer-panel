@@ -31,7 +31,7 @@ export const ROUTES = {
 
 export const ONBOARDING_STEPS = [
   {
-    title: "Verificacion de CURP",
+    title: "Verificación de CURP",
     step: 1,
     route: ROUTES.ONBOARDING.CURP_VERIFICATION,
   },
@@ -41,7 +41,7 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.USER_CONFIRM,
   },
   {
-    title: "Verificacion de identidad",
+    title: "Verificación de identidad",
     step: 3,
     route: ROUTES.ONBOARDING.IDENTITY_VERIFICATION,
   },

@@ -7,6 +7,7 @@ import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibil
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
+import { usePasswordStrength } from '@/hooks/use-password-strength'
 
 interface FormState {
   email: string
@@ -26,6 +27,8 @@ export default function CreateAccount() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+
+  const { score, label: strengthLabel, color: strengthColor } = usePasswordStrength(form.password)
 
   useEffect(() => {
     setForm((prev) => ({ ...prev, email: whitelistEmail }))
@@ -91,21 +94,6 @@ export default function CreateAccount() {
     }
   }
 
-  const strength = (() => {
-    const p = form.password
-    if (!p) return 0
-
-    let s = 0
-    if (p.length >= 8) s++
-    if (/[A-Z]/.test(p)) s++
-    if (/\d/.test(p)) s++
-    if (/[^A-Za-z0-9]/.test(p)) s++
-    return s
-  })()
-
-  const strengthLabel = ['', 'Débil', 'Regular', 'Fuerte', 'Muy fuerte'][strength]
-  const strengthColor = ['', 'var(--brand-error)', 'var(--brand-warning)', 'var(--brand-success)', 'var(--brand-strong)'][strength]
-
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
@@ -160,10 +148,16 @@ export default function CreateAccount() {
               <div className="flex items-center gap-2">
                 <div className="flex gap-1 flex-1">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-1 flex-1 rounded-full transition-all" style={{ backgroundColor: i <= strength ? strengthColor : 'var(--brand-inactive)' }} />
+                    <div
+                      key={i}
+                      className="h-1 flex-1 rounded-full transition-all"
+                      style={{ backgroundColor: i <= score ? strengthColor : 'var(--brand-inactive)' }}
+                    />
                   ))}
                 </div>
-                <span className="text-xs font-medium" style={{ color: strengthColor }}>{strengthLabel}</span>
+                <span className="text-xs font-medium" style={{ color: strengthColor }}>
+                  {strengthLabel}
+                </span>
               </div>
             )}
             {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
