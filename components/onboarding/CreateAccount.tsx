@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
-import { usePasswordStrength } from '@/hooks/use-password-strength'
+import { evaluatePasswordStrength } from '@/utils/password-strength'
 
 interface FormState {
   email: string
@@ -28,7 +28,10 @@ export default function CreateAccount() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  const { score, label: strengthLabel, color: strengthColor } = usePasswordStrength(form.password)
+  const { score, label: strengthLabel, color: strengthColor } = useMemo(
+    () => evaluatePasswordStrength(form.password),
+    [form.password],
+  )
 
   useEffect(() => {
     setForm((prev) => ({ ...prev, email: whitelistEmail }))

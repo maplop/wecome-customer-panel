@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useClientProfileStore } from '@/stores/client-profile-store'
-import { formatMxPhoneNumber } from '@/utils/phone'
+import { formatMxPhoneNumber, formatCurrencyMx } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -122,7 +122,7 @@ export default function PersonalData() {
 
         <DataRow label="Empresa" value={data.empresa} />
         <DataRow label="Ocupación" value={data.ocupacion} />
-        <DataRow label="Salario" value={`${data.salario} MXN`} />
+        <DataRow label="Salario" value={`${formatCurrencyMx(data.salario)} MXN`} />
         <DataRow label="Antigüedad" value={data.antiguedad} />
 
         <DataRow label="Teléfono" value={formatMxPhoneNumber(data.telefono)} />

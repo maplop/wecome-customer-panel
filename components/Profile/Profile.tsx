@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import { useClientProfileStore } from '@/stores/client-profile-store'
-import { formatMxPhoneNumber } from '@/utils/phone'
+import { formatCurrencyMx, formatDateLongEs, formatMxPhoneNumber } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '@/components/common'
 
 interface DataItemProps {
@@ -20,7 +20,7 @@ function DataItem({ label, value }: DataItemProps) {
   return (
     <div className="rounded-xl border border-border bg-background px-4 py-3">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium text-foreground break-words">{value || '-'}</p>
+      <p className="mt-1 text-sm font-medium text-foreground wrap-break-word">{value || '-'}</p>
     </div>
   )
 }
@@ -36,25 +36,6 @@ function DataSection({ title, items }: DataSectionProps) {
       </div>
     </section>
   )
-}
-
-const formatDate = (value: string): string => {
-  if (!value) return '-'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-
-  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'long' }).format(date)
-}
-
-const formatCurrency = (value: number): string => {
-  if (!Number.isFinite(value)) return '-'
-
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    maximumFractionDigits: 0,
-  }).format(value)
 }
 
 export default function Profile() {
@@ -85,7 +66,7 @@ export default function Profile() {
     { label: 'Nombres', value: data.nombres },
     { label: 'Primer apellido', value: data.primer_apellido },
     { label: 'Segundo apellido', value: data.segundo_apellido },
-    { label: 'Fecha de nacimiento', value: formatDate(data.fecha_de_nacimiento) },
+    { label: 'Fecha de nacimiento', value: formatDateLongEs(data.fecha_de_nacimiento) },
     { label: 'Edad', value: `${data.edad} años` },
     { label: 'Nacionalidad', value: data.nacionalidad },
     { label: 'Régimen conyugal', value: data._regimen_conyugal },
@@ -103,7 +84,6 @@ export default function Profile() {
     { label: 'RFC', value: data.rfc },
     { label: 'Tipo de identificación oficial', value: data.tipo_identificacion_oficial },
     { label: 'Número de identificación oficial', value: data.numero_identificacion_oficial },
-    { label: 'Registro creado', value: formatDate(data.created_at) },
   ]
 
   const jobSection: DataItemProps[] = [
@@ -112,7 +92,7 @@ export default function Profile() {
     { label: 'Actividad económica', value: data.actividad_economica },
     { label: 'Nivel de estudios', value: data.nivel_de_estudios },
     { label: 'Antigüedad', value: data.antiguedad },
-    { label: 'Salario', value: formatCurrency(data.salario) },
+    { label: 'Salario', value: `${formatCurrencyMx(data.salario)} MXN` },
   ]
 
   return (

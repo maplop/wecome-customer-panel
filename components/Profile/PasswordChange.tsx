@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, TogglePasswordVisibility } from '@/components/common'
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { changePassword } from '@/services/profile'
+import { evaluatePasswordStrength } from '@/utils/password-strength'
 
 export default function PasswordChange() {
   const router = useRouter()
@@ -18,6 +19,11 @@ export default function PasswordChange() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const { score, label: strengthLabel, color: strengthColor } = useMemo(
+    () => evaluatePasswordStrength(newPassword),
+    [newPassword],
+  )
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +50,7 @@ export default function PasswordChange() {
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden.')
+      setError('Las contrasenas no coinciden.')
       return
     }
 
@@ -66,9 +72,9 @@ export default function PasswordChange() {
         if (rawType.includes('NotAuthorizedException')) {
           setError('La contraseña actual es incorrecta.')
         } else if (rawType.includes('InvalidPasswordException')) {
-          setError('La nueva contraseña no cumple con la política de seguridad.')
+          setError('La nueva contraseña no cumple con la politica de seguridad.')
         } else if (rawType.includes('LimitExceededException')) {
-          setError('Demasiados intentos. Intenta más tarde.')
+          setError('Demasiados intentos. Intenta mas tarde.')
         } else {
           setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
         }
@@ -89,8 +95,6 @@ export default function PasswordChange() {
 
       <form onSubmit={handleChangePassword}>
         <div className="flex flex-col gap-5">
-
-          {/* Contraseña actual */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="current-password" className="text-sm font-medium text-foreground">
               Contraseña actual
@@ -115,7 +119,6 @@ export default function PasswordChange() {
             </div>
           </div>
 
-          {/* Nueva contraseña */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="new-password" className="text-sm font-medium text-foreground">
               Nueva contraseña
@@ -124,7 +127,7 @@ export default function PasswordChange() {
               <input
                 id="new-password"
                 type={showNewPassword ? 'text' : 'password'}
-                placeholder="Mínimo 8 caracteres"
+                placeholder="Minimo 8 caracteres"
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value)
@@ -138,9 +141,24 @@ export default function PasswordChange() {
                 label={showNewPassword ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
               />
             </div>
+            {newPassword && (
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1 flex-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="h-1 flex-1 rounded-full transition-all"
+                      style={{ backgroundColor: i <= score ? strengthColor : 'var(--brand-inactive)' }}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs font-medium" style={{ color: strengthColor }}>
+                  {strengthLabel}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Confirmar contraseña */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="confirm-password" className="text-sm font-medium text-foreground">
               Confirmar nueva contraseña
@@ -160,7 +178,7 @@ export default function PasswordChange() {
               <TogglePasswordVisibility
                 visible={showConfirmPassword}
                 onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                label={showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'}
+                label={showConfirmPassword ? 'Ocultar confirmacion' : 'Mostrar confirmacion'}
               />
             </div>
             {error && <p className="text-xs text-destructive">{error}</p>}
@@ -170,15 +188,10 @@ export default function PasswordChange() {
             <ButtonCard submit disabled={loading} loading={loading} loadingText="Guardando...">
               Actualizar contraseña
             </ButtonCard>
-            <ButtonCard
-              variant="secondary"
-              onClick={() => router.back()}
-              disabled={loading}
-            >
+            <ButtonCard variant="secondary" onClick={() => router.back()} disabled={loading}>
               Regresar
             </ButtonCard>
           </div>
-
         </div>
       </form>
     </WrapperCard>
