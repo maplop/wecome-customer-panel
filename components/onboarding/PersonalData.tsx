@@ -1,11 +1,12 @@
 'use client'
 
-import { useClientVerificationStore } from '@/stores/client-store'
+import { useState } from 'react'
+import { useClientProfileStore } from '@/stores/client-profile-store'
 import { formatMxPhoneNumber } from '@/utils/phone'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { Info } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 interface DataRowProps {
   label: string
@@ -21,30 +22,12 @@ function DataRow({ label, value }: DataRowProps) {
   )
 }
 
-function calculateAge(birthDate: string): number {
-  const birth = new Date(birthDate)
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
-  }
-  return age
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
 export default function PersonalData() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { data } = useClientVerificationStore()
+  const { data } = useClientProfileStore()
 
   if (!data) {
     return (
@@ -69,7 +52,54 @@ export default function PersonalData() {
   }
 
   const nombreCompleto = `${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}`.trim()
-  const edad = calculateAge(data.fecha_de_nacimiento)
+  const nombresSeparados = data.nombres.trim().split(/\s+/).filter(Boolean)
+  const primerNombre = nombresSeparados[0] ?? ' '
+  const segundoNombre = nombresSeparados.length > 1
+    ? nombresSeparados.slice(1).join(' ')
+    : ' '
+
+  const handleContinue = async () => {
+    try {
+      setIsSubmitting(true)
+      setSubmitError(null)
+
+      await updateClientData({
+        pii: {
+          name: primerNombre,
+          secondname: segundoNombre,
+          apellido_paterno: data.primer_apellido,
+          motherlastname: data.segundo_apellido,
+          email: data.correo_electronico,
+          phone: data.telefono,
+          curp: data.curp,
+          rfc: data.rfc,
+          birthdate: data.fecha_de_nacimiento,
+          // age: data.edad,
+          nationality: data.nacionalidad,
+          //occupation: data.ocupacion,
+          //company: data.empresa,
+          //salary: data.salario,
+          antiguedad_laboral___empresarial: data.antiguedad,
+          actividad_economica: data.actividad_economica,
+          nivel_de_estudio: data.nivel_de_estudios,
+          numero_de_identificacion: data.numero_identificacion_oficial,
+          tipo_de_identificacion: data.tipo_identificacion_oficial,
+          //fiscal_and_home_address: data.domicilio_fiscal_y_particular,
+          //contact_data: data.datos_de_contacto,
+        },
+        step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
+      })
+
+      router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : 'No se pudieron actualizar tus datos. Intenta nuevamente.'
+      setSubmitError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <WrapperCard className="flex flex-col gap-6">
@@ -86,12 +116,15 @@ export default function PersonalData() {
         <DataRow label="Nombre completo" value={nombreCompleto} />
         <DataRow label="RFC" value={data.rfc} />
         <DataRow label="CURP" value={data.curp} />
-        <DataRow label="Fecha de nacimiento" value={formatDate(data.fecha_de_nacimiento)} />
-        <DataRow label="Edad" value={`${edad} años`} />
+
+        <DataRow label="Edad" value={`${data.edad} años`} />
         <DataRow label="Nacionalidad" value={data.nacionalidad} />
-        <DataRow label="Ocupación" value={data.ocupacion} />
-        <DataRow label="Actividad económica" value={data.actividad_economica} />
+
         <DataRow label="Empresa" value={data.empresa} />
+        <DataRow label="Ocupación" value={data.ocupacion} />
+        <DataRow label="Salario" value={`${data.salario} MXN`} />
+        <DataRow label="Antigüedad" value={data.antiguedad} />
+
         <DataRow label="Teléfono" value={formatMxPhoneNumber(data.telefono)} />
         <DataRow label="Correo electrónico" value={data.correo_electronico} />
       </div>
@@ -100,15 +133,21 @@ export default function PersonalData() {
         text="Esta información ha sido extraída de nuestro registro de entidades confiables. Si no coincide, reporta a soporte."
       />
 
+      {submitError && (
+        <p className="text-sm text-red-600">{submitError}</p>
+      )}
+
       <div className="flex flex-col gap-3">
         <ButtonCard
-          onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
+          onClick={handleContinue}
+          disabled={isSubmitting}
         >
-          Continuar
+          {isSubmitting ? 'Guardando...' : 'Continuar'}
         </ButtonCard>
 
         <ButtonCard
           variant="secondary"
+          disabled={isSubmitting}
           onClick={() => router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT)}
         >
           Regresar
@@ -117,3 +156,5 @@ export default function PersonalData() {
     </WrapperCard>
   )
 }
+
+

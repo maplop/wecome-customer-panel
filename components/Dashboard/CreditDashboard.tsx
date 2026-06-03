@@ -1,24 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { Header } from '@/components/common/Header'
+import { useMemo, useState } from 'react'
+import { ButtonCard } from '@/components/common'
 import PaymentModal from './components/PaymentModal'
 import CreditDetailModal from './components/CreditDetailModal'
 import { Calendar, CircleDollarSign, CreditCard, HandCoins, Plus } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { ButtonCard } from '../common'
-
-export interface LoggedUser {
-  name: string
-  email: string
-  curp: string
-}
-
-interface CreditDashboardProps {
-  user: LoggedUser
-  onLogout: () => void
-}
+import { useClientDataStore } from '@/stores/client-data-store'
 
 interface Credit {
   id: string
@@ -107,9 +96,23 @@ const MOCK_DATA: Record<string, {
 
 type TabFilter = 'todos' | 'actuales' | 'finalizados'
 
-
-export default function CreditDashboard({ user, onLogout }: CreditDashboardProps) {
+export default function CreditDashboard() {
   const router = useRouter()
+  const session = useClientDataStore((state) => state)
+
+  const user = useMemo(() => {
+    const people = session?.data?.people
+    const pii = people?.pii
+    const email = pii?.email || people?.username || 'usuario@wecome.mx'
+    const fullName = pii?.name || pii?.fullname || email.split('@')[0]
+    console.log("pii ", pii)
+    return {
+      name: fullName,
+      email,
+    }
+  }, [session?.data?.people])
+
+  console.log("user ---", user)
 
   const [activeTab, setActiveTab] = useState<TabFilter>('todos')
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; amount: number }>({ open: false, amount: 0 })
@@ -177,13 +180,8 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
         </div>
       )}
 
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header showLogout onLogout={onLogout} />
-
-        {/* Main */}
-        <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
-          {/* Welcome + New Request */}
-          <div className="flex items-center justify-between mb-8">
+      {/* Welcome + New Request */}
+      <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl font-bold text-foreground">
               ¡Bienvenido {user.name.split(' ')[0]}!
             </h1>
@@ -197,8 +195,8 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
             </ButtonCard>
           </div>
 
-          {!data ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
+      {!data ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-4">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
                   <path d="M9 12h6" />
@@ -211,8 +209,8 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
                 Aún no tienes ningún crédito. Solicita uno ahora y recibe tu dinero en minutos.
               </p>
             </div>
-          ) : (
-            <>
+      ) : (
+        <>
               {/* 3 summary cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {/* Card 1: Valor total a pagar */}
@@ -392,19 +390,10 @@ export default function CreditDashboard({ user, onLogout }: CreditDashboardProps
                   })
                 )}
               </div>
-            </>
-          )}
-        </main>
+        </>
+      )}
 
-        {/* Footer */}
-        <footer className="py-5 border-t border-border/60 text-center">
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition underline">Aviso de privacidad</a>
-            <span>|</span>
-            <a href="#" className="hover:text-foreground transition underline">Términos y condiciones</a>
-          </div>
-        </footer>
-      </div>
     </>
   )
 }
+

@@ -1,0 +1,6 @@
+export const ONBOARDING_OTP_CLIENT = 146492;
+export const ONBOARDING_OTP_TYPE = "client";
+
+export const ONBOARDING_OTP_LENGTH = 6;
+export const ONBOARDING_RESEND_WAIT_SECONDS = 60;
+export const ONBOARDING_MAX_RESEND_ATTEMPTS = 3;

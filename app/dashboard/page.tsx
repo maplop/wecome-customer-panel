@@ -1,16 +1,6 @@
 'use client'
-
 import CreditDashboard from '@/components/Dashboard/CreditDashboard'
 
 export default function DashboardPage() {
-  return (
-    <CreditDashboard
-      onLogout={() => { }}
-      user={{
-        name: 'María González',
-        email: 'maria.gonzalez@empresa.com',
-        curp: 'GOMR890101MDFRNR01'
-      }}
-    />
-  )
+  return <CreditDashboard />
 }

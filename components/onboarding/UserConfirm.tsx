@@ -1,33 +1,39 @@
 'use client'
+
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { useClientProfileStore } from '@/stores/client-profile-store'
+import { useInitialOtpSend } from '@/hooks/use-onboarding-otp'
 
 export default function UserConfirm() {
-  // Derive a display name from CURP (first 4 letters → initials)
   const router = useRouter()
+  const { data } = useClientProfileStore()
 
-  const curp = 'GARC850101HDFRRL09' // This would come from props or context in a real app
-  const isVerified = true // This would also come from props or context
-  const firstName = curp.slice(0, 4)
+  const curp = data?.curp
+  const email = data?.correo_electronico
+
+  const isVerified = Boolean(data?.curp)
+  const firstName = curp?.slice(0, 4)
+
+  const { isSendingOtp, otpError, sendInitialOtp } = useInitialOtpSend({
+    email,
+    onSuccess: () => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION),
+  })
 
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
-        <TitleCard>
-          Confirmación de usuario
-        </TitleCard>
+        <TitleCard>Verificación de identidad</TitleCard>
         <SubtitleCard>
-          Verificamos tu CURP en nuestro sistema. ¿Es correcta esta información?
+          Hemos validado tu CURP. Confirma que la siguiente información corresponde a tu identidad.
         </SubtitleCard>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/50 p-5 flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-full text-white text-sm font-bold shrink-0 bg-brand-dark"
-          >
-            {firstName.slice(0, 2)}
+          <div className="flex h-12 w-12 items-center justify-center rounded-full text-white text-sm font-bold shrink-0 bg-brand-dark">
+            {firstName?.slice(0, 2)}
           </div>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">CURP detectado</span>
@@ -55,12 +61,20 @@ export default function UserConfirm() {
         </div>
       </div>
 
+      <p className="text-sm text-muted-foreground">
+        Para continuar, enviaremos un código de verificación al correo registrado:{' '}
+        <strong>{email}</strong>
+      </p>
+
       <div className="flex flex-col gap-3">
         {isVerified ? (
           <ButtonCard
-            onClick={() => router.push(ROUTES.ONBOARDING.IDENTITY_VERIFICATION)}
+            onClick={sendInitialOtp}
+            disabled={isSendingOtp}
+            loading={isSendingOtp}
+            loadingText="Enviando el código..."
           >
-            Iniciar solicitud
+            Enviar código
           </ButtonCard>
         ) : (
           <ButtonCard
@@ -70,9 +84,11 @@ export default function UserConfirm() {
             No puedes iniciar la solicitud
           </ButtonCard>
         )}
+        {otpError && <p className="text-sm text-destructive">{otpError}</p>}
         <ButtonCard
           variant="secondary"
           onClick={() => router.push(ROUTES.ONBOARDING.CURP_VERIFICATION)}
+          disabled={isSendingOtp}
         >
           No soy yo, regresar
         </ButtonCard>
@@ -80,3 +96,4 @@ export default function UserConfirm() {
     </WrapperCard>
   )
 }
+

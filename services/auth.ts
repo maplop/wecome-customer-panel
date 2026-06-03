@@ -1,5 +1,12 @@
-import apiClient from "@/lib/api/api-client";
-import { API_ENDPOINTS } from "@/lib/api/api-config";
+import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
+import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
+import { isApiClientError } from "@/api/core";
+import {
+  clearCognitoAuthSession,
+  getAccessToken,
+  setCognitoAuthSession,
+} from "@/lib/auth-session";
+import { getClientData } from "@/services/client-data";
 
 export interface RegisterRequest {
   email: string;
@@ -24,25 +31,30 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
-  token?: string;
-  user?: {
-    id: string;
-    email: string;
-    username: string;
-  };
-  message?: string;
-  success: boolean;
+export interface ForgotPasswordRequest {
+  username: string;
 }
 
-/**
- * Register a new web client
- */
-export async function registerWebClient(
-  data: RegisterRequest,
-): Promise<RegisterResponse> {
-  console.log("Registering user with data:", data);
+export interface ConfirmForgotPasswordRequest {
+  username: string;
+  code: string;
+  password: string;
+}
 
+export interface CognitoAuthResponse {
+  AuthenticationResult?: {
+    AccessToken?: string;
+    IdToken?: string;
+    RefreshToken?: string;
+    ExpiresIn?: number;
+    TokenType?: string;
+  };
+  ChallengeName?: string;
+  Session?: string;
+  [key: string]: unknown;
+}
+
+async function register(data: RegisterRequest): Promise<RegisterResponse> {
   const response = await apiClient.post<RegisterResponse>(
     API_ENDPOINTS.AUTH.REGISTER,
     {
@@ -63,33 +75,87 @@ export async function registerWebClient(
   };
 }
 
-/**
- * Login with email and password
- */
-export async function loginWebClient(
+async function initiateCognitoAuth(
   data: LoginRequest,
-): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>(
-    API_ENDPOINTS.AUTH.LOGIN,
+): Promise<CognitoAuthResponse> {
+  const { data: cognitoData } = await AwsCognito(
+    COGNITO_SERVICES.INITIATE_AUTH,
     {
-      email: data.email,
-      password: data.password,
+      AuthFlow: "USER_PASSWORD_AUTH",
+      AuthParameters: {
+        USERNAME: data.email,
+        PASSWORD: data.password,
+      },
     },
   );
 
-  return {
-    ...response.data,
-    success: true,
-  };
+  return cognitoData as CognitoAuthResponse;
 }
 
-/**
- * Logout
- */
-export async function logoutWebClient(): Promise<void> {
+export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
+  const auth = await initiateCognitoAuth(data);
+  setCognitoAuthSession(auth);
   try {
-    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
-  } catch (error: any) {
-    console.error("Error during logout:", error);
+    const clientData = await getClientData("company", "people");
+    console.log("clientData", clientData);
+  } catch (error) {
+    if (
+      isApiClientError(error) &&
+      (error.status === 401 || error.status === 403)
+    ) {
+      console.warn(
+        "No se pudo obtener user info por permisos/contexto:",
+        error.status,
+      );
+    } else {
+      console.warn("No se pudo obtener user info post-login.", error);
+    }
+  }
+  console.log("auth", auth);
+  return auth;
+}
+
+export async function registerAndLogin(
+  data: RegisterRequest,
+): Promise<{ register: RegisterResponse; auth: CognitoAuthResponse }> {
+  const registerResp = await register(data);
+  const auth = await login({
+    email: data.email,
+    password: data.password,
+  });
+
+  return { register: registerResp, auth };
+}
+
+export async function forgotPassword(
+  data: ForgotPasswordRequest,
+): Promise<void> {
+  await AwsCognito(COGNITO_SERVICES.FORGOT_PASSWORD, {
+    Username: data.username,
+  });
+}
+
+export async function confirmForgotPassword(
+  data: ConfirmForgotPasswordRequest,
+): Promise<void> {
+  await AwsCognito(COGNITO_SERVICES.CONFIRM_FORGOT_PASSWORD, {
+    ConfirmationCode: data.code,
+    Password: data.password,
+    Username: data.username,
+  });
+}
+
+export async function logout(): Promise<void> {
+  try {
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      await AwsCognito(COGNITO_SERVICES.GLOBAL_SIGN_OUT, {
+        AccessToken: accessToken,
+      });
+    }
+  } catch {
+    // Even if Cognito sign out fails, clear local session data.
+  } finally {
+    clearCognitoAuthSession();
   }
 }
