@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, CircleDollarSign, X, Pencil } from '@/lib/icons'
+import { CircleDollarSign, X, Pencil } from '@/lib/icons'
 import { ButtonCard } from '@/components/common'
 
 

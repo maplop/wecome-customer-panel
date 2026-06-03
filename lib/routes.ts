@@ -1,12 +1,15 @@
 // lib/routes.ts
 export const ROUTES = {
   HOME: "/onboarding/curp-verification",
+  PROFILE: {
+    ROOT: "/profile",
+    PASSWORD_CHANGE: "/profile/password-change",
+  },
   AUTH: {
     ROOT: "/auth",
     LOGIN: "/auth/login",
     RECOVER_REQUEST: "/auth/recover-request",
     RECOVER_VERIFY: "/auth/recover-verify",
-    RECOVER_RESET: "/auth/recover-reset",
   },
   ONBOARDING: {
     ROOT: "/onboarding",

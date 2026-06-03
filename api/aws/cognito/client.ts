@@ -9,10 +9,10 @@ export const cognitoApiClient = createHttpClient({
   includeAuthToken: false,
 });
 
-export async function client(
+export async function client<T = Payload | Payload[]>(
   service: string,
   payload: Payload = {},
-): Promise<ClientResponse> {
+): Promise<ClientResponse<T>> {
   const response = await cognitoApiClient.post(
     service,
     {
@@ -43,6 +43,6 @@ export async function client(
 
   return {
     code: response.status,
-    data: response.data,
+    data: response.data as T,
   };
 }

@@ -14,4 +14,7 @@ export {
   CreditCard,
   Pencil,
   Plus,
+  User,
+  LogOut,
+  SquareAsterisk,
 } from "lucide-react";

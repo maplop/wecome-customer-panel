@@ -5,7 +5,7 @@ export interface ClientError extends Error {
   message: string;
 }
 
-export interface ClientResponse {
+export interface ClientResponse<T = Payload | Payload[]> {
   code: number;
-  data: Payload | Payload[];
+  data: T;
 }
