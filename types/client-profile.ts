@@ -19,5 +19,6 @@ export interface ClientProfileType {
   segundo_apellido: string;
   telefono: string;
   tipo_identificacion_oficial: string;
+  _regimen_conyugal: string;
   created_at: string;
 }

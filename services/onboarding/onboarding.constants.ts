@@ -1,4 +1,4 @@
-export const ONBOARDING_OTP_CLIENT = 142296;
+export const ONBOARDING_OTP_CLIENT = 146492;
 export const ONBOARDING_OTP_TYPE = "client";
 
 export const ONBOARDING_OTP_LENGTH = 6;
