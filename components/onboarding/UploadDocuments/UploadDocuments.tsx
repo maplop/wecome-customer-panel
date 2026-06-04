@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
 import DocumentUploadField from './DocumentUploadField'
-import { upload as uploadToS3 } from '@/utils/aws/s3'
+import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { useClientDataStore } from '@/stores/client-data-store'
 
@@ -48,6 +48,14 @@ interface UploadedDocumentState {
   value: UploadedDocumentValue[]
 }
 
+interface StoredDocumentValue {
+  active?: boolean
+  metadata?: Record<string, unknown>
+  name?: string
+  uploaded?: number
+  url?: string
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -61,6 +69,95 @@ function sanitizeFilename(filename: string): string {
   return filename.replace(/[^a-zA-Z0-9._-]/g, '_')
 }
 
+function getFilenameFromUrl(url: string): string {
+  const pathname = url.split('?')[0]
+  const parts = pathname.split('/')
+  return parts[parts.length - 1] || 'documento'
+}
+
+function normalizeStoredDocumentValue(
+  item: unknown,
+  fallbackName: string,
+): UploadedDocumentValue | null {
+  if (!item) return null
+
+  if (typeof item === 'string') {
+    const cleanUrl = item.trim()
+    if (!cleanUrl) return null
+    return {
+      active: true,
+      metadata: {},
+      name: fallbackName,
+      uploaded: Date.now(),
+      url: cleanUrl,
+    }
+  }
+
+  if (typeof item !== 'object') return null
+
+  const raw = item as StoredDocumentValue
+  const cleanUrl = typeof raw.url === 'string' ? raw.url.trim() : ''
+  if (!cleanUrl) return null
+
+  return {
+    active: raw.active ?? true,
+    metadata: raw.metadata ?? {},
+    name: raw.name || fallbackName,
+    uploaded: typeof raw.uploaded === 'number' ? raw.uploaded : Date.now(),
+    url: cleanUrl,
+  }
+}
+
+function buildInitialDocuments(
+  pii: Record<string, unknown> | undefined,
+): Record<string, UploadedDocumentState> {
+  if (!pii) return {}
+
+  const initial: Record<string, UploadedDocumentState> = {}
+
+  DOCUMENT_TYPES.forEach((doc) => {
+    const rawFieldValue = pii[doc.piiKey]
+    const values = Array.isArray(rawFieldValue) ? rawFieldValue : [rawFieldValue]
+    const normalizedValues = values
+      .map((item) => normalizeStoredDocumentValue(item, doc.valueName))
+      .filter((item): item is UploadedDocumentValue => Boolean(item && item.active))
+
+    const selected =
+      doc.piiKey === 'ine'
+        ? normalizedValues.find((item) => item.name === doc.valueName)
+        : normalizedValues[0]
+
+    if (!selected?.url) return
+
+    const metadataOriginalName =
+      typeof selected.metadata?.originalName === 'string'
+        ? selected.metadata.originalName
+        : ''
+    const displayName = metadataOriginalName || getFilenameFromUrl(selected.url)
+
+    initial[doc.id] = {
+      name: displayName,
+      preview: selected.url,
+      value: [selected],
+    }
+  })
+
+  return initial
+}
+
+async function resolveSignedUrl(url: string): Promise<string> {
+  try {
+    const signed = await getSignedUrl(url)
+    if (typeof signed === 'string') return signed
+    if (signed && typeof signed === 'object' && 'url' in signed) {
+      return String(signed.url || url)
+    }
+    return url
+  } catch {
+    return url
+  }
+}
+
 export default function UploadDocuments() {
   const router = useRouter()
   const client = useClientDataStore((state) => state.client)
@@ -69,8 +166,11 @@ export default function UploadDocuments() {
   const [documents, setDocuments] = useState<Record<string, UploadedDocumentState>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState<string | null>(null)
+  const [loadingExistingDocs, setLoadingExistingDocs] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitProgress, setSubmitProgress] = useState(0)
   const [submitError, setSubmitError] = useState('')
+  const [hydratedFromPii, setHydratedFromPii] = useState(false)
 
   const currentTabDocs = DOCUMENT_TYPES.filter((d) => d.tab === activeTab)
   const tab1Docs = DOCUMENT_TYPES.filter((d) => d.tab === 1)
@@ -78,6 +178,54 @@ export default function UploadDocuments() {
   const tab1Complete = tab1Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const tab2Complete = tab2Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const allRequiredUploaded = tab1Complete && tab2Complete
+
+  useEffect(() => {
+    if (hydratedFromPii) return
+    const pii = (client?.pii as Record<string, unknown> | undefined)
+    if (!pii) return
+
+    let cancelled = false
+
+    const hydrate = async () => {
+      const initialDocs = buildInitialDocuments(pii)
+      const initialKeys = Object.keys(initialDocs)
+      if (initialKeys.length) {
+        const initialLoadingState = Object.fromEntries(
+          initialKeys.map((key) => [key, true]),
+        ) as Record<string, boolean>
+        setLoadingExistingDocs(initialLoadingState)
+      }
+
+      const entries = await Promise.all(
+        Object.entries(initialDocs).map(async ([key, item]) => {
+          const signedPreview = await resolveSignedUrl(item.preview)
+          setLoadingExistingDocs((prev) => ({ ...prev, [key]: false }))
+          return [
+            key,
+            {
+              ...item,
+              preview: signedPreview,
+            },
+          ] as const
+        }),
+      )
+
+      if (cancelled) return
+
+      const signedDocs = Object.fromEntries(entries)
+      setDocuments((current) =>
+        Object.keys(current).length ? current : signedDocs,
+      )
+      setLoadingExistingDocs({})
+      setHydratedFromPii(true)
+    }
+
+    void hydrate()
+
+    return () => {
+      cancelled = true
+    }
+  }, [client?.pii, hydratedFromPii])
 
   const handleFileChange = async (docId: string, file: File | null, acceptedTypes: string) => {
     if (!file) return
@@ -176,6 +324,7 @@ export default function UploadDocuments() {
 
     try {
       setIsSubmitting(true)
+      setSubmitProgress(0)
       setSubmitError('')
 
       const piiPayload: Record<string, unknown> = {}
@@ -194,9 +343,15 @@ export default function UploadDocuments() {
       })
       piiPayload.current_step = ROUTES.ONBOARDING.FINANCIAL_DATA
 
-      await updateClientData({
-        pii: piiPayload,
-      })
+      await updateClientData(
+        {
+          pii: piiPayload,
+        },
+        {
+          onProgress: (progress) => setSubmitProgress(progress),
+        },
+      )
+      setSubmitProgress(100)
 
       router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
     } catch (error) {
@@ -250,13 +405,25 @@ export default function UploadDocuments() {
             fileData={documents[doc.id]}
             error={errors[doc.id]}
             uploading={uploading === doc.id}
-            disabled={Boolean(uploading) || isSubmitting}
+            loadingExisting={Boolean(loadingExistingDocs[doc.id])}
+            disabled={Boolean(uploading) || isSubmitting || Boolean(loadingExistingDocs[doc.id])}
             onFileChange={handleFileChange}
             onRemove={removeDocument}
           />
         ))}
 
         {submitError && <p className="text-sm text-destructive">{submitError}</p>}
+        {isSubmitting && (
+          <div className="flex flex-col gap-1">
+            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-brand-accent transition-all duration-200"
+                style={{ width: `${submitProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-right">{submitProgress}%</p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3">
           {activeTab === 1 ? (

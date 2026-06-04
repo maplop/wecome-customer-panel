@@ -10,6 +10,7 @@ interface DocumentUploadFieldProps {
   fileData?: { name: string; preview: string }
   error?: string
   uploading: boolean
+  loadingExisting?: boolean
   disabled?: boolean
   onFileChange: (docId: string, file: File | null, acceptedTypes: string) => void
   onRemove: (docId: string) => void
@@ -23,10 +24,22 @@ export default function DocumentUploadField({
   fileData,
   error,
   uploading,
+  loadingExisting = false,
   disabled = false,
   onFileChange,
   onRemove,
 }: DocumentUploadFieldProps) {
+  const isImagePreview = Boolean(
+    fileData?.preview &&
+      (
+        fileData.preview.startsWith('data:image') ||
+        /\.(png|jpe?g|webp|gif|bmp|svg)(\?|#|$)/i.test(fileData.preview)
+      ),
+  )
+
+  const isLoading = loadingExisting || uploading
+  const loadingText = loadingExisting ? 'Cargando documento...' : 'Subiendo documento...'
+
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-foreground">
@@ -35,7 +48,7 @@ export default function DocumentUploadField({
 
       {fileData ? (
         <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/50">
-          {fileData.preview.startsWith('data:image') ? (
+          {isImagePreview ? (
             <img src={fileData.preview} alt={label} className="w-12 h-12 object-cover rounded-lg" />
           ) : (
             <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted">
@@ -64,13 +77,13 @@ export default function DocumentUploadField({
             disabled={disabled}
             onChange={(e) => onFileChange(docId, e.target.files?.[0] || null, acceptedTypes)}
           />
-          {uploading ? (
+          {isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Cargando...
+              {loadingText}
             </div>
           ) : (
             <>

@@ -1,13 +1,19 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { useClientDataStore } from "@/stores/client-data-store";
 import { ClientPiiType } from "@/types/client-data/client";
+import { AxiosProgressEvent } from "axios";
 
 interface UpdateClientDataInput {
   pii: Partial<ClientPiiType> & Record<string, unknown>;
 }
 
+interface UpdateClientDataOptions {
+  onProgress?: (progress: number) => void;
+}
+
 export async function updateClientData(
   clientData: UpdateClientDataInput,
+  options: UpdateClientDataOptions = {},
 ): Promise<any> {
   const { client } = useClientDataStore.getState();
 
@@ -26,7 +32,16 @@ export async function updateClientData(
     },
   };
 
-  const { data: response } = await apiClient.put(SERVICES.PEOPLE, payload);
+  const { data: response } = await apiClient.put(SERVICES.PEOPLE, payload, {
+    onUploadProgress: (event: AxiosProgressEvent) => {
+      if (!options.onProgress || !event.total) return;
+      const progress = Math.min(
+        100,
+        Math.round((event.loaded / event.total) * 100),
+      );
+      options.onProgress(progress);
+    },
+  });
 
   // Actualizar pii en el store después del PUT
   useClientDataStore.setState({

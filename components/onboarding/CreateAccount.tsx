@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
+import { updateClientData } from '@/services/client-data'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -68,6 +69,13 @@ export default function CreateAccount() {
         email: form.email,
         password: form.password,
         username: form.email,
+      })
+
+      await updateClientData({
+        pii: {
+          email: form.email,
+          current_step: ROUTES.ONBOARDING.PERSONAL_DATA,
+        },
       })
 
       router.push(ROUTES.ONBOARDING.PERSONAL_DATA)

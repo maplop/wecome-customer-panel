@@ -5,6 +5,7 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { X, Check } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 const DOCUMENTS = [
   {
@@ -175,6 +176,7 @@ export default function TermsAcceptance() {
     creditHistory: false,
   })
   const [modalDoc, setModalDoc] = useState<string | null>(null)
+  const [error, setError] = useState('')
 
   const allAccepted = Object.values(accepted).every(Boolean)
 
@@ -191,6 +193,24 @@ export default function TermsAcceptance() {
     if (modalDoc) {
       setAccepted(prev => ({ ...prev, [modalDoc]: true }))
       setModalDoc(null)
+    }
+  }
+
+  const handleContinue = async () => {
+    try {
+      setError('')
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.CREDIT_SUCCESS,
+        },
+      })
+      router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
     }
   }
 
@@ -239,7 +259,7 @@ export default function TermsAcceptance() {
 
         <div className="flex flex-col gap-3">
           <ButtonCard
-            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)}
+            onClick={handleContinue}
             disabled={!allAccepted}
           >
             Continuar
@@ -250,6 +270,7 @@ export default function TermsAcceptance() {
           >
             Regresar
           </ButtonCard>
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       </WrapperCard>
 
@@ -257,7 +278,6 @@ export default function TermsAcceptance() {
       {activeDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-foreground">{activeDoc.title}</h2>
               <button

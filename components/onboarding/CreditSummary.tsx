@@ -1,13 +1,16 @@
 'use client'
+import { useState } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
+import { updateClientData } from '@/services/client-data'
 
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
 
 export default function CreditSummary() {
   const router = useRouter()
+  const [error, setError] = useState('')
 
   // In a real app, these would come from context or props
   const amount = 15000
@@ -40,9 +43,9 @@ export default function CreditSummary() {
   const creditTypeLabel = hasInsurance ? 'Protegido (con seguro)' : 'Esencial (sin seguro)'
 
   const summaryRows = [
-    { label: 'Tipo de crédito', value: creditTypeLabel },
+    { label: 'Tipo de credito', value: creditTypeLabel },
     { label: 'Monto solicitado', value: `$${amount.toLocaleString('es-MX')}` },
-    { label: 'Comisión por apertura', value: `$${commission.toLocaleString('es-MX')}` },
+    { label: 'Comision por apertura', value: `$${commission.toLocaleString('es-MX')}` },
     { label: 'Monto a recibir', value: `$${netAmount.toLocaleString('es-MX')}`, highlight: true },
     { label: 'Pago quincenal', value: `$${biweeklyPayment.toLocaleString('es-MX', { maximumFractionDigits: 2 })}`, highlight: true },
     { label: 'Intereses totales', value: `$${totalInterest.toLocaleString('es-MX')}` },
@@ -50,11 +53,29 @@ export default function CreditSummary() {
     { label: 'Total a pagar', value: `$${totalPayment.toLocaleString('es-MX')}` },
   ]
 
+  const handleContinue = async () => {
+    try {
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.FINAL_CONFIRM,
+        },
+      })
+
+      router.push(ROUTES.ONBOARDING.FINAL_CONFIRM)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    }
+  }
+
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
         <TitleCard>
-          Resumen del crédito
+          Resumen del credito
         </TitleCard>
         <SubtitleCard>
           Revisa todos los detalles antes de continuar con tu solicitud.
@@ -69,18 +90,17 @@ export default function CreditSummary() {
             className={`flex items-center justify-between px-4 py-3 ${i < summaryRows.length - 1 ? 'border-b border-border' : ''} ${row.highlight ? 'bg-secondary/40' : 'bg-background'}`}
           >
             <span className={`text-sm ${row.highlight ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{row.label}</span>
-            <span className={`text-sm font-semibold ${row.highlight ? 'text-foreground' : 'text-foreground'}`}>{row.value}</span>
+            <span className="text-sm font-semibold text-foreground">{row.value}</span>
           </div>
         ))}
       </div>
 
       {/* Amortization table */}
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-foreground">Tabla de amortización</p>
+        <p className="text-sm font-medium text-foreground">Tabla de amortizacion</p>
         <div className="rounded-2xl border border-border overflow-hidden">
-          {/* Header */}
           <div className="grid grid-cols-4 bg-secondary px-3 py-2">
-            {['Quincena', 'Pago', 'Capital', 'Saldo'].map(h => (
+            {['Quincena', 'Pago', 'Capital', 'Saldo'].map((h) => (
               <span key={h} className="text-xs font-medium text-muted-foreground text-right first:text-left">{h}</span>
             ))}
           </div>
@@ -99,17 +119,16 @@ export default function CreditSummary() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <ButtonCard
-          onClick={() => router.push(ROUTES.ONBOARDING.FINAL_CONFIRM)}
-        >
-          Continuar con mi crédito
+        <ButtonCard onClick={handleContinue}>
+          Continuar con mi credito
         </ButtonCard>
         <ButtonCard
-          variant='secondary'
+          variant="secondary"
           onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
         >
           Regresar
         </ButtonCard>
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </WrapperCard>
   )

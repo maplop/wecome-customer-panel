@@ -5,6 +5,7 @@ import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote } from '../c
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
+import { updateClientData } from '@/services/client-data'
 
 export default function FinancialData() {
   const router = useRouter()
@@ -13,20 +14,46 @@ export default function FinancialData() {
 
   const salary = data?.salario
   const [error, setError] = useState('')
+
   const formatMXN = (value: string) => {
     const numeric = value.replace(/\D/g, '')
     return numeric ? Number(numeric).toLocaleString('es-MX') : ''
   }
 
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const num = Number(salary)
-    if (!salary) { setError('Ingresa tu salario mensual'); return }
-    if (num < 3000) { setError('El salario mínimo requerido es $3,000'); return }
-    if (num > 500000) { setError('Verifica el monto ingresado'); return }
 
-    router.push(ROUTES.ONBOARDING.CREDIT_RESULT)
+    if (!salary) {
+      setError('Ingresa tu salario mensual')
+      return
+    }
+
+    if (num < 3000) {
+      setError('El salario minimo requerido es $3,000')
+      return
+    }
+
+    if (num > 500000) {
+      setError('Verifica el monto ingresado')
+      return
+    }
+
+    try {
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.CREDIT_RESULT,
+        },
+      })
+
+      router.push(ROUTES.ONBOARDING.CREDIT_RESULT)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    }
   }
 
   return (
@@ -36,12 +63,12 @@ export default function FinancialData() {
           Datos financieros
         </TitleCard>
         <SubtitleCard>
-          Con base en la información registrada, calculamos el monto de crédito disponible para ti.
+          Con base en la informacion registrada, calculamos el monto de credito disponible para ti.
         </SubtitleCard>
       </div>
 
       <InfoNote
-        text=' La información mostrada es confidencial y se utiliza únicamente para calcular tu línea de crédito.'
+        text="La informacion mostrada es confidencial y se utiliza unicamente para calcular tu linea de credito."
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -66,16 +93,14 @@ export default function FinancialData() {
           {error && <p className="text-xs text-destructive">{error}</p>}
           {salary && !error && (
             <p className="text-xs text-muted-foreground">
-              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3 * 0.6).toLocaleString('es-MX')} MXN</span> disponible en crédito
+              Hasta <span className="font-semibold text-foreground">${(Number(salary) * 3 * 0.6).toLocaleString('es-MX')} MXN</span> disponible en credito
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-3">
-          <ButtonCard
-            submit
-          >
-            Calcular crédito
+          <ButtonCard submit>
+            Calcular credito
           </ButtonCard>
 
           <ButtonCard
@@ -89,4 +114,3 @@ export default function FinancialData() {
     </WrapperCard>
   )
 }
-

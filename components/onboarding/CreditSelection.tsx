@@ -7,6 +7,7 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 const TERMS = [6, 12, 18]
 const MONTHLY_RATE = 0.028
@@ -99,6 +100,7 @@ export default function CreditSelection() {
   const [term, setTerm] = useState(12)
   const [hasInsurance, setHasInsurance] = useState(true)
   const [showRiskModal, setShowRiskModal] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (showRiskModal) {
@@ -133,6 +135,23 @@ export default function CreditSelection() {
 
   const handleRiskCancel = () => {
     setShowRiskModal(false)
+  }
+
+  const handleContinue = async () => {
+    try {
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.CREDIT_SUMMARY,
+        },
+      })
+      router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    }
   }
 
   return (
@@ -249,7 +268,7 @@ export default function CreditSelection() {
 
         <div className="flex flex-col gap-3">
           <ButtonCard
-            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)}
+            onClick={handleContinue}
           >
             Continuar
           </ButtonCard>
@@ -259,6 +278,7 @@ export default function CreditSelection() {
           >
             Regresar
           </ButtonCard>
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       </WrapperCard>
 

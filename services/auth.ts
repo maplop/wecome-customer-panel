@@ -146,18 +146,16 @@ export async function registerAndLogin(
   data: RegisterRequest,
 ): Promise<{ register: RegisterResponse; auth: CognitoAuthResponse }> {
   const registerResp = await register(data);
+
   const auth = await login({
     email: data.email,
     password: data.password,
   });
 
-  /*
   await confirmUser({
     username: data.username,
     confirmEmail: true,
-    confirmPhone: true,
   });
-  */
 
   return { register: registerResp, auth };
 }
