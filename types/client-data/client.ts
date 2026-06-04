@@ -61,6 +61,9 @@ export interface ClientPiiType {
   intereses_cobrados: string;
   referencia_de_tasa: string;
   saldo_total_deudor: string;
+  recibo_de_nomina_1: string;
+  recibo_de_nomina_2: string;
+  recibo_de_nomina_3: string;
   actividad_economica: string;
   destino_del_credito: string;
   iva_sobre_intereses: string;
