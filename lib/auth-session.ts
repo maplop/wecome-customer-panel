@@ -100,9 +100,7 @@ export function isAccessTokenValid(): boolean {
 function getCognitoConfig(): { apiUrl?: string; clientId?: string } {
   return {
     apiUrl: process.env.NEXT_PUBLIC_AWS_COGNITO_API_URL,
-    clientId:
-      process.env.NEXT_PUBLIC_AWS_USER_POOLS_WEB_CLIENT_ID ||
-      process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID,
+    clientId: process.env.NEXT_PUBLIC_AWS_USER_POOLS_WEB_CLIENT_ID || "",
   };
 }
 

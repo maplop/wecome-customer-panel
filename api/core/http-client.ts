@@ -164,6 +164,41 @@ type RetryableRequestConfig = NonNullable<AxiosError["config"]> & {
   _retry?: boolean;
 };
 
+function getHeaderValue(headers: unknown, key: string): string | undefined {
+  if (!headers || typeof headers !== "object") {
+    return undefined;
+  }
+
+  const candidate = headers as Record<string, unknown> & {
+    get?: (name: string) => unknown;
+  };
+
+  if (typeof candidate.get === "function") {
+    const value = candidate.get(key);
+    return value == null ? undefined : String(value);
+  }
+
+  const direct = candidate[key] ?? candidate[key.toLowerCase()];
+  return direct == null ? undefined : String(direct);
+}
+
+function setHeaderValue(headers: unknown, key: string, value: string): void {
+  if (!headers || typeof headers !== "object") {
+    return;
+  }
+
+  const candidate = headers as Record<string, unknown> & {
+    set?: (name: string, value: string) => unknown;
+  };
+
+  if (typeof candidate.set === "function") {
+    candidate.set(key, value);
+    return;
+  }
+
+  candidate[key] = value;
+}
+
 export function createHttpClient(
   options: CreateHttpClientOptions,
 ): AxiosInstance {
@@ -189,17 +224,21 @@ export function createHttpClient(
 
   httpClient.interceptors.request.use(
     (config) => {
+      config.headers = config.headers || {};
+
       if (includeAuthToken && typeof window !== "undefined") {
         const accessToken = getAccessToken();
-        if (accessToken && !config.headers["Authorization"]) {
-          config.headers["Authorization"] = authTokenPrefix
-            ? `${authTokenPrefix} ${accessToken}`
-            : accessToken;
+        if (accessToken && !getHeaderValue(config.headers, "Authorization")) {
+          setHeaderValue(
+            config.headers,
+            "Authorization",
+            authTokenPrefix ? `${authTokenPrefix} ${accessToken}` : accessToken,
+          );
         }
       }
 
-      if (context && !config.headers["context"]) {
-        config.headers["context"] = context;
+      if (context && !getHeaderValue(config.headers, "context")) {
+        setHeaderValue(config.headers, "context", context);
       }
 
       return config;

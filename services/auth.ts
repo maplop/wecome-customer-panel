@@ -1,4 +1,7 @@
-import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
+import {
+  apiClient,
+  API_ENDPOINTS,
+} from "@/api/dynamicore/frontend";
 import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
 import { isApiClientError } from "@/api/core";
 import {
@@ -39,6 +42,12 @@ export interface ConfirmForgotPasswordRequest {
   username: string;
   code: string;
   password: string;
+}
+
+export interface ConfirmUserRequest {
+  username: string;
+  confirmEmail?: boolean;
+  confirmPhone?: boolean;
 }
 
 export interface CognitoAuthResponse {
@@ -92,6 +101,19 @@ async function initiateCognitoAuth(
   return cognitoData as CognitoAuthResponse;
 }
 
+async function confirmUser(data: ConfirmUserRequest): Promise<void> {
+  const payload: Record<string, unknown> = {
+    username: data.username,
+    confirmEmail: data.confirmEmail ?? true,
+  };
+
+  if (typeof data.confirmPhone === "boolean") {
+    payload.confirmPhone = data.confirmPhone;
+  }
+
+  await apiClient.post(API_ENDPOINTS.AUTH.CONFIRM_USER, payload);
+}
+
 export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   const auth = await initiateCognitoAuth(data);
   setCognitoAuthSession(auth);
@@ -122,6 +144,12 @@ export async function registerAndLogin(
   const auth = await login({
     email: data.email,
     password: data.password,
+  });
+
+  await confirmUser({
+    username: data.username,
+    confirmEmail: true,
+    confirmPhone: true,
   });
 
   return { register: registerResp, auth };

@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
     LOGIN: "/auth/login",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
+    CONFIRM_USER: "/users/confirmUserAttributes",
   },
   USERS: {
     PROFILE: "/users/profile",

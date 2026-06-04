@@ -48,7 +48,7 @@ export const useClientProfileStore = create<ClientProfileState>()(
       reset: () => set({ loading: false, error: null, data: null }),
     }),
     {
-      name: "client-verification-store",
+      name: "client-profile-store",
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         data: state.data,

@@ -32,6 +32,7 @@ export const apiClient = createHttpClient({
     API_ENDPOINTS.AUTH.LOGIN,
     API_ENDPOINTS.AUTH.LOGOUT,
     API_ENDPOINTS.AUTH.REGISTER,
+    API_ENDPOINTS.AUTH.CONFIRM_USER,
   ],
   redirectOnUnauthorized: true,
   onUnauthorized: redirectToCurpVerification,
