@@ -48,8 +48,6 @@ export function AppShell({
     return userName
   }, [session?.client])
 
-  console.log('Session data in AppShell:', session) // Debug log to check session data
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header showLogout={canShowAccountMenu} onLogout={handleLogout} userEmail={userEmail} />
