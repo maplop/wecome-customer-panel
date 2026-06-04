@@ -31,6 +31,7 @@ export interface ClientPiiType {
   fecha_1: string;
   num_ext: string;
   num_int: string;
+  salario: number;
   seguros: string;
   zipcode: string;
   fullname: string;
@@ -38,6 +39,7 @@ export interface ClientPiiType {
   birthstate: string;
   secondname: string;
   nationality: string;
+  current_step: string;
   dia_de_corte: string;
   forma_de_pago: string;
   monto_del_pago: string;
@@ -48,6 +50,7 @@ export interface ClientPiiType {
   capital_vigente: string;
   tipo_de_credito: string;
   apellido_paterno: string;
+  cargo_en_empresa: string;
   fuente_del_score: string;
   nivel_de_estudio: string;
   tipo_de_garantia: string;
@@ -71,6 +74,7 @@ export interface ClientPiiType {
   periodicidad_de_pago: string;
   comision_por_apertura: string;
   comisiones_por_cobrar: string;
+  empresa_donde_trabaja: string;
   fecha_limite_del_pago: string;
   comision_por_anualidad: string;
   tipo_de_identificacion: string;

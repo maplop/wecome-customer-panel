@@ -74,20 +74,17 @@ export default function PersonalData() {
           curp: data.curp,
           rfc: data.rfc,
           birthdate: data.fecha_de_nacimiento,
-          // age: data.edad,
           nationality: data.nacionalidad,
-          //occupation: data.ocupacion,
-          //company: data.empresa,
-          //salary: data.salario,
+          empresa_donde_trabaja: data.empresa,
+          salario: data.salario,
+          cargo_en_empresa: data.ocupacion,
           antiguedad_laboral___empresarial: data.antiguedad,
           actividad_economica: data.actividad_economica,
           nivel_de_estudio: data.nivel_de_estudios,
           numero_de_identificacion: data.numero_identificacion_oficial,
           tipo_de_identificacion: data.tipo_identificacion_oficial,
-          //fiscal_and_home_address: data.domicilio_fiscal_y_particular,
-          //contact_data: data.datos_de_contacto,
+          current_step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
         },
-        step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
       })
 
       router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)

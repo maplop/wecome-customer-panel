@@ -1,21 +1,14 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { useClientDataStore } from "@/stores/client-data-store";
-import { ClientType, ClientPiiType } from "@/types/client-data/client";
+import { ClientPiiType } from "@/types/client-data/client";
 
 interface UpdateClientDataInput {
   pii: Partial<ClientPiiType> & Record<string, unknown>;
-  step?: string;
-}
-
-function getCurrentStep(step?: string): string {
-  if (step) return step;
-  if (typeof window !== "undefined") return window.location.pathname;
-  return "unknown";
 }
 
 export async function updateClientData(
   clientData: UpdateClientDataInput,
-): Promise<unknown> {
+): Promise<any> {
   const { client } = useClientDataStore.getState();
 
   if (!client) {
@@ -24,15 +17,12 @@ export async function updateClientData(
     );
   }
 
-  const step = getCurrentStep(clientData.step);
-
   const payload = {
     client_type: client.client_type,
     id: client.id,
     group: client.group,
     pii: {
       ...clientData.pii,
-      step,
     },
   };
 
