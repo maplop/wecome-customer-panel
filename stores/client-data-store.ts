@@ -1,19 +1,19 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { ClientPiiType } from "@/types/client-data/client";
+import type { ClientType } from "@/types/client-data/client";
 
 interface ClientDataStore {
-  pii: ClientPiiType | null;
-  setPii: (pii: ClientPiiType) => void;
-  clearPii: () => void;
+  client: ClientType | null;
+  setClient: (client: ClientType) => void;
+  clearClient: () => void;
 }
 
 export const useClientDataStore = create<ClientDataStore>()(
   persist(
     (set) => ({
-      pii: null,
-      setPii: (pii) => set({ pii }),
-      clearPii: () => set({ pii: null }),
+      client: null,
+      setClient: (client) => set({ client }),
+      clearClient: () => set({ client: null }),
     }),
     {
       name: "client-data-store",

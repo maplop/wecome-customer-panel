@@ -122,8 +122,8 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
     console.log("pii", clientData.data?.people?.pii);
 
     // guarda solo el pii en zustand
-    if (clientData.data?.people?.pii) {
-      useClientDataStore.getState().setPii(clientData.data.people.pii);
+    if (clientData.data?.people) {
+      useClientDataStore.getState().setClient(clientData.data.people);
     }
   } catch (error) {
     if (

@@ -1,19 +1,16 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-import {
-  ClientData,
-  ClientPeopleType,
-  GatewayEnvelope,
-} from "@/types/client-data";
-
+import { ApiResponse } from "@/types/client-data/api-response";
+import { ClientType } from "@/types/client-data/client";
+import { ClientPeopleType } from "@/types/client-data/client-type";
 export interface ClientPeopleResult {
-  people: ClientData;
+  people: ClientType;
   peopleType: ClientPeopleType;
   peopleTypeId?: number;
 }
 
 export async function getPeople(peopleId: number): Promise<ClientPeopleResult> {
   const { data: peopleResponse } = await apiClient.get<
-    GatewayEnvelope<ClientData | ClientData[]>
+    ApiResponse<ClientType | ClientType[]>
   >(SERVICES.PEOPLE, {
     params: { id: peopleId },
   });
@@ -23,7 +20,7 @@ export async function getPeople(peopleId: number): Promise<ClientPeopleResult> {
     : (peopleData ?? {});
 
   const { data: peopleTypeResponse } = await apiClient.get<
-    GatewayEnvelope<ClientPeopleType | ClientPeopleType[]>
+    ApiResponse<ClientPeopleType | ClientPeopleType[]>
   >(SERVICES.PEOPLE_TYPES, {
     params: { id: people?.client_type ?? 0 },
   });

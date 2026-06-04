@@ -3,7 +3,7 @@ import { useClientDataStore } from "@/stores/client-data-store";
 import { useClientProfileStore } from "@/stores/client-profile-store";
 
 export const clearAllStores = () => {
-  useClientDataStore.getState().clearPii();
+  useClientDataStore.getState().clearClient();
   useClientProfileStore.getState().reset();
 };
 

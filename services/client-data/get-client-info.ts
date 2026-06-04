@@ -1,7 +1,12 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
-import { GatewayEnvelope, InfoResponse, ClientInfo } from "@/types/client-data";
+import { UserInfoType } from "@/types/client-data/user-info";
+import { ApiResponse } from "@/types/client-data/api-response";
 
-function extractPeopleId(info: InfoResponse): number {
+type ClientInfo = UserInfoType & {
+  peopleId: number;
+};
+
+function extractPeopleId(info: UserInfoType): number {
   const key = `dcore:${info?.company}:client:`;
   const peopleResource = String(
     (info?.json_rol?.Statement ?? []).find((item) =>
@@ -9,21 +14,18 @@ function extractPeopleId(info: InfoResponse): number {
     )?.Resource ?? "",
   );
   const peopleId = Number.parseInt(peopleResource.replace(key, ""), 10);
-
   return Number.isFinite(peopleId) ? peopleId : 0;
 }
 
 export async function getClientInfo(): Promise<ClientInfo> {
-  const { data: infoResponse } = await apiClient.get<
-    GatewayEnvelope<InfoResponse>
-  >(SERVICES.USERS_GET_INFO);
-  console.log("data---", infoResponse);
+  const { data: infoResponse } = await apiClient.get<ApiResponse<UserInfoType>>(
+    SERVICES.USERS_GET_INFO,
+  );
+  console.log("getClientInfo ---", infoResponse);
   const info = infoResponse?.data ?? {};
 
   return {
-    user: info?.user,
-    company: info?.company,
-    group: info?.group,
+    ...info,
     peopleId: extractPeopleId(info),
   };
 }

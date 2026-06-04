@@ -1,9 +1,9 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { useClientDataStore } from "@/stores/client-data-store";
-import { ClientPii, GatewayEnvelope } from "@/types/client-data";
+import { ClientType, ClientPiiType } from "@/types/client-data/client";
 
 interface UpdateClientDataInput {
-  pii: Partial<ClientPii> & Record<string, unknown>;
+  pii: Partial<ClientPiiType> & Record<string, unknown>;
   step?: string;
 }
 
@@ -16,47 +16,34 @@ function getCurrentStep(step?: string): string {
 export async function updateClientData(
   clientData: UpdateClientDataInput,
 ): Promise<unknown> {
-  const { people } = useClientDataStore.getState();
+  const { client } = useClientDataStore.getState();
 
-  const peopleId = people?.id;
-  const groupId = people?.group;
-  const clientType = people?.client_type;
-
-  if (!peopleId || !groupId) {
+  if (!client) {
     throw new Error(
-      "No se encontró id/group en sesión. Ejecuta getClientData antes de actualizar el cliente.",
-    );
-  }
-
-  if (!clientType) {
-    throw new Error(
-      "No se encontró client_type en sesión. Carga people en getClientData.",
+      "No se encontró información del cliente en sesión. Asegúrate de haber cargado los datos del cliente antes de actualizar.",
     );
   }
 
   const step = getCurrentStep(clientData.step);
 
   const payload = {
-    client_type: clientType,
-    id: peopleId,
-    group: groupId,
+    client_type: client.client_type,
+    id: client.id,
+    group: client.group,
     pii: {
       ...clientData.pii,
       step,
     },
   };
 
-  const { data: response } = await apiClient.put<GatewayEnvelope<unknown>>(
-    SERVICES.PEOPLE,
-    payload,
-  );
+  const { data: response } = await apiClient.put(SERVICES.PEOPLE, payload);
 
   // Actualizar pii en el store después del PUT
   useClientDataStore.setState({
-    people: {
-      ...people,
+    client: {
+      ...client,
       pii: {
-        ...people?.pii,
+        ...client?.pii,
         ...clientData.pii,
       },
     },
