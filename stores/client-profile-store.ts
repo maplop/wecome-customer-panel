@@ -1,6 +1,4 @@
-﻿"use client";
-
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { verifyCurpInWhitelist } from "@/services/onboarding/onboarding";
 import { ClientProfileType } from "@/types/client-profile";

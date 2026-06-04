@@ -1,7 +1,4 @@
-import {
-  apiClient,
-  API_ENDPOINTS,
-} from "@/api/dynamicore/frontend";
+import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
 import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
 import { isApiClientError } from "@/api/core";
 import {
@@ -10,6 +7,8 @@ import {
   setCognitoAuthSession,
 } from "@/lib/auth-session";
 import { getClientData } from "@/services/client-data";
+import { useClientDataStore } from "@/stores/client-data-store";
+import { clearAllStores } from "@/stores";
 
 export interface RegisterRequest {
   email: string;
@@ -120,6 +119,12 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
   try {
     const clientData = await getClientData("company", "people");
     console.log("clientData", clientData);
+    console.log("pii", clientData.data?.people?.pii);
+
+    // guarda solo el pii en zustand
+    if (clientData.data?.people?.pii) {
+      useClientDataStore.getState().setPii(clientData.data.people.pii);
+    }
   } catch (error) {
     if (
       isApiClientError(error) &&
@@ -146,11 +151,13 @@ export async function registerAndLogin(
     password: data.password,
   });
 
+  /*
   await confirmUser({
     username: data.username,
     confirmEmail: true,
     confirmPhone: true,
   });
+  */
 
   return { register: registerResp, auth };
 }
@@ -185,5 +192,6 @@ export async function logout(): Promise<void> {
     // Even if Cognito sign out fails, clear local session data.
   } finally {
     clearCognitoAuthSession();
+    clearAllStores();
   }
 }
