@@ -100,6 +100,7 @@ export default function CreditSelection() {
   const [term, setTerm] = useState(12)
   const [hasInsurance, setHasInsurance] = useState(true)
   const [showRiskModal, setShowRiskModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -138,6 +139,7 @@ export default function CreditSelection() {
   }
 
   const handleContinue = async () => {
+    setIsSubmitting(true)
     try {
       await updateClientData({
         pii: {
@@ -151,6 +153,8 @@ export default function CreditSelection() {
           ? err.message
           : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
       )
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -269,11 +273,14 @@ export default function CreditSelection() {
         <div className="flex flex-col gap-3">
           <ButtonCard
             onClick={handleContinue}
+            disabled={isSubmitting}
+            loading={isSubmitting}
           >
-            Continuar
+            Continuar con mi crédito
           </ButtonCard>
           <ButtonCard
             variant="secondary"
+            disabled={isSubmitting}
             onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_RESULT)}
           >
             Regresar

@@ -20,9 +20,9 @@ export default function CreateAccount() {
   const router = useRouter()
   const { data } = useClientProfileStore()
 
-  const whitelistEmail = data?.correo_electronico || ''
+  const email = data?.correo_electronico || ''
 
-  const [form, setForm] = useState<FormState>({ email: whitelistEmail, password: '', confirm: '' })
+  const [form, setForm] = useState<FormState>({ email: email, password: '', confirm: '' })
   const [errors, setErrors] = useState<Partial<FormState>>({})
   const [showPwd, setShowPwd] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -35,8 +35,8 @@ export default function CreateAccount() {
   )
 
   useEffect(() => {
-    setForm((prev) => ({ ...prev, email: whitelistEmail }))
-  }, [whitelistEmail])
+    setForm((prev) => ({ ...prev, email: email }))
+  }, [email])
 
   const validate = () => {
     const e: Partial<FormState> = {}
@@ -50,6 +50,12 @@ export default function CreateAccount() {
 
     return e
   }
+
+  const nombresSeparados = data?.nombres?.trim().split(/\s+/).filter(Boolean) ?? []
+  const primerNombre = nombresSeparados[0] ?? ''
+  const segundoNombre = nombresSeparados.length > 1
+    ? nombresSeparados.slice(1).join(' ')
+    : ''
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,7 +79,24 @@ export default function CreateAccount() {
 
       await updateClientData({
         pii: {
-          email: form.email,
+          name: primerNombre,
+          secondname: segundoNombre,
+          apellido_paterno: data?.primer_apellido,
+          motherlastname: data?.segundo_apellido,
+          email: data?.correo_electronico,
+          phone: data?.telefono,
+          curp: data?.curp,
+          rfc: data?.rfc,
+          birthdate: data?.fecha_de_nacimiento,
+          nationality: data?.nacionalidad,
+          empresa_donde_trabaja: data?.empresa,
+          salario: data?.salario,
+          cargo_en_empresa: data?.ocupacion,
+          antiguedad_laboral___empresarial: data?.antiguedad,
+          actividad_economica: data?.actividad_economica,
+          nivel_de_estudio: data?.nivel_de_estudios,
+          numero_de_identificacion: data?.numero_identificacion_oficial,
+          tipo_de_identificacion: data?.tipo_identificacion_oficial,
           current_step: ROUTES.ONBOARDING.PERSONAL_DATA,
         },
       })
@@ -222,18 +245,6 @@ export default function CreateAccount() {
           >
             Regresar
           </ButtonCard>
-          <div className='flex justify-center gap-1.5'>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              ¿Ya tienes cuenta?
-            </p>
-            <ButtonCard
-              variant="text"
-              onClick={() => router.push(ROUTES.AUTH.LOGIN)}
-              disabled={isSubmitting}
-            >
-              Inicia sesión
-            </ButtonCard>
-          </div>
         </div>
       </form>
     </WrapperCard>

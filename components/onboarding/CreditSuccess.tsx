@@ -9,9 +9,11 @@ import { updateClientData } from '@/services/client-data'
 
 export default function CreditSuccess() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const onRestart = async () => {
+  const handleContinue = async () => {
+    setIsSubmitting(true)
     try {
       setError('')
       await updateClientData({
@@ -26,6 +28,9 @@ export default function CreditSuccess() {
           ? err.message
           : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
       )
+    }
+    finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -71,7 +76,9 @@ export default function CreditSuccess() {
       </div>
 
       <ButtonCard
-        onClick={onRestart}
+        onClick={handleContinue}
+        loading={isSubmitting}
+        disabled={isSubmitting}
       >
         Ver solicitud
       </ButtonCard>

@@ -8,12 +8,14 @@ import { updateClientData } from '@/services/client-data'
 
 export default function CreditResult() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   const salary = 3500
   const maxCredit = salary * 3
 
   const handleContinue = async () => {
+    setIsSubmitting(true)
     try {
       await updateClientData({
         pii: {
@@ -26,7 +28,8 @@ export default function CreditResult() {
           ? err.message
           : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
       )
-      return
+    } finally {
+      setIsSubmitting(false)
     }
 
     router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)
@@ -78,11 +81,14 @@ export default function CreditResult() {
       <div className="flex flex-col gap-3">
         <ButtonCard
           onClick={handleContinue}
+          disabled={isSubmitting}
+          loading={isSubmitting}
         >
-          Continuar
+          Continuar con mi crédito
         </ButtonCard>
         <ButtonCard
           variant="secondary"
+          disabled={isSubmitting}
           onClick={() => router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)}
         >
           Regresar

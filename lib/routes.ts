@@ -69,17 +69,17 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.FINANCIAL_DATA,
   },
   {
-    title: "Resultado de credito",
+    title: "Resultado de crédito",
     step: 8,
     route: ROUTES.ONBOARDING.CREDIT_RESULT,
   },
   {
-    title: "Seleccion de credito",
+    title: "Seleccion de crédito",
     step: 9,
     route: ROUTES.ONBOARDING.CREDIT_SELECTION,
   },
   {
-    title: "Resumen de credito",
+    title: "Resumen de crédito",
     step: 10,
     route: ROUTES.ONBOARDING.CREDIT_SUMMARY,
   },
@@ -94,7 +94,7 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
   },
   {
-    title: "Credito exitoso",
+    title: "Crédito exitoso",
     step: 13,
     route: ROUTES.ONBOARDING.CREDIT_SUCCESS,
   },

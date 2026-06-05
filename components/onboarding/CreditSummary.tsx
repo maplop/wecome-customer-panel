@@ -10,6 +10,7 @@ const COMMISSION_RATE = 0.02
 
 export default function CreditSummary() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   // In a real app, these would come from context or props
@@ -43,7 +44,7 @@ export default function CreditSummary() {
   const creditTypeLabel = hasInsurance ? 'Protegido (con seguro)' : 'Esencial (sin seguro)'
 
   const summaryRows = [
-    { label: 'Tipo de credito', value: creditTypeLabel },
+    { label: 'Tipo de crédito', value: creditTypeLabel },
     { label: 'Monto solicitado', value: `$${amount.toLocaleString('es-MX')}` },
     { label: 'Comision por apertura', value: `$${commission.toLocaleString('es-MX')}` },
     { label: 'Monto a recibir', value: `$${netAmount.toLocaleString('es-MX')}`, highlight: true },
@@ -54,6 +55,7 @@ export default function CreditSummary() {
   ]
 
   const handleContinue = async () => {
+    setIsSubmitting(true)
     try {
       await updateClientData({
         pii: {
@@ -68,6 +70,8 @@ export default function CreditSummary() {
           ? err.message
           : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
       )
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -75,7 +79,7 @@ export default function CreditSummary() {
     <WrapperCard>
       <div className="flex flex-col gap-2">
         <TitleCard>
-          Resumen del credito
+          Resumen del crédito
         </TitleCard>
         <SubtitleCard>
           Revisa todos los detalles antes de continuar con tu solicitud.
@@ -95,7 +99,7 @@ export default function CreditSummary() {
         ))}
       </div>
 
-      {/* Amortization table */}
+      {/*
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">Tabla de amortizacion</p>
         <div className="rounded-2xl border border-border overflow-hidden">
@@ -104,7 +108,6 @@ export default function CreditSummary() {
               <span key={h} className="text-xs font-medium text-muted-foreground text-right first:text-left">{h}</span>
             ))}
           </div>
-          {/* Rows - scrollable */}
           <div className="max-h-48 overflow-y-auto divide-y divide-border">
             {rows.map((row) => (
               <div key={row.period} className="grid grid-cols-4 px-3 py-2.5 hover:bg-secondary/30 transition">
@@ -117,13 +120,19 @@ export default function CreditSummary() {
           </div>
         </div>
       </div>
+     */}
 
       <div className="flex flex-col gap-3">
-        <ButtonCard onClick={handleContinue}>
-          Continuar con mi credito
+        <ButtonCard
+          onClick={handleContinue}
+          disabled={isSubmitting}
+          loading={isSubmitting}
+        >
+          Continuar con mi crédito
         </ButtonCard>
         <ButtonCard
           variant="secondary"
+          disabled={isSubmitting}
           onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
         >
           Regresar

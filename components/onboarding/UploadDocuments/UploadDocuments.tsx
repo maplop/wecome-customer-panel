@@ -56,6 +56,8 @@ interface StoredDocumentValue {
   url?: string
 }
 
+type DocumentsStateMap = Record<string, UploadedDocumentState>
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -84,6 +86,7 @@ function normalizeStoredDocumentValue(
   if (typeof item === 'string') {
     const cleanUrl = item.trim()
     if (!cleanUrl) return null
+
     return {
       active: true,
       metadata: {},
@@ -158,6 +161,40 @@ async function resolveSignedUrl(url: string): Promise<string> {
   }
 }
 
+function buildDocumentsPiiPayload(
+  docsMap: DocumentsStateMap,
+  currentStep?: string,
+): Record<string, unknown> {
+  const piiPayload: Record<string, unknown> = {
+    ine: [],
+    comprobante_de_domicilio: [],
+    recibo_de_nomina_1: [],
+    recibo_de_nomina_2: [],
+    recibo_de_nomina_3: [],
+  }
+
+  DOCUMENT_TYPES.forEach((doc) => {
+    const item = docsMap[doc.id]
+    if (!item?.value?.length) return
+
+    if (doc.piiKey === 'ine') {
+      const current = Array.isArray(piiPayload.ine)
+        ? (piiPayload.ine as UploadedDocumentValue[])
+        : []
+      piiPayload.ine = [...current, ...item.value]
+      return
+    }
+
+    piiPayload[doc.piiKey] = item.value
+  })
+
+  if (currentStep) {
+    piiPayload.current_step = currentStep
+  }
+
+  return piiPayload
+}
+
 export default function UploadDocuments() {
   const router = useRouter()
   const client = useClientDataStore((state) => state.client)
@@ -168,6 +205,7 @@ export default function UploadDocuments() {
   const [uploading, setUploading] = useState<string | null>(null)
   const [loadingExistingDocs, setLoadingExistingDocs] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [removingDocumentId, setRemovingDocumentId] = useState<string | null>(null)
   const [submitProgress, setSubmitProgress] = useState(0)
   const [submitError, setSubmitError] = useState('')
   const [hydratedFromPii, setHydratedFromPii] = useState(false)
@@ -300,11 +338,35 @@ export default function UploadDocuments() {
   }
 
   const removeDocument = (docId: string) => {
-    setDocuments((d) => {
-      const nextDocs = { ...d }
-      delete nextDocs[docId]
-      return nextDocs
-    })
+    const persistRemoval = async () => {
+      if (removingDocumentId || isSubmitting) return
+
+      const previousDocuments = documents
+      const nextDocuments = { ...previousDocuments }
+      delete nextDocuments[docId]
+
+      setSubmitError('')
+      setErrors((e) => ({ ...e, [docId]: '' }))
+      setDocuments(nextDocuments)
+      setRemovingDocumentId(docId)
+
+      try {
+        await updateClientData({
+          pii: buildDocumentsPiiPayload(nextDocuments),
+        })
+      } catch (error) {
+        setDocuments(previousDocuments)
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : 'No se pudo eliminar el documento. Intenta nuevamente.',
+        )
+      } finally {
+        setRemovingDocumentId(null)
+      }
+    }
+
+    void persistRemoval()
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -327,21 +389,10 @@ export default function UploadDocuments() {
       setSubmitProgress(0)
       setSubmitError('')
 
-      const piiPayload: Record<string, unknown> = {}
-      DOCUMENT_TYPES.forEach((doc) => {
-        const item = documents[doc.id]
-        if (item?.value?.length) {
-          if (doc.piiKey === 'ine') {
-            const current = Array.isArray(piiPayload.ine)
-              ? (piiPayload.ine as UploadedDocumentValue[])
-              : []
-            piiPayload.ine = [...current, ...item.value]
-          } else {
-            piiPayload[doc.piiKey] = item.value
-          }
-        }
-      })
-      piiPayload.current_step = ROUTES.ONBOARDING.FINANCIAL_DATA
+      const piiPayload = buildDocumentsPiiPayload(
+        documents,
+        ROUTES.ONBOARDING.FINANCIAL_DATA,
+      )
 
       await updateClientData(
         {
@@ -406,7 +457,7 @@ export default function UploadDocuments() {
             error={errors[doc.id]}
             uploading={uploading === doc.id}
             loadingExisting={Boolean(loadingExistingDocs[doc.id])}
-            disabled={Boolean(uploading) || isSubmitting || Boolean(loadingExistingDocs[doc.id])}
+            disabled={Boolean(uploading) || isSubmitting || Boolean(removingDocumentId) || Boolean(loadingExistingDocs[doc.id])}
             onFileChange={handleFileChange}
             onRemove={removeDocument}
           />
@@ -429,14 +480,14 @@ export default function UploadDocuments() {
           {activeTab === 1 ? (
             <ButtonCard
               onClick={() => setActiveTab(2)}
-              disabled={!tab1Complete || Boolean(uploading) || isSubmitting}
+              disabled={!tab1Complete || Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
             >
               Siguiente
             </ButtonCard>
           ) : (
             <ButtonCard
               submit
-              disabled={!allRequiredUploaded || Boolean(uploading) || isSubmitting}
+              disabled={!allRequiredUploaded || Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
               loading={isSubmitting}
               loadingText="Guardando..."
             >
@@ -446,7 +497,7 @@ export default function UploadDocuments() {
 
           <ButtonCard
             variant="secondary"
-            disabled={Boolean(uploading) || isSubmitting}
+            disabled={Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
             onClick={activeTab === 2
               ? () => setActiveTab(1)
               : () => router.push(ROUTES.ONBOARDING.PERSONAL_DATA)}
