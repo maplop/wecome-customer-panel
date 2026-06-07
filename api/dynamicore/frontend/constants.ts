@@ -48,6 +48,8 @@ export const SERVICES = {
   GET_TRANSACTIONS: "/private/accounts/movements",
   GET_DATE_PAYEMENT: "/marketplace/apps/mgiver/calculate_date",
 
+  JUMIO_VERIFICATION: "/marketplace/apps/jumio",
+
   GET_CABLE: "/private/accounts/get_cable",
   USERS_WEBCLIENTS: API_ENDPOINTS.AUTH.REGISTER,
 };

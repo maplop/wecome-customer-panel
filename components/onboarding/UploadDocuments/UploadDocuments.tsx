@@ -8,6 +8,7 @@ import { Check } from '@/lib/icons'
 import DocumentUploadField from './DocumentUploadField'
 import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
+import { verifyIneWithJumio } from '@/services/onboarding/jumio'
 import { useClientDataStore } from '@/stores/client-data-store'
 
 interface DocumentType {
@@ -24,15 +25,18 @@ const DOCUMENT_TYPES: DocumentType[] = [
   { id: 'ine-frontal', piiKey: 'ine', valueName: 'ine_frontal', label: 'INE (Parte frontal)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
   { id: 'ine-trasera', piiKey: 'ine', valueName: 'ine_trasera', label: 'INE (Parte trasera)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
   { id: 'comprobante-domicilio', piiKey: 'comprobante_de_domicilio', valueName: 'comprobante_de_domicilio', label: 'Comprobante de domicilio', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
-  { id: 'recibo-nomina-1', piiKey: 'recibo_de_nomina_1', valueName: 'recibo_de_nomina_1', label: 'Recibo de nomina (1er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
-  { id: 'recibo-nomina-2', piiKey: 'recibo_de_nomina_2', valueName: 'recibo_de_nomina_2', label: 'Recibo de nomina (2do mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
-  { id: 'recibo-nomina-3', piiKey: 'recibo_de_nomina_3', valueName: 'recibo_de_nomina_3', label: 'Recibo de nomina (3er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nómina-1', piiKey: 'recibo_de_nomina_1', valueName: 'recibo_de_nomina_1', label: 'Recibo de nómina (1er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nómina-2', piiKey: 'recibo_de_nomina_2', valueName: 'recibo_de_nomina_2', label: 'Recibo de nómina (2do mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nómina-3', piiKey: 'recibo_de_nomina_3', valueName: 'recibo_de_nomina_3', label: 'Recibo de nómina (3er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
 ]
 
 const TABS = [
-  { id: 1, label: 'Identificacion' },
-  { id: 2, label: 'Recibos de nomina' },
+  { id: 1, label: 'Identificación' },
+  { id: 2, label: 'Recibos de nómina' },
 ]
+
+const INE_FRONT_DOC_ID = 'ine-frontal'
+const INE_BACK_DOC_ID = 'ine-trasera'
 
 interface UploadedDocumentValue {
   active: boolean
@@ -57,6 +61,14 @@ interface StoredDocumentValue {
 }
 
 type DocumentsStateMap = Record<string, UploadedDocumentState>
+
+function isValidUrl(url: string): boolean {
+  const trimmed = url.trim()
+  if (!trimmed) return false
+  if (trimmed.startsWith('[') || trimmed.startsWith('{')) return false
+  if (trimmed === 'null' || trimmed === 'undefined') return false
+  return true
+}
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -85,8 +97,7 @@ function normalizeStoredDocumentValue(
 
   if (typeof item === 'string') {
     const cleanUrl = item.trim()
-    if (!cleanUrl) return null
-
+    if (!isValidUrl(cleanUrl)) return null
     return {
       active: true,
       metadata: {},
@@ -100,7 +111,7 @@ function normalizeStoredDocumentValue(
 
   const raw = item as StoredDocumentValue
   const cleanUrl = typeof raw.url === 'string' ? raw.url.trim() : ''
-  if (!cleanUrl) return null
+  if (!isValidUrl(cleanUrl)) return null
 
   return {
     active: raw.active ?? true,
@@ -109,6 +120,23 @@ function normalizeStoredDocumentValue(
     uploaded: typeof raw.uploaded === 'number' ? raw.uploaded : Date.now(),
     url: cleanUrl,
   }
+}
+
+function parseFieldValue(raw: unknown): unknown[] {
+  if (Array.isArray(raw)) return raw
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        return Array.isArray(parsed) ? parsed : [parsed]
+      } catch {
+        return trimmed ? [trimmed] : []
+      }
+    }
+    return trimmed ? [trimmed] : []
+  }
+  return raw != null ? [raw] : []
 }
 
 function buildInitialDocuments(
@@ -120,7 +148,7 @@ function buildInitialDocuments(
 
   DOCUMENT_TYPES.forEach((doc) => {
     const rawFieldValue = pii[doc.piiKey]
-    const values = Array.isArray(rawFieldValue) ? rawFieldValue : [rawFieldValue]
+    const values = parseFieldValue(rawFieldValue)
     const normalizedValues = values
       .map((item) => normalizeStoredDocumentValue(item, doc.valueName))
       .filter((item): item is UploadedDocumentValue => Boolean(item && item.active))
@@ -177,15 +205,19 @@ function buildDocumentsPiiPayload(
     const item = docsMap[doc.id]
     if (!item?.value?.length) return
 
+    // Filtrar valores con URL inválida antes de guardar
+    const validValues = item.value.filter((v) => isValidUrl(v.url))
+    if (!validValues.length) return
+
     if (doc.piiKey === 'ine') {
       const current = Array.isArray(piiPayload.ine)
         ? (piiPayload.ine as UploadedDocumentValue[])
         : []
-      piiPayload.ine = [...current, ...item.value]
+      piiPayload.ine = [...current, ...validValues]
       return
     }
 
-    piiPayload[doc.piiKey] = item.value
+    piiPayload[doc.piiKey] = validValues
   })
 
   if (currentStep) {
@@ -206,6 +238,7 @@ export default function UploadDocuments() {
   const [loadingExistingDocs, setLoadingExistingDocs] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [removingDocumentId, setRemovingDocumentId] = useState<string | null>(null)
+  const [jumioFailures, setJumioFailures] = useState<Record<string, boolean>>({})
   const [submitProgress, setSubmitProgress] = useState(0)
   const [submitError, setSubmitError] = useState('')
   const [hydratedFromPii, setHydratedFromPii] = useState(false)
@@ -294,6 +327,9 @@ export default function UploadDocuments() {
 
     setSubmitError('')
     setErrors((e) => ({ ...e, [docId]: '' }))
+    if (docId === INE_FRONT_DOC_ID || docId === INE_BACK_DOC_ID) {
+      setJumioFailures((prev) => ({ ...prev, [docId]: false }))
+    }
     setUploading(docId)
 
     try {
@@ -347,6 +383,9 @@ export default function UploadDocuments() {
 
       setSubmitError('')
       setErrors((e) => ({ ...e, [docId]: '' }))
+      if (docId === INE_FRONT_DOC_ID || docId === INE_BACK_DOC_ID) {
+        setJumioFailures((prev) => ({ ...prev, [docId]: false }))
+      }
       setDocuments(nextDocuments)
       setRemovingDocumentId(docId)
 
@@ -388,6 +427,48 @@ export default function UploadDocuments() {
       setIsSubmitting(true)
       setSubmitProgress(0)
       setSubmitError('')
+
+      const ineFrontDoc = documents[INE_FRONT_DOC_ID]
+      const ineBackDoc = documents[INE_BACK_DOC_ID]
+      const clientRecord = (client ?? {}) as Record<string, unknown>
+      const entities = (clientRecord.entities ?? {}) as Record<string, unknown>
+
+      {/*
+      const jumioClientId = String(
+        entities.peopleId ?? clientRecord.id ?? clientRecord.external_id ?? '',
+      )
+
+      if (!jumioClientId) {
+        setSubmitError('No se encontro el identificador del cliente para validar INE.')
+        return
+      }
+
+      const jumioResult = await verifyIneWithJumio({
+        clientId: jumioClientId,
+        frontImage: String(ineFrontDoc?.value?.[0]?.url || ''),
+        backImage: String(ineBackDoc?.value?.[0]?.url || ''),
+      })
+
+      if (!jumioResult.valid) {
+        setActiveTab(1)
+        setJumioFailures({
+          [INE_FRONT_DOC_ID]: true,
+          [INE_BACK_DOC_ID]: true,
+        })
+        setErrors((prev) => ({
+          ...prev,
+          [INE_FRONT_DOC_ID]: 'No se pudo validar el INE. Verifica que las fotos sean legibles.',
+          [INE_BACK_DOC_ID]: 'No se pudo validar el INE. Verifica que las fotos sean legibles.',
+        }))
+        setSubmitError('No se pudo validar el INE. Intenta subirlo nuevamente.')
+        return
+      }
+
+      setJumioFailures({
+        [INE_FRONT_DOC_ID]: false,
+        [INE_BACK_DOC_ID]: false,
+      })
+        */}
 
       const piiPayload = buildDocumentsPiiPayload(
         documents,
@@ -454,7 +535,7 @@ export default function UploadDocuments() {
             required={doc.required}
             acceptedTypes={doc.acceptedTypes}
             fileData={documents[doc.id]}
-            error={errors[doc.id]}
+            error={errors[doc.id] || (jumioFailures[doc.id] ? 'No se pudo validar el INE.' : '')}
             uploading={uploading === doc.id}
             loadingExisting={Boolean(loadingExistingDocs[doc.id])}
             disabled={Boolean(uploading) || isSubmitting || Boolean(removingDocumentId) || Boolean(loadingExistingDocs[doc.id])}
@@ -464,17 +545,6 @@ export default function UploadDocuments() {
         ))}
 
         {submitError && <p className="text-sm text-destructive">{submitError}</p>}
-        {isSubmitting && (
-          <div className="flex flex-col gap-1">
-            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-              <div
-                className="h-full rounded-full bg-brand-accent transition-all duration-200"
-                style={{ width: `${submitProgress}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground text-right">{submitProgress}%</p>
-          </div>
-        )}
 
         <div className="flex flex-col gap-3">
           {activeTab === 1 ? (
@@ -489,9 +559,9 @@ export default function UploadDocuments() {
               submit
               disabled={!allRequiredUploaded || Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
               loading={isSubmitting}
-              loadingText="Guardando..."
+              loadingText="Subiendo documentos..."
             >
-              Completar
+              Subir documentos
             </ButtonCard>
           )}
 
@@ -502,7 +572,7 @@ export default function UploadDocuments() {
               ? () => setActiveTab(1)
               : () => router.push(ROUTES.ONBOARDING.PERSONAL_DATA)}
           >
-            {activeTab === 2 ? 'Atras' : 'Regresar'}
+            {activeTab === 2 ? 'Regresar' : 'Regresar'}
           </ButtonCard>
         </div>
       </form>
