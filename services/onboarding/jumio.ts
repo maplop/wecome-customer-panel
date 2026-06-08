@@ -23,6 +23,8 @@ interface VerifyIneWithJumioResult {
   data: unknown;
 }
 
+type SignedUrlLike = string | { url?: unknown };
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -57,6 +59,35 @@ function toLowerText(value: unknown): string {
     .toLowerCase();
 }
 
+function normalizeSignedUrl(input: SignedUrlLike, fallback: string): string {
+  if (typeof input === "string" && input.trim()) return input;
+
+  if (input && typeof input === "object" && "url" in input) {
+    const value = String(input.url ?? "").trim();
+    if (value) return value;
+  }
+
+  return fallback;
+}
+
+function stripDataUrlPrefix(dataUrl: string): string {
+  const commaIndex = dataUrl.indexOf(",");
+  return commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : dataUrl;
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result ?? "");
+      resolve(stripDataUrlPrefix(dataUrl));
+    };
+    reader.onerror = () =>
+      reject(new Error("No se pudo convertir la imagen a base64."));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export function shouldRetryJumio(message: unknown): boolean {
   const text = toLowerText(message);
   return text.includes("timed out") || text.includes("timeout");
@@ -70,6 +101,7 @@ export function extractJumioMessage(source: unknown): string {
     const record = source as Record<string, unknown>;
     const directMessage =
       record.message ?? record.msg ?? record.error ?? record.detail;
+
     if (typeof directMessage === "string" && directMessage.trim()) {
       return directMessage.trim();
     }
@@ -80,6 +112,19 @@ export function extractJumioMessage(source: unknown): string {
   }
 
   return "";
+}
+
+export function getActiveDocumentUrl(
+  sourceUrl: string,
+  signedCandidate: SignedUrlLike,
+): string {
+  const raw = sourceUrl.trim();
+  if (raw) return raw;
+
+  const signed = normalizeSignedUrl(signedCandidate, "");
+  if (signed) return signed;
+
+  throw new Error("No se recibio la imagen del documento.");
 }
 
 export async function postJumioWithRetry(
@@ -120,94 +165,68 @@ export async function postJumioWithRetry(
   throw lastError;
 }
 
-function stripDataUrlPrefix(dataUrl: string): string {
-  const commaIndex = dataUrl.indexOf(",");
-  return commaIndex >= 0 ? dataUrl.slice(commaIndex + 1) : dataUrl;
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result ?? "");
-      resolve(stripDataUrlPrefix(dataUrl));
-    };
-    reader.onerror = () =>
-      reject(new Error("No se pudo convertir la imagen a base64."));
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function resolveImageInputToBase64(image: string): Promise<string> {
-  const trimmed = image.trim();
-  if (!trimmed) {
-    throw new Error("No se recibió la imagen del documento.");
+async function fetchUrlAsBase64(url: string): Promise<string> {
+  if (url.startsWith("data:")) {
+    return stripDataUrlPrefix(url);
   }
 
-  if (trimmed.startsWith("data:")) {
-    return stripDataUrlPrefix(trimmed);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`No se pudo descargar la imagen (${response.status}).`);
   }
 
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    try {
-      return await fetchUrlAsBase64Compressed(trimmed);
-    } catch {
-      const signed = await getSignedUrl(trimmed);
-      const signedUrl =
-        typeof signed === "string"
-          ? signed
-          : String((signed as { url?: unknown })?.url || trimmed);
-      return fetchUrlAsBase64Compressed(signedUrl);
-    }
-  }
-
-  const signed = await getSignedUrl(trimmed);
-  const signedUrl =
-    typeof signed === "string"
-      ? signed
-      : String((signed as { url?: unknown })?.url || trimmed);
-  return fetchUrlAsBase64Compressed(signedUrl);
+  const blob = await response.blob();
+  return blobToBase64(blob);
 }
 
 export async function verifyIneWithJumio(
   input: VerifyIneWithJumioInput,
 ): Promise<VerifyIneWithJumioResult> {
-  const [frontBase64, backBase64] = await Promise.all([
-    resolveImageInputToBase64(input.frontImage),
-    resolveImageInputToBase64(input.backImage),
+  // 1) Obtener URL firmada inicial.
+  const [frontSignedInitial, backSignedInitial] = await Promise.all([
+    getSignedUrl(input.frontImage),
+    getSignedUrl(input.backImage),
   ]);
 
+  // 2) Obtener URL activa por imagen.
+  const frontActiveUrl = getActiveDocumentUrl(
+    input.frontImage,
+    frontSignedInitial,
+  );
+  const backActiveUrl = getActiveDocumentUrl(input.backImage, backSignedInitial);
+
+  // 3) Verificar ambas imagenes.
+  if (!frontActiveUrl || !backActiveUrl) {
+    throw new Error("No se recibieron ambas imagenes del documento.");
+  }
+
+  // 4) Obtener URL firmada con 300 segundos.
+  const [frontSigned300Raw, backSigned300Raw] = await Promise.all([
+    getSignedUrl(frontActiveUrl, 300),
+    getSignedUrl(backActiveUrl, 300),
+  ]);
+  const frontSigned300 = normalizeSignedUrl(frontSigned300Raw, frontActiveUrl);
+  const backSigned300 = normalizeSignedUrl(backSigned300Raw, backActiveUrl);
+
+  // 5) Descargar desde S3 y convertir a base64.
+  const [frontBase64, backBase64] = await Promise.all([
+    fetchUrlAsBase64(frontSigned300),
+    fetchUrlAsBase64(backSigned300),
+  ]);
+
+  // 6) Reintentos con delay + POST a Jumio.
   const response = await postJumioWithRetry({
     client: input.clientId,
     front_image_b64: frontBase64,
     back_image_b64: backBase64,
   });
 
+  // 7) Validar respuesta.
   const firstLevel = extractEnvelopeData<unknown>(response);
   const jumioData = extractNestedData(firstLevel) as JumioVerificationData;
+
   return {
     valid: jumioData?.valid === true,
     data: jumioData,
   };
-}
-
-async function fetchUrlAsBase64Compressed(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const MAX_WIDTH = 1200;
-      const scale = Math.min(1, MAX_WIDTH / img.width);
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return reject(new Error("Canvas no disponible"));
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const base64 = canvas.toDataURL("image/jpeg", 0.75).split(",")[1];
-      resolve(base64);
-    };
-    img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
-    img.src = url;
-  });
 }

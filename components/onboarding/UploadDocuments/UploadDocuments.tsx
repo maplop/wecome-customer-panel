@@ -433,7 +433,7 @@ export default function UploadDocuments() {
       const clientRecord = (client ?? {}) as Record<string, unknown>
       const entities = (clientRecord.entities ?? {}) as Record<string, unknown>
 
-      {/*
+
       const jumioClientId = String(
         entities.peopleId ?? clientRecord.id ?? clientRecord.external_id ?? '',
       )
@@ -468,7 +468,7 @@ export default function UploadDocuments() {
         [INE_FRONT_DOC_ID]: false,
         [INE_BACK_DOC_ID]: false,
       })
-        */}
+
 
       const piiPayload = buildDocumentsPiiPayload(
         documents,
