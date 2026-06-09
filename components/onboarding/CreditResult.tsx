@@ -1,15 +1,40 @@
 'use client'
+import { useState } from 'react'
 import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 export default function CreditResult() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const salary = 3500
   const maxCredit = salary * 3
-  const monthlyRate = 0.028
+
+  const handleContinue = async () => {
+    setIsSubmitting(true)
+    try {
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.CREDIT_SELECTION,
+        },
+      })
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+
+    router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)
+  }
+
   return (
     <WrapperCard>
       <div className="flex flex-col gap-2">
@@ -55,16 +80,20 @@ export default function CreditResult() {
 
       <div className="flex flex-col gap-3">
         <ButtonCard
-          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
+          onClick={handleContinue}
+          disabled={isSubmitting}
+          loading={isSubmitting}
         >
-          Continuar
+          Continuar con mi crédito
         </ButtonCard>
         <ButtonCard
           variant="secondary"
+          disabled={isSubmitting}
           onClick={() => router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)}
         >
           Regresar
         </ButtonCard>
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </WrapperCard>
   )

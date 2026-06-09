@@ -1,15 +1,37 @@
 'use client'
+import { useState } from 'react'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 
 export default function CreditSuccess() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const onRestart = () => {
-    router.push(ROUTES.DASHBOARD.ROOT)
+  const handleContinue = async () => {
+    setIsSubmitting(true)
+    try {
+      setError('')
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.DASHBOARD.ROOT,
+        },
+      })
+      router.push(ROUTES.DASHBOARD.ROOT)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    }
+    finally {
+      setIsSubmitting(false)
+    }
   }
 
   const amount = 15000
@@ -54,10 +76,13 @@ export default function CreditSuccess() {
       </div>
 
       <ButtonCard
-        onClick={onRestart}
+        onClick={handleContinue}
+        loading={isSubmitting}
+        disabled={isSubmitting}
       >
         Ver solicitud
       </ButtonCard>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </WrapperCard>
   )
 }

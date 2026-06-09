@@ -5,6 +5,7 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
+import { updateClientData } from '@/services/client-data'
 
 const MONTHLY_RATE = 0.028
 const COMMISSION_RATE = 0.02
@@ -13,6 +14,7 @@ export default function FinalConfirm() {
   const router = useRouter()
 
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const amount = 15000
   const term = 12
@@ -28,10 +30,25 @@ export default function FinalConfirm() {
   const formattedStart = startDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const handleConfirm = async () => {
-    setLoading(true)
-    await new Promise(r => setTimeout(r, 1200))
-    setLoading(false)
-    router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)
+    try {
+      setLoading(true)
+      setError('')
+      await updateClientData({
+        pii: {
+          current_step: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
+        },
+      })
+      await new Promise(r => setTimeout(r, 1200))
+      router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   const details = [
@@ -86,6 +103,7 @@ export default function FinalConfirm() {
         >
           Regresar
         </ButtonCard>
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </WrapperCard>
   )

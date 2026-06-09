@@ -44,10 +44,9 @@ export function AppShell({
   }
 
   const userEmail = useMemo(() => {
-    const people = session?.data?.people
-    const pii = people?.pii
-    return pii?.email || people?.username || ''
-  }, [session?.data?.people])
+    const userName = session.client?.pii.email || `${session.client?.pii.name} ${session.client?.pii.apellido_paterno}`.trim() || 'Mi cuenta'
+    return userName
+  }, [session?.client])
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -55,7 +55,7 @@ export async function getClientData(
 
       if (retries === MAX_RETRIES) {
         throw new Error(
-          "No se pudo obtener toda la informacion del cliente despues de varios intentos.",
+          "No se pudo obtener toda la información del cliente despues de varios intentos.",
         );
       }
 
@@ -63,5 +63,5 @@ export async function getClientData(
     }
   }
 
-  throw new Error("No se pudo obtener la informacion del cliente.");
+  throw new Error("No se pudo obtener la información del cliente.");
 }

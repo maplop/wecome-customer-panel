@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
-import { useClientProfileStore } from '@/stores/client-profile-store'
+import { useClientDataStore } from "@/stores/client-data-store";
 import { formatCurrencyMx, formatDateLongEs, formatMxPhoneNumber } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '@/components/common'
 
@@ -40,7 +40,9 @@ function DataSection({ title, items }: DataSectionProps) {
 
 export default function Profile() {
   const router = useRouter()
-  const { data } = useClientProfileStore()
+  const { client } = useClientDataStore()
+
+  const data = client?.pii
 
   if (!data) {
     return (
@@ -59,39 +61,39 @@ export default function Profile() {
     )
   }
 
-  const nombreCompleto = `${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}`.trim()
-  const initials = `${data.nombres?.[0] ?? ''}${data.primer_apellido?.[0] ?? ''}`.toUpperCase() || 'U'
+  const nombreCompleto = `${data.name} ${data.apellido_paterno} ${data.motherlastname}`.trim()
+  const initials = `${data.name?.[0] ?? ''}${data.apellido_paterno?.[0] ?? ''}`.toUpperCase() || 'U'
 
   const personalSection: DataItemProps[] = [
-    { label: 'Nombres', value: data.nombres },
-    { label: 'Primer apellido', value: data.primer_apellido },
-    { label: 'Segundo apellido', value: data.segundo_apellido },
-    { label: 'Fecha de nacimiento', value: formatDateLongEs(data.fecha_de_nacimiento) },
-    { label: 'Edad', value: `${data.edad} años` },
-    { label: 'Nacionalidad', value: data.nacionalidad },
-    { label: 'Régimen conyugal', value: data._regimen_conyugal },
+    { label: 'Nombres', value: data.name },
+    { label: 'Primer apellido', value: data.apellido_paterno },
+    { label: 'Segundo apellido', value: data.motherlastname },
+    { label: 'Fecha de nacimiento', value: formatDateLongEs(data.birthdate) },
+    //{ label: 'Edad', value: `${data.ag} años` },
+    { label: 'Nacionalidad', value: data.nationality },
+    //{ label: 'Régimen conyugal', value: data._regimen_conyugal },
   ]
 
   const contactSection: DataItemProps[] = [
-    { label: 'Correo electrónico', value: data.correo_electronico },
-    { label: 'Teléfono', value: formatMxPhoneNumber(data.telefono) },
-    { label: 'Datos de contacto', value: data.datos_de_contacto },
-    { label: 'Domicilio fiscal y particular', value: data.domicilio_fiscal_y_particular },
+    { label: 'Correo electrónico', value: data.email },
+    { label: 'Teléfono', value: formatMxPhoneNumber(data.phone) },
+    // { label: 'Datos de contacto', value: data.con },
+    //{ label: 'Domicilio fiscal y particular', value: data.domicilio_fiscal_y_particular },
   ]
 
   const officialSection: DataItemProps[] = [
     { label: 'CURP', value: data.curp },
     { label: 'RFC', value: data.rfc },
-    { label: 'Tipo de identificación oficial', value: data.tipo_identificacion_oficial },
-    { label: 'Número de identificación oficial', value: data.numero_identificacion_oficial },
+    { label: 'Tipo de identificación oficial', value: data.tipo_de_identificacion },
+    { label: 'Número de identificación oficial', value: data.numero_de_identificacion },
   ]
 
   const jobSection: DataItemProps[] = [
-    { label: 'Empresa', value: data.empresa },
-    { label: 'Ocupación', value: data.ocupacion },
+    { label: 'Empresa', value: data.empresa_donde_trabaja },
+    { label: 'Ocupación', value: data.cargo_en_empresa },
     { label: 'Actividad económica', value: data.actividad_economica },
-    { label: 'Nivel de estudios', value: data.nivel_de_estudios },
-    { label: 'Antigüedad', value: data.antiguedad },
+    { label: 'Nivel de estudios', value: data.nivel_de_estudio },
+    { label: 'Antigüedad', value: data.antiguedad_laboral___empresarial },
     { label: 'Salario', value: `${formatCurrencyMx(data.salario)} MXN` },
   ]
 
@@ -110,7 +112,7 @@ export default function Profile() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{nombreCompleto}</p>
-              <p className="text-xs text-muted-foreground truncate">{data.correo_electronico}</p>
+              <p className="text-xs text-muted-foreground truncate">{data.email}</p>
             </div>
           </div>
 

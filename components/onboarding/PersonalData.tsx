@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useClientProfileStore } from '@/stores/client-profile-store'
+import { useClientDataStore } from '@/stores'
 import { formatMxPhoneNumber, formatCurrencyMx } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
@@ -27,9 +27,10 @@ export default function PersonalData() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const { data } = useClientProfileStore()
+  const { client } = useClientDataStore()
+  const clientData = client?.pii
 
-  if (!data) {
+  if (!clientData) {
     return (
       <div>
         <div className="flex flex-col gap-2">
@@ -51,12 +52,10 @@ export default function PersonalData() {
     )
   }
 
-  const nombreCompleto = `${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}`.trim()
-  const nombresSeparados = data.nombres.trim().split(/\s+/).filter(Boolean)
-  const primerNombre = nombresSeparados[0] ?? ' '
-  const segundoNombre = nombresSeparados.length > 1
-    ? nombresSeparados.slice(1).join(' ')
-    : ' '
+  const nombreCompleto = `${clientData?.name} ${clientData.apellido_paterno} ${clientData.motherlastname}`.trim()
+  const edad = clientData.birthdate
+    ? new Date().getFullYear() - new Date(clientData.birthdate).getFullYear()
+    : ''
 
   const handleContinue = async () => {
     try {
@@ -65,29 +64,8 @@ export default function PersonalData() {
 
       await updateClientData({
         pii: {
-          name: primerNombre,
-          secondname: segundoNombre,
-          apellido_paterno: data.primer_apellido,
-          motherlastname: data.segundo_apellido,
-          email: data.correo_electronico,
-          phone: data.telefono,
-          curp: data.curp,
-          rfc: data.rfc,
-          birthdate: data.fecha_de_nacimiento,
-          // age: data.edad,
-          nationality: data.nacionalidad,
-          //occupation: data.ocupacion,
-          //company: data.empresa,
-          //salary: data.salario,
-          antiguedad_laboral___empresarial: data.antiguedad,
-          actividad_economica: data.actividad_economica,
-          nivel_de_estudio: data.nivel_de_estudios,
-          numero_de_identificacion: data.numero_identificacion_oficial,
-          tipo_de_identificacion: data.tipo_identificacion_oficial,
-          //fiscal_and_home_address: data.domicilio_fiscal_y_particular,
-          //contact_data: data.datos_de_contacto,
+          current_step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
         },
-        step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
       })
 
       router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)
@@ -114,19 +92,15 @@ export default function PersonalData() {
 
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
         <DataRow label="Nombre completo" value={nombreCompleto} />
-        <DataRow label="RFC" value={data.rfc} />
-        <DataRow label="CURP" value={data.curp} />
-
-        <DataRow label="Edad" value={`${data.edad} años`} />
-        <DataRow label="Nacionalidad" value={data.nacionalidad} />
-
-        <DataRow label="Empresa" value={data.empresa} />
-        <DataRow label="Ocupación" value={data.ocupacion} />
-        <DataRow label="Salario" value={`${formatCurrencyMx(data.salario)} MXN`} />
-        <DataRow label="Antigüedad" value={data.antiguedad} />
-
-        <DataRow label="Teléfono" value={formatMxPhoneNumber(data.telefono)} />
-        <DataRow label="Correo electrónico" value={data.correo_electronico} />
+        <DataRow label="RFC" value={clientData.rfc} />
+        <DataRow label="CURP" value={clientData.curp} />
+        <DataRow label="Nacionalidad" value={clientData.nationality} />
+        <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
+        <DataRow label="Ocupación" value={clientData.cargo_en_empresa} />
+        <DataRow label="Salario" value={`${formatCurrencyMx(clientData.salario)} MXN`} />
+        <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial} />
+        <DataRow label="Teléfono" value={formatMxPhoneNumber(clientData.phone)} />
+        <DataRow label="Correo electrónico" value={clientData.email} />
       </div>
 
       <InfoNote
@@ -143,14 +117,6 @@ export default function PersonalData() {
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Guardando...' : 'Continuar'}
-        </ButtonCard>
-
-        <ButtonCard
-          variant="secondary"
-          disabled={isSubmitting}
-          onClick={() => router.push(ROUTES.ONBOARDING.CREATE_ACCOUNT)}
-        >
-          Regresar
         </ButtonCard>
       </div>
     </WrapperCard>

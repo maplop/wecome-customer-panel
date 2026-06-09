@@ -208,7 +208,7 @@ export default function RecoverVerify() {
               <input
                 id="new-password"
                 type={showNewPassword ? 'text' : 'password'}
-                placeholder="Minimo 8 caracteres"
+                placeholder="Mínimo 8 caracteres"
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value)
