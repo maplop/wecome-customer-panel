@@ -1,4 +1,4 @@
-import { CreditCard, CheckCircle2 } from "lucide-react"
+import { CreditCard, CheckCircle2 } from '@/lib/icons'
 import type { ClientRequestRecord, ClientRequestData } from "@/types/client-request"
 
 export interface ClientRequestItemProps {
