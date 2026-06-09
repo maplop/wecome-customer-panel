@@ -50,6 +50,9 @@ export const SERVICES = {
 
   JUMIO_VERIFICATION: "/marketplace/apps/jumio",
 
+  NOTIFICATIONS_FORMS: "/private/notifications/forms",
+  NOTIFICATIONS_FORMS_DATA: "/private/notifications/forms_data",
+
   GET_CABLE: "/private/accounts/get_cable",
   USERS_WEBCLIENTS: API_ENDPOINTS.AUTH.REGISTER,
 };

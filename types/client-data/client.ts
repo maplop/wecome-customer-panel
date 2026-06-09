@@ -39,7 +39,6 @@ export interface ClientPiiType {
   birthstate: string;
   secondname: string;
   nationality: string;
-  current_step: string;
   dia_de_corte: string;
   forma_de_pago: string;
   monto_del_pago: string;

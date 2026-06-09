@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { useClientDataStore } from '@/stores'
-import { formatMxPhoneNumber, formatCurrencyMx } from '@/utils/formatters'
+import { formatMoney, formatMxPhoneNumber } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
 
 interface DataRowProps {
   label: string
@@ -58,17 +58,17 @@ export default function PersonalData() {
     : ''
 
   const handleContinue = async () => {
+    const nextStep = ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
+
     try {
       setIsSubmitting(true)
       setSubmitError(null)
 
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
-        },
+      await updateActiveRequestData({
+        paso_actual: nextStep,
       })
 
-      router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)
+      router.push(nextStep)
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -97,7 +97,7 @@ export default function PersonalData() {
         <DataRow label="Nacionalidad" value={clientData.nationality} />
         <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
         <DataRow label="Ocupación" value={clientData.cargo_en_empresa} />
-        <DataRow label="Salario" value={`${formatCurrencyMx(clientData.salario)} MXN`} />
+        <DataRow label="Salario" value={`${formatMoney(Number(clientData.salario))} MXN`} />
         <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial} />
         <DataRow label="Teléfono" value={formatMxPhoneNumber(clientData.phone)} />
         <DataRow label="Correo electrónico" value={clientData.email} />

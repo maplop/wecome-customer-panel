@@ -17,4 +17,5 @@ export {
   User,
   LogOut,
   SquareAsterisk,
+  CheckCircle2,
 } from "lucide-react";

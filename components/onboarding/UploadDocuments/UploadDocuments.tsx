@@ -10,6 +10,7 @@ import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { verifyIneWithJumio } from '@/services/onboarding/jumio'
 import { useClientDataStore } from '@/stores/client-data-store'
+import { updateActiveRequestData } from '@/services/client-requests'
 
 interface DocumentType {
   id: string
@@ -191,7 +192,6 @@ async function resolveSignedUrl(url: string): Promise<string> {
 
 function buildDocumentsPiiPayload(
   docsMap: DocumentsStateMap,
-  currentStep?: string,
 ): Record<string, unknown> {
   const piiPayload: Record<string, unknown> = {
     ine: [],
@@ -219,10 +219,6 @@ function buildDocumentsPiiPayload(
 
     piiPayload[doc.piiKey] = validValues
   })
-
-  if (currentStep) {
-    piiPayload.current_step = currentStep
-  }
 
   return piiPayload
 }
@@ -410,6 +406,7 @@ export default function UploadDocuments() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const nextStep = ROUTES.ONBOARDING.FINANCIAL_DATA
 
     const newErrors: Record<string, string> = {}
     DOCUMENT_TYPES.filter((d) => d.required).forEach((d) => {
@@ -425,7 +422,6 @@ export default function UploadDocuments() {
 
     try {
       setIsSubmitting(true)
-      setSubmitProgress(0)
       setSubmitError('')
 
       const ineFrontDoc = documents[INE_FRONT_DOC_ID]
@@ -469,23 +465,19 @@ export default function UploadDocuments() {
         [INE_BACK_DOC_ID]: false,
       })
 
-
-      const piiPayload = buildDocumentsPiiPayload(
-        documents,
-        ROUTES.ONBOARDING.FINANCIAL_DATA,
-      )
+      const piiPayload = buildDocumentsPiiPayload(documents)
 
       await updateClientData(
         {
           pii: piiPayload,
         },
-        {
-          onProgress: (progress) => setSubmitProgress(progress),
-        },
       )
-      setSubmitProgress(100)
 
-      router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
+      await updateActiveRequestData({
+        paso_actual: nextStep,
+      })
+
+      router.push(nextStep)
     } catch (error) {
       setSubmitError(
         error instanceof Error

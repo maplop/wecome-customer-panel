@@ -4,24 +4,27 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
+import { useClientRequestStore } from '@/stores'
 
 
 export default function CreditSuccess() {
+
+  const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
+
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   const handleContinue = async () => {
+    const nextStep = ROUTES.DASHBOARD.ROOT
     setIsSubmitting(true)
     try {
       setError('')
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.DASHBOARD.ROOT,
-        },
-      })
-      router.push(ROUTES.DASHBOARD.ROOT)
+
+      await updateActiveRequestData({ paso_actual: nextStep, })
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -34,7 +37,6 @@ export default function CreditSuccess() {
     }
   }
 
-  const amount = 15000
   return (
     <WrapperCard className="text-center">
       <div className="flex flex-col items-center gap-4">
@@ -49,7 +51,7 @@ export default function CreditSuccess() {
           </TitleCard>
           <SubtitleCard>
             Tu solicitud de crédito por{' '}
-            <strong className="text-foreground">${amount.toLocaleString('es-MX')} MXN</strong>{' '}
+            <strong className="text-foreground">{Number(activeRequest?.data.monto_solicitado).toLocaleString('es-MX')} MXN</strong>{' '}
             ha sido enviada a nuestro equipo y se encuentra en proceso de revisión
           </SubtitleCard>
         </div>

@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
+import { addRequest, updateActiveRequestData } from '@/services/client-requests'
 import { updateClientData } from '@/services/client-data'
 import { WrapperCard, ButtonCard, TitleCard, SubtitleCard, TogglePasswordVisibility } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
+import { useClientDataStore } from '@/stores/client-data-store'
+import { useClientRequestStore } from '@/stores/client-request-store'
 import { evaluatePasswordStrength } from '@/utils/password-strength'
 
 interface FormState {
@@ -15,6 +18,8 @@ interface FormState {
   password: string
   confirm: string
 }
+
+const DEFAULT_REQUEST_FORM_ID = '859'
 
 export default function CreateAccount() {
   const router = useRouter()
@@ -58,6 +63,8 @@ export default function CreateAccount() {
     : ''
 
   const handleSubmit = async (e: React.FormEvent) => {
+    const nextStep = ROUTES.ONBOARDING.PERSONAL_DATA
+
     e.preventDefault()
 
     const errs = validate()
@@ -76,6 +83,24 @@ export default function CreateAccount() {
         password: form.password,
         username: form.email,
       })
+
+      const createdClientId = Number(useClientDataStore.getState().client?.id || 0)
+      if (createdClientId > 0) {
+        const createdRequest = await addRequest({
+          form_id: DEFAULT_REQUEST_FORM_ID,
+          client: createdClientId,
+          enabled: 1,
+          data: {},
+        })
+
+        if (!createdRequest?.id) {
+          throw new Error('No se pudo crear la solicitud inicial del cliente.')
+        }
+
+        useClientRequestStore.getState().upsertRequest(createdRequest, true)
+      } else {
+        throw new Error('No se pudo resolver el cliente para crear la solicitud inicial.')
+      }
 
       await updateClientData({
         pii: {
@@ -97,11 +122,14 @@ export default function CreateAccount() {
           nivel_de_estudio: data?.nivel_de_estudios,
           numero_de_identificacion: data?.numero_identificacion_oficial,
           tipo_de_identificacion: data?.tipo_identificacion_oficial,
-          current_step: ROUTES.ONBOARDING.PERSONAL_DATA,
         },
       })
 
-      router.push(ROUTES.ONBOARDING.PERSONAL_DATA)
+      await updateActiveRequestData({
+        paso_actual: nextStep,
+      })
+
+      router.push(nextStep)
     } catch (error) {
       if (isApiClientError(error)) {
         if (

@@ -5,8 +5,8 @@ import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote } from '../c
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientDataStore } from '@/stores'
-import { updateClientData } from '@/services/client-data'
-import { formatCurrencyMx } from '@/utils/formatters'
+import { updateActiveRequestData } from '@/services/client-requests'
+import { formatMoney } from '@/utils/formatters'
 
 export default function FinancialData() {
   const router = useRouter()
@@ -42,13 +42,17 @@ export default function FinancialData() {
     setIsSubmitting(true)
 
     try {
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.CREDIT_RESULT,
-        },
-      })
+      const nextStep = ROUTES.ONBOARDING.CREDIT_RESULT
+      const montoMaximoSolicitable = String(num * 3 * 0.6)
 
-      router.push(ROUTES.ONBOARDING.CREDIT_RESULT)
+      await updateActiveRequestData(
+        {
+          monto_maximo_solicitable: montoMaximoSolicitable,
+          paso_actual: nextStep,
+        },
+      )
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -87,7 +91,7 @@ export default function FinancialData() {
               inputMode="numeric"
               placeholder="0"
               readOnly
-              value={formatCurrencyMx(salary?.toString() ?? '')}
+              value={formatMoney(Number(salary))}
               disabled
               className={`w-full rounded-xl border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border bg-background'}`}
             />
@@ -96,7 +100,7 @@ export default function FinancialData() {
           {error && <p className="text-xs text-destructive">{error}</p>}
           {salary && !error && (
             <p className="text-xs text-muted-foreground">
-              Hasta <span className="font-semibold text-foreground">{formatCurrencyMx((Number(salary) * 3 * 0.6).toString())} MXN</span> disponible en crédito
+              Hasta <span className="font-semibold text-foreground">{formatMoney(salary * 3 * 0.6)} MXN</span> disponible en crédito
             </p>
           )}
         </div>
