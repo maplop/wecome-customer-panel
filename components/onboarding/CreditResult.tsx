@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
+import { formatMoney } from '@/utils/formatters'
 
 export default function CreditResult() {
   const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
@@ -53,7 +54,7 @@ export default function CreditResult() {
         <span className="text-xs font-medium text-white/60 uppercase tracking-widest">Monto máximo aprobado</span>
         <div className="flex flex-col gap-1">
           <span className="text-4xl font-bold text-white">
-            {montoMaximoSolicitable.toLocaleString("es-MX")}
+            {formatMoney(montoMaximoSolicitable)}
           </span>
           <span className="text-sm text-white/60">MXN</span>
         </div>

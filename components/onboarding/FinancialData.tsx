@@ -6,6 +6,7 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientDataStore } from '@/stores'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { formatMoney } from '@/utils/formatters'
 
 export default function FinancialData() {
   const router = useRouter()
@@ -90,7 +91,7 @@ export default function FinancialData() {
               inputMode="numeric"
               placeholder="0"
               readOnly
-              value={Number(salary).toLocaleString("es-MX")}
+              value={formatMoney(Number(salary))}
               disabled
               className={`w-full rounded-xl border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 ${error ? 'border-destructive' : 'border-border bg-background'}`}
             />
@@ -99,7 +100,7 @@ export default function FinancialData() {
           {error && <p className="text-xs text-destructive">{error}</p>}
           {salary && !error && (
             <p className="text-xs text-muted-foreground">
-              Hasta <span className="font-semibold text-foreground">{(salary * 3 * 0.6).toLocaleString("es-MX")} MXN</span> disponible en crédito
+              Hasta <span className="font-semibold text-foreground">{formatMoney(salary * 3 * 0.6)} MXN</span> disponible en crédito
             </p>
           )}
         </div>

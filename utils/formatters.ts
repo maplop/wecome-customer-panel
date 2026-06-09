@@ -97,3 +97,7 @@ export function formatMxPhoneNumber(value?: string | number | null): string {
   const part2 = localDigits.slice(6, 10);
   return `+52 ${lada} ${part1} ${part2}`;
 }
+
+export function formatMoney(value: number): string {
+  return `${value.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+}

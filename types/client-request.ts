@@ -2,11 +2,17 @@ export interface ClientRequestData {
   plazo?: string;
   tipo_de_credito?: string;
   monto_solicitado?: string;
-  estado?: "pending" | "resolved" | "approved" | "active" | "completed";
+  estado?: RequestStatus;
   monto_maximo_solicitable?: string;
   paso_actual?: string;
-  [key: string]: unknown;
 }
+
+export type RequestStatus =
+  | "pending"
+  | "resolved"
+  | "approved"
+  | "active"
+  | "completed";
 
 export interface ClientRequestRecord {
   id: string;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useClientDataStore } from '@/stores'
-import { formatMxPhoneNumber } from '@/utils/formatters'
+import { formatMoney, formatMxPhoneNumber } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -97,7 +97,7 @@ export default function PersonalData() {
         <DataRow label="Nacionalidad" value={clientData.nationality} />
         <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
         <DataRow label="Ocupación" value={clientData.cargo_en_empresa} />
-        <DataRow label="Salario" value={`${Number(clientData.salario).toLocaleString("es-MX")} MXN`} />
+        <DataRow label="Salario" value={`${formatMoney(Number(clientData.salario))} MXN`} />
         <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial} />
         <DataRow label="Teléfono" value={formatMxPhoneNumber(clientData.phone)} />
         <DataRow label="Correo electrónico" value={clientData.email} />
