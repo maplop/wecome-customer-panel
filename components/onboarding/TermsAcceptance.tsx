@@ -5,7 +5,7 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { X, Check } from '@/lib/icons'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
 
 const DOCUMENTS = [
   {
@@ -197,14 +197,13 @@ export default function TermsAcceptance() {
   }
 
   const handleContinue = async () => {
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SUCCESS
     try {
       setError('')
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.CREDIT_SUCCESS,
-        },
-      })
-      router.push(ROUTES.ONBOARDING.CREDIT_SUCCESS)
+
+      await updateActiveRequestData({ paso_actual: nextStep })
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -251,7 +250,6 @@ export default function TermsAcceptance() {
                   <span className="text-sm font-semibold text-foreground">{doc.title}</span>
                   <span className="text-xs text-muted-foreground leading-relaxed">{doc.description}</span>
                 </div>
-
               </button>
             )
           })}

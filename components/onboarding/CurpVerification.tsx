@@ -21,14 +21,16 @@ export default function CurpVerification() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
+    const nextStep = ROUTES.ONBOARDING.USER_CONFIRM
     e.preventDefault()
     const err = validate()
     if (err) { setError(err); return }
     setError('')
 
     const source = await verifyCurp(curp.toUpperCase())
+
     if (source) {
-      router.push(ROUTES.ONBOARDING.USER_CONFIRM)
+      router.push(nextStep)
     }
   }
 

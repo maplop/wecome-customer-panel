@@ -48,6 +48,9 @@ export const SERVICES = {
   GET_TRANSACTIONS: "/private/accounts/movements",
   GET_DATE_PAYEMENT: "/marketplace/apps/mgiver/calculate_date",
 
+  NOTIFICATIONS_FORMS: "/private/notifications/forms",
+  NOTIFICATIONS_FORMS_DATA: "/private/notifications/forms_data",
+
   GET_CABLE: "/private/accounts/get_cable",
   USERS_WEBCLIENTS: API_ENDPOINTS.AUTH.REGISTER,
 };

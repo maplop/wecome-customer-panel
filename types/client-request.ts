@@ -1,0 +1,35 @@
+export interface ClientRequestData {
+  plazo?: string;
+  tipo_de_credito?: string;
+  monto_solicitado?: string;
+  estado?: "pending" | "resolved" | "approved" | "active" | "completed";
+  monto_maximo_solicitable?: string;
+  paso_actual?: string;
+  [key: string]: unknown;
+}
+
+export interface ClientRequestRecord {
+  id: string;
+  form_id: number;
+  client: number;
+  company: number;
+  data: ClientRequestData;
+  enabled: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddClientRequestInput {
+  form_id: string;
+  client: number;
+  data?: ClientRequestData;
+  enabled?: number;
+}
+
+export interface UpdateClientRequestInput {
+  id: string;
+  form_id: string | number;
+  client: number;
+  data?: ClientRequestData;
+  enabled?: number;
+}

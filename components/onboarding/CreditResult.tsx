@@ -4,24 +4,26 @@ import { WrapperCard, TitleCard, SubtitleCard, ButtonCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
+import { useClientRequestStore } from '@/stores'
 
 export default function CreditResult() {
+  const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
+  const montoMaximoSolicitable = Number(activeRequest?.data?.monto_maximo_solicitable) ?? 0
+
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const salary = 3500
-  const maxCredit = salary * 3
-
   const handleContinue = async () => {
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
     setIsSubmitting(true)
+    setError('')
+
     try {
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.CREDIT_SELECTION,
-        },
-      })
+      await updateActiveRequestData({ paso_actual: nextStep })
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -31,8 +33,6 @@ export default function CreditResult() {
     } finally {
       setIsSubmitting(false)
     }
-
-    router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)
   }
 
   return (
@@ -53,7 +53,7 @@ export default function CreditResult() {
         <span className="text-xs font-medium text-white/60 uppercase tracking-widest">Monto máximo aprobado</span>
         <div className="flex flex-col gap-1">
           <span className="text-4xl font-bold text-white">
-            ${maxCredit.toLocaleString('es-MX')}
+            {montoMaximoSolicitable.toLocaleString("es-MX")}
           </span>
           <span className="text-sm text-white/60">MXN</span>
         </div>

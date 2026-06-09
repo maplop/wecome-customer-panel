@@ -1,6 +1,6 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { CompanyType } from "@/types/client-data/company";
-import { ApiResponse } from "@/types/client-data/api-response";
+import { ApiResponse } from "@/types/api-response";
 
 export async function getCompany(
   companyId?: number,

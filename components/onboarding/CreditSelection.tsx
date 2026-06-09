@@ -7,11 +7,18 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from '@/lib/icons'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
+import { useClientRequestStore } from '@/stores'
 
-const TERMS = [6, 12, 18]
+const TERMS = [12, 18]
 const MONTHLY_RATE = 0.028
 const INSURANCE_RATE = 0.02
+const FALLBACK_MAX_AMOUNT = 10500
+
+function toPositiveNumber(value: unknown): number | null {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
 
 function RiskModal({
   onAccept,
@@ -92,16 +99,39 @@ function RiskModal({
 
 export default function CreditSelection() {
   const router = useRouter()
+  const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
+  const requestData = activeRequest?.data ?? {}
 
-  const salary = 3500
-  const maxAmount = salary * 3
   const minAmount = 1000
-  const [amount, setAmount] = useState(Math.round(maxAmount / 2))
-  const [term, setTerm] = useState(12)
-  const [hasInsurance, setHasInsurance] = useState(true)
+  const maxAmount = Math.max(
+    minAmount,
+    Math.round(toPositiveNumber(requestData.monto_maximo_solicitable) ?? FALLBACK_MAX_AMOUNT),
+  )
+
+  const resolvedTerm = (() => {
+    const parsed = Number(requestData.plazo)
+    return TERMS.includes(parsed) ? parsed : TERMS[0]
+  })()
+  const resolvedType =
+    requestData.tipo_de_credito === 'esencial' ? 'esencial' : 'protected'
+  const requestedAmount = toPositiveNumber(requestData.monto_solicitado)
+  const resolvedAmount = Math.min(
+    maxAmount,
+    Math.max(minAmount, Math.round(requestedAmount ?? maxAmount / 2)),
+  )
+
+  const [amount, setAmount] = useState(resolvedAmount)
+  const [term, setTerm] = useState(resolvedTerm)
+  const [hasInsurance, setHasInsurance] = useState<'protected' | 'esencial'>(resolvedType)
   const [showRiskModal, setShowRiskModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    setAmount(resolvedAmount)
+    setTerm(resolvedTerm)
+    setHasInsurance(resolvedType)
+  }, [resolvedAmount, resolvedTerm, resolvedType])
 
   useEffect(() => {
     if (showRiskModal) {
@@ -114,23 +144,24 @@ export default function CreditSelection() {
 
   const biweeklyPayment = (() => {
     const total = amount * (1 + MONTHLY_RATE * term)
-    const insuranceTotal = hasInsurance ? amount * INSURANCE_RATE : 0
+    const insuranceTotal = hasInsurance === 'protected' ? amount * INSURANCE_RATE : 0
     return (total + insuranceTotal) / (term * 2)
   })()
 
-  const pct = ((amount - minAmount) / (maxAmount - minAmount)) * 100
+  const pct =
+    maxAmount === minAmount ? 100 : ((amount - minAmount) / (maxAmount - minAmount)) * 100
 
   const handleInsuranceClick = (value: boolean) => {
     if (!value) {
       setShowRiskModal(true)
     } else {
       setShowRiskModal(false)
-      setHasInsurance(true)
+      setHasInsurance('protected')
     }
   }
 
   const handleRiskAccept = () => {
-    setHasInsurance(false)
+    setHasInsurance('esencial')
     setShowRiskModal(false)
   }
 
@@ -139,14 +170,18 @@ export default function CreditSelection() {
   }
 
   const handleContinue = async () => {
+    const nextStep = ROUTES.ONBOARDING.FINAL_CONFIRM
     setIsSubmitting(true)
+    setError('')
     try {
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.CREDIT_SUMMARY,
-        },
+      await updateActiveRequestData({
+        monto_solicitado: String(amount),
+        tipo_de_credito: hasInsurance === 'protected' ? 'Protegido' : 'Esencial',
+        plazo: String(term),
+        paso_actual: nextStep,
       })
-      router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -200,7 +235,7 @@ export default function CreditSelection() {
           {/* Term selection */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">Plazo</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {TERMS.map((t) => (
                 <button
                   key={t}
@@ -211,7 +246,7 @@ export default function CreditSelection() {
                     : 'border border-border text-foreground hover:bg-secondary'
                     }`}
                 >
-                  {t}m
+                  {t} meses
                 </button>
               ))}
             </div>
@@ -225,24 +260,24 @@ export default function CreditSelection() {
             <button
               type="button"
               onClick={() => handleInsuranceClick(true)}
-              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance
+              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance === 'protected'
                 ? 'bg-brand-dark text-white'
                 : 'border border-border text-foreground hover:bg-secondary'
                 }`}
             >
               <span className="font-semibold">Protegido</span>
-              <span className={`text-xs ${hasInsurance ? 'text-white/70' : 'text-muted-foreground'}`}>Con seguro</span>
+              <span className={`text-xs ${hasInsurance === 'protected' ? 'text-white/70' : 'text-muted-foreground'}`}>Con seguro</span>
             </button>
             <button
               type="button"
               onClick={() => handleInsuranceClick(false)}
-              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${!hasInsurance
+              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance === 'esencial'
                 ? 'bg-brand-dark text-white'
                 : 'border border-border text-foreground hover:bg-secondary'
                 }`}
             >
               <span className="font-semibold">Esencial</span>
-              <span className={`text-xs ${!hasInsurance ? 'text-white/70' : 'text-muted-foreground'}`}>Sin seguro</span>
+              <span className={`text-xs ${hasInsurance === 'esencial' ? 'text-white/70' : 'text-muted-foreground'}`}>Sin seguro</span>
             </button>
           </div>
         </div>
@@ -265,7 +300,7 @@ export default function CreditSelection() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Tipo</p>
-              <p className="text-sm font-semibold text-foreground">{hasInsurance ? 'Protegido' : 'Esencial'}</p>
+              <p className="text-sm font-semibold text-foreground">{hasInsurance === 'protected' ? 'Protegido' : 'Esencial'}</p>
             </div>
           </div>
         </div>

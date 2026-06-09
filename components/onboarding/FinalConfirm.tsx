@@ -5,41 +5,31 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
-import { updateClientData } from '@/services/client-data'
+import { updateActiveRequestData } from '@/services/client-requests'
+import { useClientRequestStore } from '@/stores'
 
-const MONTHLY_RATE = 0.028
-const COMMISSION_RATE = 0.02
 
 export default function FinalConfirm() {
   const router = useRouter()
 
+  const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const amount = 15000
-  const term = 12
-  const hasInsurance = true
-
-  const totalInterest = Math.round(amount * MONTHLY_RATE * term)
-  const insuranceCost = hasInsurance ? Math.round(amount * 0.02) : 0
-  const totalPayment = amount + totalInterest + insuranceCost
-  const biweeklyPayment = totalPayment / (term * 2)
 
   const startDate = new Date()
   startDate.setDate(startDate.getDate() + 7)
   const formattedStart = startDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const handleConfirm = async () => {
+    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
     try {
       setLoading(true)
       setError('')
-      await updateClientData({
-        pii: {
-          current_step: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
-        },
-      })
-      await new Promise(r => setTimeout(r, 1200))
-      router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)
+
+      await updateActiveRequestData({ paso_actual: nextStep })
+
+      router.push(nextStep)
     } catch (err) {
       setError(
         err instanceof Error
@@ -52,12 +42,27 @@ export default function FinalConfirm() {
   }
 
   const details = [
-    { label: 'Monto aprobado', value: `$${amount.toLocaleString('es-MX')} MXN` },
-    { label: 'Pago quincenal', value: `$${biweeklyPayment.toLocaleString('es-MX', { maximumFractionDigits: 2 })}` },
-    { label: 'Plazo', value: `${term} meses (${term * 2} quincenas)` },
-    ...(hasInsurance ? [{ label: 'Seguro', value: 'Incluido' }] : []),
-    { label: 'Fecha de inicio', value: formattedStart },
-  ]
+    {
+      label: 'Monto solicitado',
+      value: `${Number(activeRequest?.data.monto_solicitado).toLocaleString('es-MX')} MXN`,
+    },
+    {
+      label: 'Pago quincenal',
+      value: `${(847).toLocaleString('es-MX')} MXN`,
+    },
+    {
+      label: 'Plazo',
+      value: `${activeRequest?.data.plazo} meses`,
+    },
+    {
+      label: 'Seguro',
+      value: activeRequest?.data.tipo_de_credito
+    },
+    {
+      label: 'Fecha de inicio',
+      value: formattedStart,
+    },
+  ];
 
   return (
     <WrapperCard>
@@ -98,7 +103,7 @@ export default function FinalConfirm() {
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SUMMARY)}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
           disabled={loading}
         >
           Regresar

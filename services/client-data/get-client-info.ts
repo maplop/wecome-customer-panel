@@ -1,6 +1,6 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { UserInfoType } from "@/types/client-data/user-info";
-import { ApiResponse } from "@/types/client-data/api-response";
+import { ApiResponse } from "@/types/api-response";
 
 type ClientInfo = UserInfoType & {
   peopleId: number;

@@ -7,7 +7,9 @@ import {
   setCognitoAuthSession,
 } from "@/lib/auth-session";
 import { getClientData } from "@/services/client-data";
+import { getRequestsByClient } from "@/services/client-requests";
 import { useClientDataStore } from "@/stores/client-data-store";
+import { useClientRequestStore } from "@/stores/client-request-store";
 import { clearAllStores } from "@/stores";
 
 export interface RegisterRequest {
@@ -124,6 +126,43 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
     // guarda solo el pii en zustand
     if (clientData.data?.people) {
       useClientDataStore.getState().setClient(clientData.data.people);
+    }
+
+    const resolvedClientId = String(
+      clientData.entities?.peopleId ?? clientData.data?.people?.id ?? "",
+    ).trim();
+
+    if (resolvedClientId) {
+      try {
+        console.log("[auth/login] fetching client requests", {
+          clientId: resolvedClientId,
+        });
+        const requests = await getRequestsByClient(resolvedClientId);
+        console.log("[auth/login] client requests fetched", {
+          clientId: resolvedClientId,
+          count: requests.length,
+          requests,
+        });
+        const requestStore = useClientRequestStore.getState();
+        requestStore.syncClientRequests(Number(resolvedClientId), requests);
+
+        const latestRequest = [...requests].sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        )[0];
+        if (latestRequest?.id) {
+          requestStore.setActiveRequestId(latestRequest.id);
+        }
+      } catch (requestError) {
+        console.warn(
+          "No se pudo obtener requests del cliente post-login.",
+          requestError,
+        );
+      }
+    } else {
+      console.warn(
+        "[auth/login] no clientId resolved, skipping getRequestsByClient",
+      );
     }
   } catch (error) {
     if (

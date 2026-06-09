@@ -79,23 +79,6 @@ export function formatNumberWithThousands(
   }).format(numberValue);
 }
 
-export function formatCurrencyMx(
-  value?: string | number | null,
-  options: FormatCurrencyOptions = {},
-): string {
-  const { currency = "MXN", locale = "es-MX", decimals = 2 } = options;
-  const numberValue =
-    typeof value === "string" ? Number(value.replace(/,/g, "")) : Number(value);
-
-  if (!Number.isFinite(numberValue)) return "-";
-
-  return new Intl.NumberFormat(locale, {
-    currency,
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(numberValue);
-}
-
 export function formatMxPhoneNumber(value?: string | number | null): string {
   const digits = `${value || ""}`.replace(/\D/g, "");
   if (!digits) return "";
