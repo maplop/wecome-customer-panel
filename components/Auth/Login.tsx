@@ -6,12 +6,12 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { isApiClientError } from '@/api/dynamicore/frontend'
 import { login } from '@/services/auth'
-import { useClientDataStore } from '@/stores/client-data-store'
+import { useClientRequestStore } from '@/stores/client-request-store'
 
-function resolvePostLoginRoute(currentStep: unknown): string {
-  if (typeof currentStep !== 'string') return ROUTES.DASHBOARD.ROOT
+function resolvePostLoginRoute(currentRequestStep: unknown): string {
+  if (typeof currentRequestStep !== 'string') return ROUTES.DASHBOARD.ROOT
 
-  const normalized = currentStep.trim()
+  const normalized = currentRequestStep.trim()
   if (!normalized.startsWith('/')) return ROUTES.DASHBOARD.ROOT
 
   return normalized
@@ -43,8 +43,9 @@ export default function Login() {
         password,
       })
 
-      const currentStep = useClientDataStore.getState().client?.pii?.current_step
-      router.push(resolvePostLoginRoute(currentStep))
+      const currentRequestStep =
+        useClientRequestStore.getState().getActiveRequest()?.data?.paso_actual
+      router.push(resolvePostLoginRoute(currentRequestStep))
     } catch (err) {
       if (isApiClientError(err)) {
         const rawType =

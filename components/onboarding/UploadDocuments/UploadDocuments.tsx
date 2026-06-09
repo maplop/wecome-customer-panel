@@ -9,6 +9,7 @@ import DocumentUploadField from './DocumentUploadField'
 import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { useClientDataStore } from '@/stores/client-data-store'
+import { updateActiveRequestData } from '@/services/client-requests'
 
 interface DocumentType {
   id: string
@@ -163,7 +164,6 @@ async function resolveSignedUrl(url: string): Promise<string> {
 
 function buildDocumentsPiiPayload(
   docsMap: DocumentsStateMap,
-  currentStep?: string,
 ): Record<string, unknown> {
   const piiPayload: Record<string, unknown> = {
     ine: [],
@@ -188,10 +188,6 @@ function buildDocumentsPiiPayload(
     piiPayload[doc.piiKey] = item.value
   })
 
-  if (currentStep) {
-    piiPayload.current_step = currentStep
-  }
-
   return piiPayload
 }
 
@@ -206,7 +202,6 @@ export default function UploadDocuments() {
   const [loadingExistingDocs, setLoadingExistingDocs] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [removingDocumentId, setRemovingDocumentId] = useState<string | null>(null)
-  const [submitProgress, setSubmitProgress] = useState(0)
   const [submitError, setSubmitError] = useState('')
   const [hydratedFromPii, setHydratedFromPii] = useState(false)
 
@@ -371,6 +366,7 @@ export default function UploadDocuments() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const nextStep = ROUTES.ONBOARDING.FINANCIAL_DATA
 
     const newErrors: Record<string, string> = {}
     DOCUMENT_TYPES.filter((d) => d.required).forEach((d) => {
@@ -386,25 +382,21 @@ export default function UploadDocuments() {
 
     try {
       setIsSubmitting(true)
-      setSubmitProgress(0)
       setSubmitError('')
 
-      const piiPayload = buildDocumentsPiiPayload(
-        documents,
-        ROUTES.ONBOARDING.FINANCIAL_DATA,
-      )
+      const piiPayload = buildDocumentsPiiPayload(documents)
 
       await updateClientData(
         {
           pii: piiPayload,
         },
-        {
-          onProgress: (progress) => setSubmitProgress(progress),
-        },
       )
-      setSubmitProgress(100)
 
-      router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
+      await updateActiveRequestData({
+        paso_actual: nextStep,
+      })
+
+      router.push(nextStep)
     } catch (error) {
       setSubmitError(
         error instanceof Error
@@ -464,17 +456,6 @@ export default function UploadDocuments() {
         ))}
 
         {submitError && <p className="text-sm text-destructive">{submitError}</p>}
-        {isSubmitting && (
-          <div className="flex flex-col gap-1">
-            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-              <div
-                className="h-full rounded-full bg-brand-accent transition-all duration-200"
-                style={{ width: `${submitProgress}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground text-right">{submitProgress}%</p>
-          </div>
-        )}
 
         <div className="flex flex-col gap-3">
           {activeTab === 1 ? (
