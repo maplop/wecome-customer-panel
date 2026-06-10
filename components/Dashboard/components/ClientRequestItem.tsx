@@ -126,6 +126,7 @@ export default function ClientRequestItem({
           >
             Detalles
           </button>
+
         </div>
 
       </div>
