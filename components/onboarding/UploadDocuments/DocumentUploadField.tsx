@@ -29,12 +29,13 @@ export default function DocumentUploadField({
   onFileChange,
   onRemove,
 }: DocumentUploadFieldProps) {
+
   const isImagePreview = Boolean(
     fileData?.preview &&
-      (
-        fileData.preview.startsWith('data:image') ||
-        /\.(png|jpe?g|webp|gif|bmp|svg)(\?|#|$)/i.test(fileData.preview)
-      ),
+    (
+      fileData.preview.startsWith('data:image') ||
+      /\.(png|jpe?g|webp|gif|bmp|svg)/i.test(fileData.preview.split('?')[0])
+    ),
   )
 
   const isLoading = loadingExisting || uploading

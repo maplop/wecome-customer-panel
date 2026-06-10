@@ -1,42 +1,11 @@
-import { CreditCard, CheckCircle2 } from '@/lib/icons'
-import type { ClientRequestRecord, ClientRequestData } from "@/types/client-request"
+import { CreditCard } from '@/lib/icons'
+import type { ClientRequestRecord } from "@/types/client-request"
+import { ESTADO_CONFIG } from "../constants/request-status"
 
 export interface ClientRequestItemProps {
   request: ClientRequestRecord
   handleOpenDetail?: (request: ClientRequestRecord) => void
-  handleContinue?: (request: ClientRequestRecord) => void
 }
-
-const ESTADO_CONFIG: Record<
-  NonNullable<ClientRequestData["estado"]>,
-  { label: string; className: string; dot: string }
-> = {
-  pending: {
-    label: "Pendiente",
-    className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    dot: "bg-amber-500",
-  },
-  resolved: {
-    label: "Resuelto",
-    className: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-    dot: "bg-sky-500",
-  },
-  approved: {
-    label: "Aprobado",
-    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    dot: "bg-emerald-500",
-  },
-  active: {
-    label: "Activo",
-    className: "bg-brand-accent/10 text-brand-accent",
-    dot: "bg-brand-accent",
-  },
-  completed: {
-    label: "Completado",
-    className: "bg-brand-dark/10 text-brand-dark",
-    dot: "bg-brand-dark",
-  },
-};
 
 const MONTO_PAGADO_HARDCODED = 12500
 
@@ -61,7 +30,6 @@ function formatDate(iso: string): string {
 export default function ClientRequestItem({
   request,
   handleOpenDetail,
-  handleContinue,
 }: ClientRequestItemProps) {
   const data = request.data
   const estado = data.estado ?? "pending"
@@ -150,28 +118,15 @@ export default function ClientRequestItem({
         </div>
 
         {/* Col 6 — botones */}
-        <div className="flex gap-1.5">
+        <div className="flex justify-end items-center">
           <button
             type="button"
             onClick={() => handleOpenDetail?.(request)}
-            className="rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary active:scale-[0.98]"
+            className="rounded-lg bg-brand-dark px-2 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
           >
-            Detalle
+            Detalles
           </button>
-          {isFinished ? (
-            <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-brand-dark">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Listo
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => handleContinue?.(request)}
-              className="rounded-lg bg-brand-dark px-2 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-            >
-              Continuar
-            </button>
-          )}
+
         </div>
 
       </div>

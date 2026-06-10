@@ -49,7 +49,10 @@ export const addRequest = async (
     form_id: payload.form_id,
     client: payload.client,
     enabled: payload.enabled ?? 1,
-    data: payload.data ?? {},
+    data: {
+      ...(payload.data ?? {}),
+      estado: "pending",
+    },
   });
 
   return pickRequestRecord(response?.data);

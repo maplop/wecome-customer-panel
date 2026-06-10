@@ -21,6 +21,7 @@ const TAB_LABELS: Record<TabFilter, string> = {
   approved: 'Aprobados',
   active: 'Activos',
   completed: 'Finalizados',
+  denied: 'Denegados'
 }
 
 const TABS = Object.keys(TAB_LABELS) as TabFilter[]
@@ -71,7 +72,7 @@ export default function CreditDashboard() {
         client: clientId,
         enabled: 1,
         data: {
-          estado: 'pending',
+          paso_actual: ROUTES.ONBOARDING.FINANCIAL_DATA,
         },
       })
 
@@ -180,11 +181,6 @@ export default function CreditDashboard() {
                   key={record.id}
                   request={record}
                   handleOpenDetail={handleOpenDetail}
-                  handleContinue={(request) =>
-                    router.push(
-                      `${ROUTES.ONBOARDING.CURP_VERIFICATION}?requestId=${request.id}`
-                    )
-                  }
                 />
               ))
             )}
