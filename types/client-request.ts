@@ -12,7 +12,8 @@ export type RequestStatus =
   | "resolved"
   | "approved"
   | "active"
-  | "completed";
+  | "completed"
+  | "denied";
 
 export interface ClientRequestRecord {
   id: string;
