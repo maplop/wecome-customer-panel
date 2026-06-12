@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { ButtonCard } from '@/components/common'
-import { CreditDetailModal, ClientRequestItem } from './components'
+import { CreditDetailModal, ClientRequestItem, ResolvedOfferModal, DeniedRequestModal } from './components'
 import { Plus } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -41,16 +41,33 @@ export default function CreditDashboard() {
 
   const [activeTab, setActiveTab] = useState<TabFilter>('all')
   const [detailModal, setDetailModal] = useState<{ open: boolean; credit: ClientRequestRecord | null }>({ open: false, credit: null })
+  const [resolvedOfferModal, setResolvedOfferModal] = useState<{ open: boolean; credit: ClientRequestRecord | null }>({ open: false, credit: null })
+  const [deniedRequestModal, setDeniedRequestModal] = useState<{ open: boolean; credit: ClientRequestRecord | null }>({ open: false, credit: null })
 
   const filteredCredits = requests.filter((r) =>
     activeTab === 'all' ? true : r.data.estado === activeTab
   )
 
-  const handleOpenDetail = (record: ClientRequestRecord) =>
-    setDetailModal({ open: true, credit: record })
+  const handleOpenDetail = (record: ClientRequestRecord) => {
+    const estado = record.data.estado ?? 'pending'
+
+    if (estado === 'resolved') {
+      setResolvedOfferModal({ open: true, credit: record })
+    } else if (estado === 'denied') {
+      setDeniedRequestModal({ open: true, credit: record })
+    } else {
+      setDetailModal({ open: true, credit: record })
+    }
+  }
 
   const handleCloseDetail = () =>
     setDetailModal({ open: false, credit: null })
+
+  const handleCloseResolvedOfferModal = () =>
+    setResolvedOfferModal({ open: false, credit: null })
+
+  const handleCloseDeniedRequestModal = () =>
+    setDeniedRequestModal({ open: false, credit: null })
 
   const handleCreateNewRequest = async () => {
     if (isCreatingRequest) return
@@ -64,6 +81,8 @@ export default function CreditDashboard() {
     setCreateRequestError('')
     setIsCreatingRequest(true)
 
+    const currentStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+
     try {
       const currentFormId = requests[0]?.form_id
       const formId = String(currentFormId ?? DEFAULT_REQUEST_FORM_ID)
@@ -72,7 +91,7 @@ export default function CreditDashboard() {
         client: clientId,
         enabled: 1,
         data: {
-          paso_actual: ROUTES.ONBOARDING.FINANCIAL_DATA,
+          paso_actual: currentStep,
         },
       })
 
@@ -81,7 +100,7 @@ export default function CreditDashboard() {
       }
 
       useClientRequestStore.getState().upsertRequest(createdRequest, true)
-      router.push(ROUTES.ONBOARDING.FINANCIAL_DATA)
+      router.push(currentStep)
     } catch (error) {
       setCreateRequestError(
         error instanceof Error
@@ -100,6 +119,22 @@ export default function CreditDashboard() {
     router.push(`${ROUTES.ONBOARDING.CURP_VERIFICATION}?requestId=${id}`)
   }
 
+  const handleAcceptOffer = () => {
+    // Mock: en producción aquí se haría una llamada API
+    handleCloseResolvedOfferModal()
+    // Redirigir a confirmación de desembolso
+    router.push(ROUTES.DASHBOARD.ROOT)
+  }
+
+  const handleRetryDeniedRequest = () => {
+    // Mock: en producción aquí se permitiría intentar de nuevo con datos actualizados
+    if (!deniedRequestModal.credit) return
+    const id = deniedRequestModal.credit.id
+    handleCloseDeniedRequestModal()
+    // Redirigir a actualizar información
+    router.push(`${ROUTES.ONBOARDING.PERSONAL_DATA}?requestId=${id}`)
+  }
+
   return (
     <>
       {/* Credit Detail Modal */}
@@ -108,6 +143,24 @@ export default function CreditDashboard() {
           credit={detailModal.credit}
           onClose={handleCloseDetail}
           onPay={handleDetailContinue}
+        />
+      )}
+
+      {/* Resolved Offer Modal */}
+      {resolvedOfferModal.open && resolvedOfferModal.credit && (
+        <ResolvedOfferModal
+          credit={resolvedOfferModal.credit}
+          onClose={handleCloseResolvedOfferModal}
+          onAccept={handleAcceptOffer}
+        />
+      )}
+
+      {/* Denied Request Modal */}
+      {deniedRequestModal.open && deniedRequestModal.credit && (
+        <DeniedRequestModal
+          credit={deniedRequestModal.credit}
+          onClose={handleCloseDeniedRequestModal}
+          onRetry={handleRetryDeniedRequest}
         />
       )}
 

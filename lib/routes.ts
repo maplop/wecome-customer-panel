@@ -48,7 +48,7 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.IDENTITY_VERIFICATION,
   },
   {
-    title: "Creacion de cuenta",
+    title: "Creación de cuenta",
     step: 4,
     route: ROUTES.ONBOARDING.CREATE_ACCOUNT,
   },
@@ -63,33 +63,35 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
   },
   {
+    title: "Selección de crédito",
+    step: 7,
+    route: ROUTES.ONBOARDING.CREDIT_SELECTION,
+  },
+  /*
+  {
     title: "Datos financieros",
     step: 7,
     route: ROUTES.ONBOARDING.FINANCIAL_DATA,
   },
+  */
   {
     title: "Resultado de crédito",
     step: 8,
     route: ROUTES.ONBOARDING.CREDIT_RESULT,
   },
   {
-    title: "Seleccion de crédito",
-    step: 9,
-    route: ROUTES.ONBOARDING.CREDIT_SELECTION,
-  },
-  {
     title: "Confirmación final",
-    step: 10,
+    step: 9,
     route: ROUTES.ONBOARDING.FINAL_CONFIRM,
   },
   {
-    title: "Aceptacion de terminos",
-    step: 11,
+    title: "Aceptación de términos",
+    step: 10,
     route: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
   },
   {
     title: "Crédito exitoso",
-    step: 12,
+    step: 11,
     route: ROUTES.ONBOARDING.CREDIT_SUCCESS,
   },
 ] as const;

@@ -138,6 +138,7 @@ export async function postJumioWithRetry(
       const response = await apiClient.post(
         SERVICES.JUMIO_VERIFICATION,
         payload,
+        { timeout: 180000 }, // 3 minutos para la llamada específica a Jumio
       );
       const responseMessage = extractJumioMessage(response.data);
 
@@ -193,7 +194,10 @@ export async function verifyIneWithJumio(
     input.frontImage,
     frontSignedInitial,
   );
-  const backActiveUrl = getActiveDocumentUrl(input.backImage, backSignedInitial);
+  const backActiveUrl = getActiveDocumentUrl(
+    input.backImage,
+    backSignedInitial,
+  );
 
   // 3) Verificar ambas imagenes.
   if (!frontActiveUrl || !backActiveUrl) {

@@ -7,6 +7,16 @@ import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
+import { formatMoney } from '@/utils/formatters'
+
+const MONTHLY_RATE = 0.04
+const ANNUAL_RATE = MONTHLY_RATE * 12
+const INSURANCE_RATE = 0.02
+
+function toPositiveNumber(value: unknown): number | null {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
 
 
 export default function FinalConfirm() {
@@ -17,9 +27,6 @@ export default function FinalConfirm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() + 7)
-  const formattedStart = startDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const handleConfirm = async () => {
     const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
@@ -41,26 +48,37 @@ export default function FinalConfirm() {
     }
   }
 
+  const data = activeRequest?.data ?? {}
+
+  const amount = toPositiveNumber(data.monto_solicitado) ?? 0
+  const term = toPositiveNumber(data.plazo) ?? 12
+  const isProtected = data.tipo_de_credito === 'Protegido'
+
+  const totalInterest = amount * MONTHLY_RATE * term
+  const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
+  const totalToPay = amount + totalInterest + insuranceTotal
+  const biweeklyPayment = totalToPay / (term * 2)
+
   const details = [
     {
       label: 'Monto solicitado',
-      value: `${Number(activeRequest?.data.monto_solicitado).toLocaleString('es-MX')} MXN`,
+      value: `${formatMoney(amount)} MXN`,
     },
     {
       label: 'Pago quincenal',
-      value: `${(847).toLocaleString('es-MX')} MXN`,
+      value: `${formatMoney(biweeklyPayment)} MXN`,
     },
     {
       label: 'Plazo',
-      value: `${activeRequest?.data.plazo} meses`,
+      value: `${term} meses`,
     },
     {
       label: 'Seguro',
-      value: activeRequest?.data.tipo_de_credito
+      value: data.tipo_de_credito ?? '—',
     },
     {
-      label: 'Fecha de inicio',
-      value: formattedStart,
+      label: 'Interés anual',
+      value: `${(ANNUAL_RATE * 100).toFixed(0)}%`,
     },
   ];
 
@@ -81,7 +99,7 @@ export default function FinalConfirm() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent">
             <Check className="stroke-white w-6 h-6" />
           </div>
-          <span className="text-white font-semibold text-base">Solicitud lista para confirmar</span>
+          <span className="text-white font-semibold text-base">Solicitud lista para enviar</span>
         </div>
         <div className="divide-y divide-border">
           {details.map((d) => (
@@ -98,12 +116,13 @@ export default function FinalConfirm() {
           onClick={handleConfirm}
           disabled={loading}
           loading={loading}
+          loadingText='Enviado solicitud...'
         >
-          Confirmar solicitud
+          Enviar solicitud
         </ButtonCard>
         <ButtonCard
           variant='secondary'
-          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
+          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_RESULT)}
           disabled={loading}
         >
           Regresar

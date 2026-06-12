@@ -1,6 +1,7 @@
 import { CreditCard } from '@/lib/icons'
 import type { ClientRequestRecord } from "@/types/client-request"
 import { ESTADO_CONFIG } from "../constants/request-status"
+import { formatMoney } from '@/utils/formatters'
 
 export interface ClientRequestItemProps {
   request: ClientRequestRecord
@@ -8,16 +9,6 @@ export interface ClientRequestItemProps {
 }
 
 const MONTO_PAGADO_HARDCODED = 12500
-
-function parseAmount(value?: string): number {
-  if (!value) return 0
-  const n = Number.parseFloat(value.replace(/[^0-9.,]/g, "").replace(/,/g, ""))
-  return Number.isFinite(n) ? n : 0
-}
-
-function formatMoney(value: number): string {
-  return `${value.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-MX", {
@@ -36,7 +27,7 @@ export default function ClientRequestItem({
   const estadoCfg = ESTADO_CONFIG[estado]
   const isFinished = estado === "completed" || estado === "approved"
 
-  const solicitado = parseAmount(data.monto_solicitado)
+  const solicitado = data.monto_solicitado ?? 0
   const pagado = MONTO_PAGADO_HARDCODED
   const progress = solicitado > 0 ? Math.min(100, Math.round((pagado / solicitado) * 100)) : 0
 
@@ -126,9 +117,7 @@ export default function ClientRequestItem({
           >
             Detalles
           </button>
-
         </div>
-
       </div>
     </div>
   )

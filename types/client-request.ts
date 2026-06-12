@@ -1,9 +1,9 @@
 export interface ClientRequestData {
   plazo?: string;
   tipo_de_credito?: string;
-  monto_solicitado?: string;
+  monto_solicitado?: number;
   estado?: RequestStatus;
-  monto_maximo_solicitable?: string;
+  monto_maximo_solicitable?: number;
   paso_actual?: string;
 }
 

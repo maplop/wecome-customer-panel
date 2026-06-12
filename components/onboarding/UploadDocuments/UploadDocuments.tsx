@@ -406,7 +406,7 @@ export default function UploadDocuments() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const nextStep = ROUTES.ONBOARDING.FINANCIAL_DATA
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
 
     const newErrors: Record<string, string> = {}
     DOCUMENT_TYPES.filter((d) => d.required).forEach((d) => {

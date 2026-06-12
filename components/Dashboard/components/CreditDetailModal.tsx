@@ -4,8 +4,9 @@ import type { ClientRequestRecord, ClientRequestData } from '@/types/client-requ
 import { ESTADO_CONFIG } from '../constants/request-status'
 const MONTO_PAGADO_HARDCODED = 12500
 
-function parseAmount(value?: string): number {
-  if (!value) return 0
+function parseAmount(value?: string | number): number {
+  if (value == null || value === '') return 0
+  if (typeof value === 'number') return isFinite(value) ? value : 0
   const n = parseFloat(value.replace(/[^0-9.,]/g, '').replace(/,/g, ''))
   return isFinite(n) ? n : 0
 }

@@ -1,119 +1,51 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
+import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
+import { useClientDataStore } from '@/stores'
+import RiskModal from './RiskModal'
+import { formatMoney } from '@/utils/formatters'
+
 
 const TERMS = [12, 18]
-const MONTHLY_RATE = 0.028
-const INSURANCE_RATE = 0.02
-const FALLBACK_MAX_AMOUNT = 10500
+const MIN_AMOUNT = 10000
+const MAX_AMOUNT_CAP = 250000
 
 function toPositiveNumber(value: unknown): number | null {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
-function RiskModal({
-  onAccept,
-  onCancel,
-}: {
-  onAccept: () => void
-  onCancel: () => void
-}) {
-  const [checked, setChecked] = useState(false)
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent"
-            >
-              <AlertTriangle className="stroke-white w-5 h-5" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Crédito sin seguro</h2>
-          </div>
-        </div>
-
-        <div className="px-6 py-5 flex flex-col gap-4">
-          <div className="rounded-xl bg-brand-warning/10 border border-brand-warning/30 p-4 flex flex-col gap-2">
-            <p className="text-sm font-semibold text-brand-warning">Aviso importante</p>
-            <p className="text-sm text-brand-warning/80 leading-relaxed">
-              Al seleccionar un crédito <strong>sin seguro</strong>, asumes los siguientes riesgos:
-            </p>
-            <ul className="text-sm text-brand-warning/80 space-y-1.5 list-disc list-inside">
-              <li>En caso de incapacidad temporal, el pago del crédito sigue siendo tu responsabilidad.</li>
-              <li>En caso de fallecimiento, el saldo pendiente será cobrado a tus beneficiarios o avales.</li>
-              <li>No cuentas con protección ante pérdida involuntaria de empleo.</li>
-              <li>Las tasas de interés pueden ser más altas que en un crédito con seguro.</li>
-            </ul>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Checkbox
-              id="risk-accept"
-              checked={checked}
-              onCheckedChange={(val) =>
-                setChecked(val === true)
-              }
-              className="mt-0.5 border-brand-accent bg-transparent data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent data-[state=checked]:text-white"
-            />
-            <Label
-              htmlFor="risk-accept"
-              className="text-xs text-muted-foreground"
-            >
-              Entiendo y acepto los riesgos de contratar un crédito sin seguro. Asumo la responsabilidad total del pago en las situaciones descritas.
-            </Label>
-          </div>
-        </div>
-
-        <div className="px-6 py-4 border-t border-border flex flex-col gap-3">
-          <button
-            type="button"
-            disabled={!checked}
-            onClick={onAccept}
-            className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed bg-brand-accent"
-          >
-            Continuar
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-full rounded-xl py-3.5 text-sm font-medium text-foreground border border-border transition hover:bg-secondary active:scale-[0.98]"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function CreditSelection() {
   const router = useRouter()
   const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
   const requestData = activeRequest?.data ?? {}
 
-  const minAmount = 1000
-  const maxAmount = Math.max(
-    minAmount,
-    Math.round(toPositiveNumber(requestData.monto_maximo_solicitable) ?? FALLBACK_MAX_AMOUNT),
-  )
+  const { client } = useClientDataStore()
+  const salary = client?.pii?.salario ?? 0
 
+  // 1️⃣ term primero porque maxAmount depende de él
   const resolvedTerm = (() => {
     const parsed = Number(requestData.plazo)
     return TERMS.includes(parsed) ? parsed : TERMS[0]
   })()
-  const resolvedType =
-    requestData.tipo_de_credito === 'esencial' ? 'esencial' : 'protected'
+
+  const [term, setTerm] = useState(resolvedTerm)
+
+  // 2️⃣ maxAmount depende de term
+  const salaryNum = toPositiveNumber(salary) ?? 0
+  const paymentCapacity = (salaryNum * 0.33) / 2
+  const maxFromSalary = paymentCapacity * (term * 2)
+  const minAmount = MIN_AMOUNT
+  const maxAmount = Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, Math.round(maxFromSalary)))
+
+  // 3️⃣ resolvedAmount depende de maxAmount
+  const resolvedType = requestData.tipo_de_credito === 'esencial' ? 'esencial' : 'protected'
   const requestedAmount = toPositiveNumber(requestData.monto_solicitado)
   const resolvedAmount = Math.min(
     maxAmount,
@@ -121,35 +53,31 @@ export default function CreditSelection() {
   )
 
   const [amount, setAmount] = useState(resolvedAmount)
-  const [term, setTerm] = useState(resolvedTerm)
   const [hasInsurance, setHasInsurance] = useState<'protected' | 'esencial'>(resolvedType)
   const [showRiskModal, setShowRiskModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  // clamp amount si cambia el plazo
+  useEffect(() => {
+    setAmount((prev) =>
+      Math.max(minAmount, Math.min(prev, maxAmount))
+    )
+  }, [minAmount, maxAmount])
+
   useEffect(() => {
     setAmount(resolvedAmount)
     setTerm(resolvedTerm)
     setHasInsurance(resolvedType)
-  }, [resolvedAmount, resolvedTerm, resolvedType])
+  }, [])
 
   useEffect(() => {
-    if (showRiskModal) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = showRiskModal ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [showRiskModal])
 
-  const biweeklyPayment = (() => {
-    const total = amount * (1 + MONTHLY_RATE * term)
-    const insuranceTotal = hasInsurance === 'protected' ? amount * INSURANCE_RATE : 0
-    return (total + insuranceTotal) / (term * 2)
-  })()
 
-  const pct =
-    maxAmount === minAmount ? 100 : ((amount - minAmount) / (maxAmount - minAmount)) * 100
+  const pct = maxAmount === minAmount ? 100 : ((amount - minAmount) / (maxAmount - minAmount)) * 100
 
   const handleInsuranceClick = (value: boolean) => {
     if (!value) {
@@ -169,14 +97,49 @@ export default function CreditSelection() {
     setShowRiskModal(false)
   }
 
+  const handleAmountChange = (value: number) => {
+    if (Number.isNaN(value)) return
+
+    const clamped = Math.max(
+      minAmount,
+      Math.min(maxAmount, Math.round(value))
+    )
+
+    setAmount(clamped)
+  }
+
+  const parseFormattedAmount = (text: string): number | null => {
+    // Remover espacios y comas
+    const cleaned = text.replace(/[\s,]/g, '')
+    const parsed = Number(cleaned)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  const handleAmountInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Solo permitir números, espacios y comas
+    const filtered = e.target.value.replace(/[^\d\s,]/g, '')
+    const parsed = parseFormattedAmount(filtered)
+    if (parsed !== null) {
+      handleAmountChange(parsed)
+    }
+  }
+
+  const handleAmountInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const parsed = parseFormattedAmount(e.target.value)
+    if (parsed !== null) {
+      handleAmountChange(parsed)
+    }
+  }
+
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.FINAL_CONFIRM
+    const nextStep = ROUTES.ONBOARDING.CREDIT_RESULT
     setIsSubmitting(true)
     setError('')
     try {
       await updateActiveRequestData({
-        monto_solicitado: String(amount),
+        monto_solicitado: amount,
         tipo_de_credito: hasInsurance === 'protected' ? 'Protegido' : 'Esencial',
+        monto_maximo_solicitable: maxAmount,
         plazo: String(term),
         paso_actual: nextStep,
       })
@@ -205,21 +168,48 @@ export default function CreditSelection() {
           </SubtitleCard>
         </div>
 
+        {/* Info salario */}
+        {salaryNum > 0 && (
+          <div className="flex justify-between items-center gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">
+            <span className="text-xs text-muted-foreground leading-tight">Salario mensual registrado</span>
+            <span className="text-sm font-semibold text-foreground">
+              {formatMoney(salaryNum)} MXN
+            </span>
+          </div>
+        )}
+
         {/* Amount slider */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-foreground">Monto del crédito</label>
-              <span className="text-base font-bold text-foreground">${amount.toLocaleString('es-MX')}</span>
+            <div className="flex items-center justify-between gap-4">
+              <label className="text-sm font-medium text-foreground">
+                Monto del crédito
+              </label>
+
+              <div className="flex items-center gap-2 relative">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatMoney(amount)}
+                  onChange={handleAmountInputChange}
+                  onBlur={handleAmountInputBlur}
+                  className="w-full py-2 text-right text-sm font-semibold text-foreground outline-none focus:border-brand-accent"
+                />
+                <label className="text-sm font-medium  text-muted-foreground">
+                  MXN
+                </label>
+              </div>
+
+
             </div>
             <div className="relative py-2">
               <input
                 type="range"
                 min={minAmount}
                 max={maxAmount}
-                step={500}
+                step={1}
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => handleAmountChange(Number(e.target.value))}
                 className="w-full appearance-none h-2 rounded-full outline-none cursor-pointer"
                 style={{
                   background: `linear-gradient(to right, var(--brand-accent) 0%, var(--brand-accent) ${pct}%, var(--brand-inactive) ${pct}%, var(--brand-inactive) 100%)`,
@@ -227,8 +217,8 @@ export default function CreditSelection() {
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>${minAmount.toLocaleString('es-MX')}</span>
-              <span>${maxAmount.toLocaleString('es-MX')}</span>
+              <span>${formatMoney(minAmount)}</span>
+              <span>${formatMoney(maxAmount)}</span>
             </div>
           </div>
 
@@ -282,27 +272,19 @@ export default function CreditSelection() {
           </div>
         </div>
 
-        {/* Summary card */}
-        <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Resumen estimado</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-muted-foreground">Monto solicitado</p>
-              <p className="text-sm font-semibold text-foreground">${amount.toLocaleString('es-MX')}</p>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Tasa mensual', value: '4.0%' },
+            { label: 'Apertura', value: '3.0%' },
+            //{ label: 'Plazo máx.', value: '24 meses' },
+            { label: 'Sin aval', value: '100%' },
+          ].map((item) => (
+            <div key={item.label} className="flex flex-col gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">
+              <span className="text-xs text-muted-foreground leading-tight">{item.label}</span>
+              <span className="text-sm font-semibold text-foreground">{item.value}</span>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Pago quincenal</p>
-              <p className="text-sm font-semibold text-foreground">${biweeklyPayment.toLocaleString('es-MX', { maximumFractionDigits: 2 })}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Plazo</p>
-              <p className="text-sm font-semibold text-foreground">{term} meses</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Tipo</p>
-              <p className="text-sm font-semibold text-foreground">{hasInsurance === 'protected' ? 'Protegido' : 'Esencial'}</p>
-            </div>
-          </div>
+          ))}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -316,7 +298,7 @@ export default function CreditSelection() {
           <ButtonCard
             variant="secondary"
             disabled={isSubmitting}
-            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_RESULT)}
+            onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
           >
             Regresar
           </ButtonCard>

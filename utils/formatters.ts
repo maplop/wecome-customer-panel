@@ -99,5 +99,8 @@ export function formatMxPhoneNumber(value?: string | number | null): string {
 }
 
 export function formatMoney(value: number): string {
-  return `${value.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+  return `${value.toLocaleString("es-MX", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
