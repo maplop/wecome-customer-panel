@@ -26,9 +26,9 @@ const DOCUMENT_TYPES: DocumentType[] = [
   { id: 'ine-frontal', piiKey: 'ine', valueName: 'ine_frontal', label: 'INE (Parte frontal)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
   { id: 'ine-trasera', piiKey: 'ine', valueName: 'ine_trasera', label: 'INE (Parte trasera)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
   { id: 'comprobante-domicilio', piiKey: 'comprobante_de_domicilio', valueName: 'comprobante_de_domicilio', label: 'Comprobante de domicilio', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 1 },
-  { id: 'recibo-nómina-1', piiKey: 'recibo_de_nomina_1', valueName: 'recibo_de_nomina_1', label: 'Recibo de nómina (1er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
-  { id: 'recibo-nómina-2', piiKey: 'recibo_de_nomina_2', valueName: 'recibo_de_nomina_2', label: 'Recibo de nómina (2do mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
-  { id: 'recibo-nómina-3', piiKey: 'recibo_de_nomina_3', valueName: 'recibo_de_nomina_3', label: 'Recibo de nómina (3er mas reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nomina-1', piiKey: 'recibo_de_nomina_1', valueName: 'recibo_de_nomina_1', label: 'Recibo de nómina (1er más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nomina-2', piiKey: 'recibo_de_nomina_2', valueName: 'recibo_de_nomina_2', label: 'Recibo de nómina (2do más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
+  { id: 'recibo-nomina-3', piiKey: 'recibo_de_nomina_3', valueName: 'recibo_de_nomina_3', label: 'Recibo de nómina (3er más reciente)', required: true, acceptedTypes: '.jpg,.jpeg,.png,.pdf', tab: 2 },
 ]
 
 const TABS = [
@@ -316,7 +316,7 @@ export default function UploadDocuments() {
     if (!client?.company) {
       setErrors((e) => ({
         ...e,
-        [docId]: 'No se encontro la compania del cliente para subir archivos.',
+        [docId]: 'No se encontró la compañía del cliente para subir archivos.',
       }))
       return
     }
@@ -435,7 +435,7 @@ export default function UploadDocuments() {
       )
 
       if (!jumioClientId) {
-        setSubmitError('No se encontro el identificador del cliente para validar INE.')
+        setSubmitError('No se encontró el identificador del cliente para validar INE.')
         return
       }
 

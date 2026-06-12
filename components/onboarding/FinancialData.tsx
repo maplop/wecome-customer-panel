@@ -47,7 +47,7 @@ export default function FinancialData() {
 
       await updateActiveRequestData(
         {
-          monto_maximo_solicitable: montoMaximoSolicitable,
+          monto_maximo_solicitable: Number(montoMaximoSolicitable),
           paso_actual: nextStep,
         },
       )
@@ -76,7 +76,7 @@ export default function FinancialData() {
       </div>
 
       <InfoNote
-        text="La información mostrada es confidencial y se utiliza únicamente para calcular tu linea de crédito."
+        text="La información mostrada es confidencial y se utiliza únicamente para calcular tu línea de crédito."
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">

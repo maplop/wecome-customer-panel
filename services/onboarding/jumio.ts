@@ -124,7 +124,7 @@ export function getActiveDocumentUrl(
   const signed = normalizeSignedUrl(signedCandidate, "");
   if (signed) return signed;
 
-  throw new Error("No se recibio la imagen del documento.");
+  throw new Error("No se recibió la imagen del documento.");
 }
 
 export async function postJumioWithRetry(
@@ -201,7 +201,7 @@ export async function verifyIneWithJumio(
 
   // 3) Verificar ambas imagenes.
   if (!frontActiveUrl || !backActiveUrl) {
-    throw new Error("No se recibieron ambas imagenes del documento.");
+    throw new Error("No se recibieron ambas imágenes del documento.");
   }
 
   // 4) Obtener URL firmada con 300 segundos.

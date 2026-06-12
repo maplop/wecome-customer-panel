@@ -82,7 +82,7 @@ export default function RecoverVerify() {
         if (rawType.includes('UserNotFoundException')) {
           setError('No encontramos una cuenta con ese correo.')
         } else if (rawType.includes('LimitExceededException')) {
-          setError('Has intentado demasiadas veces. Intenta de nuevo mas tarde.')
+          setError('Has intentado demasiadas veces. Intenta de nuevo más tarde.')
         } else {
           setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
         }
