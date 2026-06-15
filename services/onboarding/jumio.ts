@@ -12,16 +12,28 @@ interface JumioVerificationData {
   [key: string]: unknown;
 }
 
+interface JumioIneStartData extends JumioVerificationData {
+  status?: string;
+  accountId?: string;
+  workflowId?: string;
+}
+
 interface VerifyIneWithJumioInput {
   clientId: string;
   frontImage: string;
   backImage: string;
+  awaitFinalStatus?: boolean;
+  onStatusResolved?: JumioStatusResolvedCallback;
+  onStatusError?: JumioStatusErrorCallback;
 }
 
 interface VerifyIneWithJumioResult {
   valid: boolean;
   data: unknown;
 }
+
+type JumioStatusResolvedCallback = (result: VerifyIneWithJumioResult) => void;
+type JumioStatusErrorCallback = (error: Error) => void;
 
 type SignedUrlLike = string | { url?: unknown };
 
@@ -59,6 +71,12 @@ function toLowerText(value: unknown): string {
     .toLowerCase();
 }
 
+function toUpperText(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase();
+}
+
 function normalizeSignedUrl(input: SignedUrlLike, fallback: string): string {
   if (typeof input === "string" && input.trim()) return input;
 
@@ -90,7 +108,11 @@ function blobToBase64(blob: Blob): Promise<string> {
 
 export function shouldRetryJumio(message: unknown): boolean {
   const text = toLowerText(message);
-  return text.includes("timed out") || text.includes("timeout");
+  return (
+    text.includes("timed out") ||
+    text.includes("timeout") ||
+    text.includes("temporarily unavailable")
+  );
 }
 
 export function extractJumioMessage(source: unknown): string {
@@ -166,6 +188,110 @@ export async function postJumioWithRetry(
   throw lastError;
 }
 
+async function getJumioIneStatus(accountId: string, workflowId: string) {
+  const response = await apiClient.get(SERVICES.JUMIO_VERIFICATION, {
+    params: {
+      type: "ine",
+      accountId,
+      workflowId,
+    },
+    timeout: 120000,
+  });
+
+  return response.data;
+}
+
+async function getJumioIneStatusWithRetry(
+  accountId: string,
+  workflowId: string,
+  maxAttempts = 3,
+): Promise<unknown> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const responseData = await getJumioIneStatus(accountId, workflowId);
+      const responseMessage = extractJumioMessage(responseData);
+
+      if (shouldRetryJumio(responseMessage)) {
+        throw new Error(responseMessage || "Endpoint request timed out");
+      }
+
+      return responseData;
+    } catch (error) {
+      lastError = error;
+      const responseData = (error as { response?: { data?: unknown } })
+        ?.response?.data;
+      const responseMessage = extractJumioMessage(responseData);
+      const errorMessage = extractJumioMessage(error);
+      const message = responseMessage || errorMessage;
+
+      if (!shouldRetryJumio(message) || attempt === maxAttempts) {
+        throw error;
+      }
+
+      await delay(800 * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
+function isFinalJumioStatus(status: unknown): boolean {
+  const upperStatus = toUpperText(status);
+  if (!upperStatus) return false;
+
+  return [
+    "PROCESSED",
+    "APPROVED_VERIFIED",
+    "REJECTED",
+    "FAILED",
+    "ERROR",
+    "DENIED",
+    "EXPIRED",
+    "ABANDONED",
+  ].includes(upperStatus);
+}
+
+async function pollJumioIneStatus(
+  accountId: string,
+  workflowId: string,
+): Promise<JumioVerificationData> {
+  const maxPollAttempts = 20;
+  const pollDelayMs = 10000;
+  let lastData: JumioVerificationData = {};
+
+  for (let attempt = 1; attempt <= maxPollAttempts; attempt += 1) {
+    const statusResponse = await getJumioIneStatusWithRetry(
+      accountId,
+      workflowId,
+    );
+    const firstLevel = extractEnvelopeData<unknown>(statusResponse);
+    const statusData = extractNestedData(firstLevel) as JumioVerificationData;
+    lastData = statusData ?? {};
+
+    if (statusData?.valid === true) {
+      return statusData;
+    }
+
+    const workflowStatus =
+      statusData?.workflowStatus ?? statusData?.status ?? statusData?.decision;
+
+    if (isFinalJumioStatus(workflowStatus)) {
+      return statusData;
+    }
+
+    if (attempt < maxPollAttempts) {
+      await delay(pollDelayMs);
+    }
+  }
+
+  throw new Error(
+    extractJumioMessage(lastData) ||
+      "La validación de INE sigue en proceso. Intenta nuevamente en unos segundos.",
+  );
+}
+
 async function fetchUrlAsBase64(url: string): Promise<string> {
   if (url.startsWith("data:")) {
     return stripDataUrlPrefix(url);
@@ -225,12 +351,62 @@ export async function verifyIneWithJumio(
     back_image_b64: backBase64,
   });
 
-  // 7) Validar respuesta.
+  // 7) Leer respuesta inicial para obtener identificadores de seguimiento.
   const firstLevel = extractEnvelopeData<unknown>(response);
-  const jumioData = extractNestedData(firstLevel) as JumioVerificationData;
+  const startData = extractNestedData(firstLevel) as JumioIneStartData;
+
+  // Compatibilidad con respuestas sin polling.
+  if (startData?.valid === true) {
+    return {
+      valid: true,
+      data: startData,
+    };
+  }
+
+  const accountId = String(startData?.accountId ?? "").trim();
+  const workflowId = String(startData?.workflowId ?? "").trim();
+  const shouldAwaitFinalStatus = input.awaitFinalStatus === true;
+
+  if (!accountId || !workflowId) {
+    throw new Error(
+      extractJumioMessage(startData) ||
+        "No fue posible obtener el estado de validación de INE.",
+    );
+  }
+
+  // Flujo no bloqueante por defecto: inicia validación y permite continuar onboarding.
+  if (!shouldAwaitFinalStatus) {
+    // Ejecuta el polling en segundo plano para consultar estatus cada 10 segundos.
+    void pollJumioIneStatus(accountId, workflowId)
+      .then((finalData) => {
+        input.onStatusResolved?.({
+          valid: finalData?.valid === true,
+          data: finalData,
+        });
+      })
+      .catch((error) => {
+        const normalizedError =
+          error instanceof Error
+            ? error
+            : new Error("No se pudo consultar el estatus de validación.");
+        input.onStatusError?.(normalizedError);
+      });
+
+    return {
+      valid: true,
+      data: startData,
+    };
+  }
+
+  // 8) Consultar estatus final con GET ?type=ine&accountId&workflowId.
+  const finalData = await pollJumioIneStatus(accountId, workflowId);
+  input.onStatusResolved?.({
+    valid: finalData?.valid === true,
+    data: finalData,
+  });
 
   return {
-    valid: jumioData?.valid === true,
-    data: jumioData,
+    valid: finalData?.valid === true,
+    data: finalData,
   };
 }

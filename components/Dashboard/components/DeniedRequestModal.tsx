@@ -96,14 +96,6 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
             </div>
           </div>
 
-          {/* Sugerencia */}
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-            <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase">Próximos pasos sugeridos</p>
-            <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">
-              {mockReason.sugerencia}
-            </p>
-          </div>
-
           {/* Contacto */}
           <div className="flex flex-col gap-2 p-3 rounded-lg bg-secondary/30 border border-border">
             <p className="text-xs text-muted-foreground">¿Tienes preguntas?</p>

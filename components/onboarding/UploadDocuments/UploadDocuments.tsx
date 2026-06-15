@@ -11,6 +11,7 @@ import { updateClientData } from '@/services/client-data'
 import { verifyIneWithJumio } from '@/services/onboarding/jumio'
 import { useClientDataStore } from '@/stores/client-data-store'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { toast } from '@/hooks/use-toast'
 
 interface DocumentType {
   id: string
@@ -38,6 +39,8 @@ const TABS = [
 
 const INE_FRONT_DOC_ID = 'ine-frontal'
 const INE_BACK_DOC_ID = 'ine-trasera'
+const TOAST_DURATION_INFO_MS = 7000
+const TOAST_DURATION_RESULT_MS = 9000
 
 interface UploadedDocumentValue {
   active: boolean
@@ -443,6 +446,38 @@ export default function UploadDocuments() {
         clientId: jumioClientId,
         frontImage: String(ineFrontDoc?.value?.[0]?.url || ''),
         backImage: String(ineBackDoc?.value?.[0]?.url || ''),
+        awaitFinalStatus: false,
+        onStatusResolved: (result) => {
+          if (result.valid) {
+            toast({
+              title: 'Validación de INE completada',
+              description: 'Tu INE fue validado correctamente.',
+              duration: TOAST_DURATION_RESULT_MS,
+            })
+            return
+          }
+
+          toast({
+            variant: 'destructive',
+            title: 'Resultado de validación de INE',
+            description: 'No se pudo validar tu INE. Te contactaremos con los siguientes pasos.',
+            duration: TOAST_DURATION_RESULT_MS,
+          })
+        },
+        onStatusError: () => {
+          toast({
+            variant: 'destructive',
+            title: 'Validación de INE pendiente',
+            description: 'No pudimos obtener un resultado final de tu INE por ahora. Lo reintentaremos.',
+            duration: TOAST_DURATION_RESULT_MS,
+          })
+        },
+      })
+
+      toast({
+        title: 'Documentación enviada',
+        description: 'Tu INE será validado en segundo plano mientras continúas con tu solicitud.',
+        duration: TOAST_DURATION_INFO_MS,
       })
 
       if (!jumioResult.valid) {
