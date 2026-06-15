@@ -86,7 +86,7 @@ function extractServerMessage(data: unknown): string | undefined {
 function getDefaultErrorMessage(error: AxiosError): string {
   if (!error.response) {
     if (error.code === "ECONNABORTED") {
-      return "La solicitud excedio el tiempo de espera.";
+      return "La solicitud excedió el tiempo de espera.";
     }
 
     return "No fue posible comunicarse con el servidor.";
@@ -94,13 +94,13 @@ function getDefaultErrorMessage(error: AxiosError): string {
 
   switch (error.response.status) {
     case 400:
-      return "La solicitud no es valida.";
+      return "La solicitud no es válida.";
     case 401:
-      return "Tu sesion expiro. Inicia sesion nuevamente.";
+      return "Tu sesión expiró. Inicia sesión nuevamente.";
     case 403:
       return "No tienes permisos para realizar esta accion.";
     case 404:
-      return "No se encontro el recurso solicitado.";
+      return "No se encontró el recurso solicitado.";
     default:
       if (error.response.status >= 500) {
         return "Ocurrio un error del servidor.";

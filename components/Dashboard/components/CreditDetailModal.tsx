@@ -1,58 +1,50 @@
 'use client'
-import { Check, CreditCard, X } from '@/lib/icons'
-import { ButtonCard } from '@/components/common'
+import { CreditCard, X } from '@/lib/icons'
+import type { ClientRequestRecord, ClientRequestData } from '@/types/client-request'
+import { ESTADO_CONFIG } from '../constants/request-status'
+const MONTO_PAGADO_HARDCODED = 12500
 
+function parseAmount(value?: string | number): number {
+  if (value == null || value === '') return 0
+  if (typeof value === 'number') return isFinite(value) ? value : 0
+  const n = parseFloat(value.replace(/[^0-9.,]/g, '').replace(/,/g, ''))
+  return isFinite(n) ? n : 0
+}
+function formatMoney(n: number) {
+  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+}
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 interface CreditDetailModalProps {
-  credit: {
-    id: string
-    type: string
-    amount: number
-    biweeklyPayment: number
-    totalPaid: number
-    paymentDue: string
-    paidPeriods: number
-    totalPeriods: number
-    status: 'activo' | 'finalizado'
-  }
+  credit: ClientRequestRecord
   onClose: () => void
   onPay: () => void
 }
 
-export default function CreditDetailModal({ credit, onClose, onPay }: CreditDetailModalProps) {
-  const progress = Math.round((credit.paidPeriods / credit.totalPeriods) * 100)
-  const isFinished = credit.status === 'finalizado'
-  const remaining = credit.totalPeriods - credit.paidPeriods
-  const totalAmount = credit.biweeklyPayment * credit.totalPeriods
-  const remainingAmount = totalAmount - credit.totalPaid
+export default function CreditDetailModal({ credit, onClose }: CreditDetailModalProps) {
+  const data = credit.data
+  const estado = (data.estado ?? 'pending') as NonNullable<ClientRequestData["estado"]>
+  const estadoCfg = ESTADO_CONFIG[estado]
+  const isFinished = estado === 'completed' || estado === 'approved'
 
-  // Generate sample schedule
-  const schedule = Array.from({ length: credit.totalPeriods }, (_, i) => {
-    const isPaid = i < credit.paidPeriods
-    const isCurrent = i === credit.paidPeriods
-    const date = new Date()
-    date.setDate(date.getDate() + (i - credit.paidPeriods) * 15)
-    return {
-      period: i + 1,
-      amount: credit.biweeklyPayment,
-      date: date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }),
-      isPaid,
-      isCurrent,
-    }
-  })
+  const solicitado = parseAmount(data.monto_solicitado)
+  const pagado = MONTO_PAGADO_HARDCODED
+  const progress = solicitado > 0 ? Math.min(100, Math.round((pagado / solicitado) * 100)) : 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+      <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark"
-            >
-              <CreditCard className="stroke-white w-5 h-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary">
+              <CreditCard className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Detalle del crédito</h2>
+              <p className="text-base font-semibold text-foreground">Crédito Nómina</p>
               <p className="text-xs text-muted-foreground font-mono">{credit.id}</p>
             </div>
           </div>
@@ -60,63 +52,27 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-secondary transition"
-            aria-label="Cerrar"
           >
             <X />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* Status badge */}
-          <div className="flex items-center gap-2 mb-5">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${isFinished
-                ? 'bg-green-100 text-green-700'
-                : 'bg-amber-100 text-amber-700'
-                }`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${isFinished ? 'bg-green-500' : 'bg-amber-500'}`} />
-              {isFinished ? 'Finalizado' : 'Activo'}
-            </span>
-            <span className="text-xs text-muted-foreground">{credit.type}</span>
-          </div>
+        {/* Body */}
+        <div className="px-6 py-5 flex flex-col gap-6">
 
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="rounded-xl bg-secondary/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Monto total</p>
-              <p className="text-lg font-bold text-foreground">
-                ${totalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </p>
+          {/* Monto pagado / solicitado + barra */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Monto pagado</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-brand-accent">{formatMoney(pagado)}</span>
+                  <span className="text-sm text-muted-foreground">/ {formatMoney(solicitado)}</span>
+                </div>
+              </div>
+              <span className="text-lg font-semibold text-foreground">{progress}%</span>
             </div>
-            <div className="rounded-xl bg-secondary/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Pago quincenal</p>
-              <p className="text-lg font-bold text-foreground">
-                ${credit.biweeklyPayment.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div className="rounded-xl bg-secondary/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Total pagado</p>
-              <p className="text-lg font-bold text-brand-accent">
-                ${credit.totalPaid.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div className="rounded-xl bg-secondary/50 p-4">
-              <p className="text-xs text-muted-foreground mb-1">Por pagar</p>
-              <p className="text-lg font-bold text-foreground">
-                ${remainingAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">Progreso de pagos</span>
-              <span className="text-sm font-semibold text-brand-accent">{progress}%</span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
@@ -125,71 +81,39 @@ export default function CreditDetailModal({ credit, onClose, onPay }: CreditDeta
                 }}
               />
             </div>
-            <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-              <span>{credit.paidPeriods} pagos realizados</span>
-              <span>{remaining} pagos restantes</span>
-            </div>
+            <p className="text-xs text-muted-foreground">Pagado del monto solicitado</p>
           </div>
 
-          {/* Payment schedule */}
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-3">Calendario de pagos</h3>
-            <div className="rounded-xl border border-border overflow-hidden">
-              <div className="max-h-52 overflow-y-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-secondary/50 sticky top-0">
-                    <tr>
-                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-muted-foreground">Periodo</th>
-                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-muted-foreground">Fecha</th>
-                      <th className="text-right py-2.5 px-4 text-xs font-semibold text-muted-foreground">Monto</th>
-                      <th className="text-center py-2.5 px-4 text-xs font-semibold text-muted-foreground">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schedule.map((row) => (
-                      <tr
-                        key={row.period}
-                        className={`border-t border-border ${row.isCurrent ? 'bg-amber-50' : ''}`}
-                      >
-                        <td className="py-2.5 px-4 text-foreground font-medium">{row.period}</td>
-                        <td className="py-2.5 px-4 text-muted-foreground">{row.date}</td>
-                        <td className="py-2.5 px-4 text-foreground text-right">
-                          ${row.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                        </td>
-                        <td className="py-2.5 px-4 text-center">
-                          {row.isPaid ? (
-                            <span className="inline-flex items-center gap-1 text-green-600">
-                              <Check className="w-4 h-4" />
-                              Pagado
-                            </span>
-                          ) : row.isCurrent ? (
-                            <span className="inline-flex items-center gap-1 font-medium text-brand-accent">
-                              Pendiente
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          {/* Campos en grid 2 columnas */}
+          <div className="grid grid-cols-2 gap-4">
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Tipo de crédito</span>
+              <span className="text-sm font-medium text-foreground">{data.tipo_de_credito ?? '—'}</span>
             </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Plazo</span>
+              <span className="text-sm font-medium text-foreground">
+                {data.plazo ? `${data.plazo} meses` : '—'}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Estado</span>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium w-fit ${estadoCfg.className}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${estadoCfg.dot}`} />
+                {estadoCfg.label}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Fecha de creación</span>
+              <span className="text-sm font-medium text-foreground">{formatDate(credit.created_at)}</span>
+            </div>
+
           </div>
         </div>
-
-        {/* Footer */}
-        {!isFinished && (
-          <div className="px-6 py-4 border-t border-border shrink-0">
-            <ButtonCard
-              onClick={onPay}
-              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98] bg-brand-accent"
-            >
-              Realizar pago de ${credit.biweeklyPayment.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-            </ButtonCard>
-          </div>
-        )}
       </div>
     </div>
   )

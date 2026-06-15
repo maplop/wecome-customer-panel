@@ -1,6 +1,6 @@
 'use client'
 
-import CreditSelection from '@/components/Onboarding/CreditSelection'
+import CreditSelection from '@/components/Onboarding/CreditSelection/CreditSelection'
 
 export default function CreditSelectionPage() {
   return <CreditSelection />

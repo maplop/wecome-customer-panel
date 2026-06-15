@@ -23,7 +23,7 @@ export async function getClientData(
         clientData = buildClientSession(info, args);
       }
       if (!clientData) {
-        throw new Error("No se pudo inicializar la sesion del cliente.");
+        throw new Error("No se pudo inicializar la sesión del cliente.");
       }
 
       if (args.includes("company") && !completedRequests.company) {

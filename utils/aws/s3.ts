@@ -56,7 +56,11 @@ function delay(ms: number): Promise<void> {
 function toBlobPart(
   file: Blob | File | ArrayBuffer | Uint8Array | string,
 ): BlobPart {
-  if (typeof file === "string" || file instanceof Blob || file instanceof ArrayBuffer) {
+  if (
+    typeof file === "string" ||
+    file instanceof Blob ||
+    file instanceof ArrayBuffer
+  ) {
     return file;
   }
 
@@ -84,7 +88,7 @@ export async function checkKeyExist(
 
 export async function getSignedUrl(
   path: string,
-  expires = 10,
+  expires = 60,
   repository: string = BUCKET,
 ): Promise<SignedUrlResponse | string> {
   let attempts = 0;

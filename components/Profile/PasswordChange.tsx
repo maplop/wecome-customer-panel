@@ -50,7 +50,7 @@ export default function PasswordChange() {
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Las contrasenas no coinciden.')
+      setError('Las contraseñas no coinciden.')
       return
     }
 
@@ -72,9 +72,9 @@ export default function PasswordChange() {
         if (rawType.includes('NotAuthorizedException')) {
           setError('La contraseña actual es incorrecta.')
         } else if (rawType.includes('InvalidPasswordException')) {
-          setError('La nueva contraseña no cumple con la politica de seguridad.')
+          setError('La nueva contraseña no cumple con la política de seguridad.')
         } else if (rawType.includes('LimitExceededException')) {
-          setError('Demasiados intentos. Intenta mas tarde.')
+          setError('Demasiados intentos. Intenta más tarde.')
         } else {
           setError(err.apiDetail || err.apiMessage || err.apiError || err.message)
         }

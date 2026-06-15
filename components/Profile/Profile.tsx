@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import { useClientDataStore } from "@/stores/client-data-store";
-import { formatCurrencyMx, formatDateLongEs, formatMxPhoneNumber } from '@/utils/formatters'
+import { formatDateLongEs, formatMoney, formatMxPhoneNumber } from '@/utils/formatters'
 import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '@/components/common'
 
 interface DataItemProps {
@@ -94,7 +94,7 @@ export default function Profile() {
     { label: 'Actividad económica', value: data.actividad_economica },
     { label: 'Nivel de estudios', value: data.nivel_de_estudio },
     { label: 'Antigüedad', value: data.antiguedad_laboral___empresarial },
-    { label: 'Salario', value: `${formatCurrencyMx(data.salario)} MXN` },
+    { label: 'Salario', value: `${formatMoney(Number(data.salario))} MXN` },
   ]
 
   return (
