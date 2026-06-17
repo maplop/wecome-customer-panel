@@ -3,13 +3,13 @@
 import { useMemo, useState } from 'react'
 import { ButtonCard } from '@/components/common'
 import { CreditDetailModal, ClientRequestItem, ResolvedOfferModal, DeniedRequestModal } from './components'
-import { Plus } from '@/lib/icons'
+import { Plus, RefreshCw } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientDataStore } from '@/stores/client-data-store'
 import { useClientRequestStore } from '@/stores'
 import type { RequestStatus, ClientRequestRecord } from '@/types/client-request'
-import { addRequest } from '@/services/client-requests'
+import { addRequest, getRequestsByClient } from '@/services/client-requests'
 import { TitleCard, SubtitleCard } from '@/components/common'
 
 export type TabFilter = RequestStatus | 'all'
@@ -32,7 +32,9 @@ export default function CreditDashboard() {
   const session = useClientDataStore((state) => state)
   const requests = useClientRequestStore((state) => state.requests)
   const [isCreatingRequest, setIsCreatingRequest] = useState(false)
+  const [isRefreshingRequests, setIsRefreshingRequests] = useState(false)
   const [createRequestError, setCreateRequestError] = useState('')
+  const [refreshRequestsError, setRefreshRequestsError] = useState('')
 
   const user = useMemo(() => {
     const data = session.client?.pii
@@ -112,6 +114,32 @@ export default function CreditDashboard() {
     }
   }
 
+  const handleRefreshRequests = async () => {
+    if (isRefreshingRequests) return
+
+    const clientId = Number(session.client?.id ?? 0)
+    if (!clientId) {
+      setRefreshRequestsError('No se pudo identificar el cliente para actualizar solicitudes.')
+      return
+    }
+
+    setRefreshRequestsError('')
+    setIsRefreshingRequests(true)
+
+    try {
+      const latestRequests = await getRequestsByClient(String(clientId))
+      useClientRequestStore.getState().syncClientRequests(clientId, latestRequests)
+    } catch (error) {
+      setRefreshRequestsError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudieron actualizar las solicitudes. Intenta nuevamente.',
+      )
+    } finally {
+      setIsRefreshingRequests(false)
+    }
+  }
+
   const handleDetailContinue = () => {
     if (!detailModal.credit) return
     const id = detailModal.credit.id
@@ -175,20 +203,36 @@ export default function CreditDashboard() {
             Consulta el estado de tus solicitudes de crédito, revisa los detalles  <br /> y continúa con los trámites pendientes.
           </SubtitleCard>
         </div>
+        <div className="flex items-center gap-3">
+          <ButtonCard
+            variant="secondary"
+            onClick={handleRefreshRequests}
+            disabled={isRefreshingRequests}
+            loading={isRefreshingRequests}
+            loadingText="Actualizando..."
+            className="w-auto px-4 py-2"
+          >
+            <RefreshCw size={16} />
+            Actualizar solicitudes
+          </ButtonCard>
 
-        <ButtonCard
-          onClick={handleCreateNewRequest}
-          disabled={isCreatingRequest}
-          loading={isCreatingRequest}
-          loadingText="Creando solicitud..."
-          className="w-auto px-4 py-2"
-        >
-          <Plus />
-          Nueva solicitud de crédito
-        </ButtonCard>
+          <ButtonCard
+            onClick={handleCreateNewRequest}
+            disabled={isCreatingRequest}
+            loading={isCreatingRequest}
+            loadingText="Creando solicitud..."
+            className="w-auto px-4 py-2"
+          >
+            <Plus />
+            Nueva solicitud de crédito
+          </ButtonCard>
+        </div>
       </div>
       {createRequestError && (
         <p className="mb-4 text-sm text-destructive">{createRequestError}</p>
+      )}
+      {refreshRequestsError && (
+        <p className="mb-4 text-sm text-destructive">{refreshRequestsError}</p>
       )}
 
       {filteredCredits.length === 0 && activeTab === 'all' ? (
@@ -243,3 +287,4 @@ export default function CreditDashboard() {
     </>
   )
 }
+

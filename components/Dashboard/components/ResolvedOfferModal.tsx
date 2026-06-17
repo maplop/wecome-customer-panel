@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { X, CheckCircle } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
+import { getCreditTypeLabel } from '@/utils/credit-type'
 
 interface ResolvedOfferModalProps {
   credit: ClientRequestRecord
@@ -15,19 +16,21 @@ function formatMoney(n: number) {
 }
 
 export default function ResolvedOfferModal({ credit, onClose, onAccept }: ResolvedOfferModalProps) {
-  // Datos mockeados para la oferta
+  // Fallback temporal para datos que aún no lleguen desde backend.
   const mockOffer = {
     monto: 50000,
-    tasaMensual: 4.2,
     plazo: 18,
-    comisionApertura: 3.5,
-    cuotaMensual: 2800,
     totalAPagar: 50400,
   }
 
   const data = credit.data
-  const solicitadoMonto = Number(data.monto_solicitado ?? mockOffer.monto)
-  const solicitado = formatMoney(solicitadoMonto)
+  const montoOfertado = Number(data.monto_ofertado ?? data.monto_solicitado ?? mockOffer.monto)
+  const montoSolicitado = Number(data.monto_solicitado ?? mockOffer.monto)
+  const frecuenciaDePago = String(data.frecuencia_de_pago ?? 'Mensual')
+  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito)
+  const plazo = Number(data.plazo ?? mockOffer.plazo)
+  const ofertado = formatMoney(montoOfertado)
+  const solicitado = formatMoney(montoSolicitado)
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -66,7 +69,7 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
           {/* Monto principal */}
           <div className="flex flex-col gap-2 p-4 rounded-xl bg-brand-accent/10 border border-brand-accent/20">
             <span className="text-xs text-muted-foreground">Monto aprobado</span>
-            <span className="text-3xl font-bold text-foreground">{solicitado}</span>
+            <span className="text-3xl font-bold text-foreground">{ofertado}</span>
             <p className="text-xs text-muted-foreground mt-1">Disponible inmediatamente en tu cuenta</p>
           </div>
 
@@ -74,22 +77,27 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
               <span className="text-xs text-muted-foreground">Plazo</span>
-              <span className="text-lg font-semibold text-foreground">{mockOffer.plazo} meses</span>
+              <span className="text-lg font-semibold text-foreground">{plazo} meses</span>
             </div>
 
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-              <span className="text-xs text-muted-foreground">Tasa mensual</span>
-              <span className="text-lg font-semibold text-foreground">{mockOffer.tasaMensual}%</span>
+              <span className="text-xs text-muted-foreground">Frecuencia de pago</span>
+              <span className="text-lg font-semibold text-foreground">{frecuenciaDePago}</span>
             </div>
 
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-              <span className="text-xs text-muted-foreground">Comisión de apertura</span>
-              <span className="text-lg font-semibold text-foreground">{mockOffer.comisionApertura}%</span>
+              <span className="text-xs text-muted-foreground">Monto solicitado</span>
+              <span className="text-lg font-semibold text-foreground">{solicitado}</span>
             </div>
 
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-              <span className="text-xs text-muted-foreground">Cuota mensual</span>
-              <span className="text-lg font-semibold text-foreground">{formatMoney(mockOffer.cuotaMensual)}</span>
+              <span className="text-xs text-muted-foreground">Monto ofertado</span>
+              <span className="text-lg font-semibold text-foreground">{ofertado}</span>
+            </div>
+
+            <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
+              <span className="text-xs text-muted-foreground">Tipo de crédito</span>
+              <span className="text-lg font-semibold text-foreground">{tipoDeCredito}</span>
             </div>
           </div>
 
@@ -97,7 +105,7 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
           <div className="flex flex-col gap-3 p-4 rounded-xl bg-secondary/30 border border-border">
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground">Monto a desembolsar</span>
-              <span className="font-semibold text-foreground">{solicitado}</span>
+              <span className="font-semibold text-foreground">{ofertado}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground">Total con intereses</span>

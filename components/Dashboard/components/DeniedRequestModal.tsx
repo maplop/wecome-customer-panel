@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { X, AlertCircle } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
+import { getCreditTypeLabel } from '@/utils/credit-type'
 
 interface DeniedRequestModalProps {
   credit: ClientRequestRecord
@@ -86,7 +87,7 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
                 <span className="text-xs text-muted-foreground">Tipo de crédito</span>
-                <span className="text-sm font-semibold text-foreground">{data.tipo_de_credito ?? '—'}</span>
+                <span className="text-sm font-semibold text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
               </div>
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
@@ -131,3 +132,4 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
     </div>
   )
 }
+

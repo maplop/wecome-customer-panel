@@ -7,6 +7,7 @@ import { Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
 import { formatMoney } from '@/utils/formatters'
+import { getCreditTypeLabel, isProtectedCredit } from '@/utils/credit-type'
 
 const MONTHLY_RATE = 0.04
 const ANNUAL_RATE = MONTHLY_RATE * 12
@@ -25,7 +26,7 @@ export default function CreditResult() {
 
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0
   const term = toPositiveNumber(data.plazo) ?? 12
-  const isProtected = data.tipo_de_credito === 'Protegido'
+  const isProtected = isProtectedCredit(data.tipo_de_credito)
 
   const totalInterest = amount * MONTHLY_RATE * term
   const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
@@ -104,7 +105,7 @@ export default function CreditResult() {
           <div>
             <p className="text-xs text-muted-foreground">Tipo</p>
             <p className="text-sm font-semibold text-foreground">
-              {data.tipo_de_credito ?? '—'}
+              {getCreditTypeLabel(data.tipo_de_credito)}
             </p>
           </div>
         </div>
@@ -132,3 +133,4 @@ export default function CreditResult() {
     </WrapperCard>
   )
 }
+

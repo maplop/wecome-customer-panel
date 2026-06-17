@@ -9,6 +9,7 @@ import { useClientRequestStore } from '@/stores'
 import { useClientDataStore } from '@/stores'
 import RiskModal from './RiskModal'
 import { formatMoney } from '@/utils/formatters'
+import { normalizeCreditType } from '@/utils/credit-type'
 
 
 const TERMS = [12, 18]
@@ -45,7 +46,7 @@ export default function CreditSelection() {
   const maxAmount = Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, Math.round(maxFromSalary)))
 
   // 3️⃣ resolvedAmount depende de maxAmount
-  const resolvedType = requestData.tipo_de_credito === 'esencial' ? 'esencial' : 'protected'
+  const resolvedType = normalizeCreditType(requestData.tipo_de_credito) ?? 'protected'
   const requestedAmount = toPositiveNumber(requestData.monto_solicitado)
   const resolvedAmount = Math.min(
     maxAmount,
@@ -138,7 +139,7 @@ export default function CreditSelection() {
     try {
       await updateActiveRequestData({
         monto_solicitado: amount,
-        tipo_de_credito: hasInsurance === 'protected' ? 'Protegido' : 'Esencial',
+        tipo_de_credito: hasInsurance === 'protected' ? 'protected' : 'esencial',
         monto_maximo_solicitable: maxAmount,
         plazo: String(term),
         paso_actual: nextStep,

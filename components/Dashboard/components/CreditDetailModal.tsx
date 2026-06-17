@@ -2,6 +2,7 @@
 import { CreditCard, X } from '@/lib/icons'
 import type { ClientRequestRecord, ClientRequestData } from '@/types/client-request'
 import { ESTADO_CONFIG } from '../constants/request-status'
+import { getCreditTypeLabel } from '@/utils/credit-type'
 const MONTO_PAGADO_HARDCODED = 12500
 
 function parseAmount(value?: string | number): number {
@@ -89,7 +90,7 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
 
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Tipo de crédito</span>
-              <span className="text-sm font-medium text-foreground">{data.tipo_de_credito ?? '—'}</span>
+              <span className="text-sm font-medium text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -118,3 +119,4 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
     </div>
   )
 }
+

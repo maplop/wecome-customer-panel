@@ -2,6 +2,7 @@ import { CreditCard } from '@/lib/icons'
 import type { ClientRequestRecord } from "@/types/client-request"
 import { ESTADO_CONFIG } from "../constants/request-status"
 import { formatMoney } from '@/utils/formatters'
+import { getCreditTypeLabel } from '@/utils/credit-type'
 
 export interface ClientRequestItemProps {
   request: ClientRequestRecord
@@ -87,7 +88,7 @@ export default function ClientRequestItem({
         <div className="flex flex-col gap-0.5">
           <span className="text-xs text-muted-foreground">Tipo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {data.tipo_de_credito ?? "—"}
+            {getCreditTypeLabel(data.tipo_de_credito)}
           </span>
         </div>
 
@@ -122,3 +123,4 @@ export default function ClientRequestItem({
     </div>
   )
 }
+

@@ -4,6 +4,8 @@ export interface ClientRequestData {
   monto_solicitado?: number;
   estado?: RequestStatus;
   monto_maximo_solicitable?: number;
+  monto_ofertado?: number;
+  frecuencia_de_pago?: string;
   paso_actual?: string;
 }
 
