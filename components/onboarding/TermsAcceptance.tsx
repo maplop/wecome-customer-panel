@@ -264,7 +264,7 @@ export default function TermsAcceptance() {
           </ButtonCard>
           <ButtonCard
             variant='secondary'
-            onClick={() => router.push(ROUTES.ONBOARDING.FINAL_CONFIRM)}
+            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_RESULT)}
           >
             Regresar
           </ButtonCard>

@@ -79,19 +79,21 @@ export const ONBOARDING_STEPS = [
     step: 8,
     route: ROUTES.ONBOARDING.CREDIT_RESULT,
   },
+  /*
   {
     title: "Confirmación final",
     step: 9,
     route: ROUTES.ONBOARDING.FINAL_CONFIRM,
   },
+  */
   {
     title: "Aceptación de términos",
-    step: 10,
+    step: 9,
     route: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
   },
   {
     title: "Crédito exitoso",
-    step: 11,
+    step: 10,
     route: ROUTES.ONBOARDING.CREDIT_SUCCESS,
   },
 ] as const;

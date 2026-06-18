@@ -37,7 +37,7 @@ export default function CreditResult() {
   const [error, setError] = useState('')
 
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.FINAL_CONFIRM
+    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
     setIsSubmitting(true)
     setError('')
     try {
@@ -61,6 +61,9 @@ export default function CreditResult() {
 
       {/* Hero — monto solicitado */}
       <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark">
+        <div className="flex justify-center items-center w-10 h-10 rounded-full bg-brand-accent">
+          <Check className="stroke-brand-dark w-8 h-8" />
+        </div>
         <span className="text-xs font-medium text-white/60 uppercase tracking-widest">
           Monto solicitado
         </span>
@@ -68,10 +71,6 @@ export default function CreditResult() {
           {formatMoney(amount)}
         </span>
         <span className="text-sm text-white/50">MXN</span>
-        <div className="flex items-center gap-1.5">
-          <Check className="stroke-brand-success-light w-4 h-4" />
-          <span className="text-xs text-white/70">Preaprobado al instante</span>
-        </div>
       </div>
 
       {/* Detalles del crédito */}
