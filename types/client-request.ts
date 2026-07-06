@@ -5,7 +5,7 @@ export interface ClientRequestData {
   estado?: RequestStatus;
   monto_maximo_solicitable?: number;
   monto_ofertado?: number;
-  frecuencia_de_pago?: string;
+  frecuencia_de_pago?: "QUINCENAL" | "MENSUAL";
   paso_actual?: string;
 }
 

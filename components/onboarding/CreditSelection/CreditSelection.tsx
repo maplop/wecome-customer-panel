@@ -5,16 +5,17 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { updateActiveRequestData } from '@/services/client-requests'
-import { useClientRequestStore } from '@/stores'
-import { useClientDataStore } from '@/stores'
+import { useClientRequestStore, useClientDataStore } from '@/stores'
 import RiskModal from './RiskModal'
 import { formatMoney } from '@/utils/formatters'
 import { normalizeCreditType } from '@/utils/credit-type'
+import { Shield, ShieldCheck } from '@/lib/icons'
 
 
 const TERMS = [12, 18]
 const MIN_AMOUNT = 10000
 const MAX_AMOUNT_CAP = 250000
+const PAYMENT_FREQUENCIES = ['QUINCENAL', 'MENSUAL'] as const
 
 function toPositiveNumber(value: unknown): number | null {
   const parsed = Number(value)
@@ -38,10 +39,19 @@ export default function CreditSelection() {
 
   const [term, setTerm] = useState(resolvedTerm)
 
+  const resolvedPaymentFrequency = (() => {
+    const value = String(requestData.frecuencia_de_pago ?? '').toUpperCase()
+    return PAYMENT_FREQUENCIES.includes(value as 'QUINCENAL' | 'MENSUAL')
+      ? (value as 'QUINCENAL' | 'MENSUAL')
+      : 'QUINCENAL'
+  })()
+
+  const [paymentFrequency, setPaymentFrequency] = useState<'QUINCENAL' | 'MENSUAL'>(resolvedPaymentFrequency)
+
   // 2️⃣ maxAmount depende de term
   const salaryNum = toPositiveNumber(salary) ?? 0
-  const paymentCapacity = (salaryNum * 0.33) / 2
-  const maxFromSalary = paymentCapacity * (term * 2)
+  const paymentCapacity = salaryNum * 0.33          // 33% del salario mensual
+  const maxFromSalary = paymentCapacity * term       // capacidad mensual × meses del plazo
   const minAmount = MIN_AMOUNT
   const maxAmount = Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, Math.round(maxFromSalary)))
 
@@ -70,6 +80,7 @@ export default function CreditSelection() {
     setAmount(resolvedAmount)
     setTerm(resolvedTerm)
     setHasInsurance(resolvedType)
+    setPaymentFrequency(resolvedPaymentFrequency)
   }, [])
 
   useEffect(() => {
@@ -142,6 +153,7 @@ export default function CreditSelection() {
         tipo_de_credito: hasInsurance === 'protected' ? 'protected' : 'esencial',
         monto_maximo_solicitable: maxAmount,
         plazo: String(term),
+        frecuencia_de_pago: paymentFrequency,
         paso_actual: nextStep,
       })
 
@@ -223,87 +235,155 @@ export default function CreditSelection() {
             </div>
           </div>
 
-          {/* Term selection */}
+          {/* Plazo + Frecuencia de pago, lado a lado */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-foreground">Plazo</label>
+              <div className="flex rounded-xl bg-secondary p-1">
+                {TERMS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTerm(t)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${term === t
+                      ? 'bg-brand-dark text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    {t} meses
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-foreground">Frecuencia de pago</label>
+              <div className="flex rounded-xl bg-secondary p-1">
+                {PAYMENT_FREQUENCIES.map((freq) => (
+                  <button
+                    key={freq}
+                    type="button"
+                    onClick={() => setPaymentFrequency(freq)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${paymentFrequency === freq
+                      ? 'bg-brand-dark text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    {freq === 'QUINCENAL' ? 'Quincenal' : 'Mensual'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Insurance toggle */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">Plazo</label>
-            <div className="grid grid-cols-2 gap-2">
-              {TERMS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTerm(t)}
-                  className={`rounded-xl py-2.5 text-sm font-medium transition active:scale-[0.97] ${term === t
-                    ? 'bg-brand-dark text-white'
-                    : 'border border-border text-foreground hover:bg-secondary'
+            <label className="text-sm font-semibold text-foreground">
+              Tipo de crédito
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleInsuranceClick(true)}
+                className={`relative rounded-xl p-4 text-left transition active:scale-[0.98] ${hasInsurance === 'protected'
+                  ? 'border-2 border-brand-accent bg-brand-accent/10'
+                  : 'border border-brand-accent/25 bg-white'
+                  }`}
+              >
+                <ShieldCheck
+                  className={`absolute top-3 right-3 h-5 w-5 ${hasInsurance === 'protected'
+                    ? 'text-brand-accent'
+                    : 'text-muted-foreground/50'
+                    }`}
+                />
+
+                <span
+                  className={`block text-sm font-semibold ${hasInsurance === 'protected'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
                     }`}
                 >
-                  {t} meses
-                </button>
-              ))}
+                  Protegido
+                </span>
+
+                <span
+                  className={`block text-xs mt-0.5 ${hasInsurance === 'protected'
+                    ? 'text-brand-accent font-medium'
+                    : 'text-muted-foreground'
+                    }`}
+                >
+                  Con seguro incluido
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleInsuranceClick(false)}
+                className={`relative rounded-xl p-4 text-left transition active:scale-[0.98] ${hasInsurance === 'esencial'
+                  ? 'border-2 border-brand-accent bg-brand-accent/10'
+                  : 'border border-brand-accent/25 bg-white'
+                  }`}
+              >
+                <Shield
+                  className={`absolute top-3 right-3 h-5 w-5 ${hasInsurance === 'esencial'
+                    ? 'text-brand-accent'
+                    : 'text-muted-foreground/50'
+                    }`}
+                />
+
+                <span
+                  className={`block text-sm font-semibold ${hasInsurance === 'esencial'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
+                    }`}
+                >
+                  Esencial
+                </span>
+
+                <span
+                  className={`block text-xs mt-0.5 ${hasInsurance === 'esencial'
+                    ? 'text-brand-accent font-medium'
+                    : 'text-muted-foreground'
+                    }`}
+                >
+                  Sin seguro
+                </span>
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Insurance toggle */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-foreground">Tipo de crédito</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleInsuranceClick(true)}
-              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance === 'protected'
-                ? 'bg-brand-dark text-white'
-                : 'border border-border text-foreground hover:bg-secondary'
-                }`}
-            >
-              <span className="font-semibold">Protegido</span>
-              <span className={`text-xs ${hasInsurance === 'protected' ? 'text-white/70' : 'text-muted-foreground'}`}>Con seguro</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleInsuranceClick(false)}
-              className={`rounded-xl py-3 px-4 text-sm font-medium transition active:scale-[0.97] text-left flex flex-col gap-0.5 ${hasInsurance === 'esencial'
-                ? 'bg-brand-dark text-white'
-                : 'border border-border text-foreground hover:bg-secondary'
-                }`}
-            >
-              <span className="font-semibold">Esencial</span>
-              <span className={`text-xs ${hasInsurance === 'esencial' ? 'text-white/70' : 'text-muted-foreground'}`}>Sin seguro</span>
-            </button>
+          {/* Stats */}
+          <div className="grid grid-cols-3 divide-x divide-border border-t border-border pt-4 mt-3">
+            {[
+              { label: 'Tasa mensual', value: '4.0%' },
+              { label: 'Apertura', value: '3.0%' },
+              { label: 'Sin aval', value: '100%' },
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-1 px-2 text-center">
+                <span className="text-xs text-muted-foreground">{item.label}</span>
+                <span className="text-base font-bold text-brand-accent">{item.value}</span>
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Tasa mensual', value: '4.0%' },
-            { label: 'Apertura', value: '3.0%' },
-            //{ label: 'Plazo máx.', value: '24 meses' },
-            { label: 'Sin aval', value: '100%' },
-          ].map((item) => (
-            <div key={item.label} className="flex flex-col gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">
-              <span className="text-xs text-muted-foreground leading-tight">{item.label}</span>
-              <span className="text-sm font-semibold text-foreground">{item.value}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <ButtonCard
-            onClick={handleContinue}
-            disabled={isSubmitting}
-            loading={isSubmitting}
-          >
-            Continuar con mi crédito
-          </ButtonCard>
-          <ButtonCard
-            variant="secondary"
-            disabled={isSubmitting}
-            onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
-          >
-            Regresar
-          </ButtonCard>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          <div className="flex flex-col gap-3 mt-3">
+            <ButtonCard
+              onClick={handleContinue}
+              disabled={isSubmitting}
+              loading={isSubmitting}
+            >
+              Continuar con mi crédito
+            </ButtonCard>
+            <ButtonCard
+              variant="secondary"
+              disabled={isSubmitting}
+              onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
+            >
+              Regresar
+            </ButtonCard>
+            {error && <p className="text-xs text-destructive">{error}</p>}
+          </div>
         </div>
       </WrapperCard>
 

@@ -21,4 +21,6 @@ export {
   AlertCircle,
   CheckCircle,
   RefreshCw,
+  Shield,
+  ShieldCheck,
 } from "lucide-react";
