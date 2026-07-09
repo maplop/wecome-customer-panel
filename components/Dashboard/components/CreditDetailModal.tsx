@@ -2,18 +2,9 @@
 import { CreditCard, X } from '@/lib/icons'
 import type { ClientRequestRecord, ClientRequestData } from '@/types/client-request'
 import { ESTADO_CONFIG } from '../constants/request-status'
+import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
-const MONTO_PAGADO_HARDCODED = 12500
 
-function parseAmount(value?: string | number): number {
-  if (value == null || value === '') return 0
-  if (typeof value === 'number') return isFinite(value) ? value : 0
-  const n = parseFloat(value.replace(/[^0-9.,]/g, '').replace(/,/g, ''))
-  return isFinite(n) ? n : 0
-}
-function formatMoney(n: number) {
-  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
-}
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
@@ -28,11 +19,9 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
   const data = credit.data
   const estado = (data.estado ?? 'pending') as NonNullable<ClientRequestData["estado"]>
   const estadoCfg = ESTADO_CONFIG[estado]
-  const isFinished = estado === 'completed' || estado === 'approved'
 
-  const solicitado = parseAmount(data.monto_solicitado)
-  const pagado = MONTO_PAGADO_HARDCODED
-  const progress = solicitado > 0 ? Math.min(100, Math.round((pagado / solicitado) * 100)) : 0
+  const solicitado = Number(data.monto_solicitado ?? 0)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -61,28 +50,10 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
         {/* Body */}
         <div className="px-6 py-5 flex flex-col gap-6">
 
-          {/* Monto pagado / solicitado + barra */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Monto pagado</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-brand-accent">{formatMoney(pagado)}</span>
-                  <span className="text-sm text-muted-foreground">/ {formatMoney(solicitado)}</span>
-                </div>
-              </div>
-              <span className="text-lg font-semibold text-foreground">{progress}%</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${progress}%`,
-                  backgroundColor: isFinished ? 'var(--brand-dark)' : 'var(--brand-accent)',
-                }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">Pagado del monto solicitado</p>
+          {/* Monto solicitado */}
+          <div className="flex flex-col gap-0.5">
+            <p className="text-xs text-muted-foreground">Monto solicitado</p>
+            <span className="text-2xl font-bold text-brand-accent">{formatMoney(solicitado)}</span>
           </div>
 
           {/* Campos en grid 2 columnas */}
@@ -91,6 +62,11 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Tipo de crédito</span>
               <span className="text-sm font-medium text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Frecuencia</span>
+              <span className="text-sm font-medium text-foreground">{frecuenciaDePago}</span>
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -119,4 +95,3 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
     </div>
   )
 }
-

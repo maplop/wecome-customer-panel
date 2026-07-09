@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { X, AlertCircle } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
+import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 
 interface DeniedRequestModalProps {
@@ -11,21 +12,17 @@ interface DeniedRequestModalProps {
   onRetry: () => void
 }
 
+const SUPPORT_EMAIL = 'soporte@wecome.mx'
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedRequestModalProps) {
-  // Datos mockeados para la denegación
-  const mockReason = {
-    razonPrincipal: 'Ingresos insuficientes',
-    detalles: 'El ingreso registrado en tu perfil no cumple con los requisitos mínimos para este monto solicitado.',
-    sugerencia: 'Puedes solicitar un monto menor o actualizar tu información de ingresos.',
-    contacto: 'soporte@wecome.mx',
-    fechaDenegacion: new Date().toISOString(),
-  }
-
   const data = credit.data
+
+  const solicitado = Number(data.monto_solicitado ?? 0)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago)
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -63,11 +60,8 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
 
           {/* Mensaje principal */}
           <div className="flex flex-col gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-            <p className="text-sm font-semibold text-destructive">
-              {mockReason.razonPrincipal}
-            </p>
             <p className="text-sm text-foreground leading-relaxed">
-              {mockReason.detalles}
+              Lamentablemente tu solicitud de crédito no cumplió con los requisitos necesarios para su aprobación.
             </p>
           </div>
 
@@ -77,7 +71,7 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
                 <span className="text-xs text-muted-foreground">Monto solicitado</span>
-                <span className="text-sm font-semibold text-foreground">${data.monto_solicitado ?? '—'}</span>
+                <span className="text-sm font-semibold text-foreground">{formatMoney(solicitado)}</span>
               </div>
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
@@ -85,14 +79,19 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
                 <span className="text-sm font-semibold text-foreground">{data.plazo ? `${data.plazo} meses` : '—'}</span>
               </div>
 
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
+              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
+                <span className="text-xs text-muted-foreground">Frecuencia de pago</span>
+                <span className="text-sm font-semibold text-foreground">{frecuenciaDePago}</span>
+              </div>
+
+              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
                 <span className="text-xs text-muted-foreground">Tipo de crédito</span>
                 <span className="text-sm font-semibold text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
               </div>
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
-                <span className="text-xs text-muted-foreground">Fecha de denegación</span>
-                <span className="text-sm font-semibold text-foreground">{formatDate(mockReason.fechaDenegacion)}</span>
+                <span className="text-xs text-muted-foreground">Fecha de solicitud</span>
+                <span className="text-sm font-semibold text-foreground">{formatDate(credit.created_at)}</span>
               </div>
             </div>
           </div>
@@ -102,8 +101,8 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
             <p className="text-xs text-muted-foreground">¿Tienes preguntas?</p>
             <p className="text-sm font-medium text-foreground">
               Contacta a nuestro equipo en{' '}
-              <a href={`mailto:${mockReason.contacto}`} className="text-brand-accent hover:underline">
-                {mockReason.contacto}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-accent hover:underline">
+                {SUPPORT_EMAIL}
               </a>
             </p>
           </div>
@@ -132,4 +131,3 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
     </div>
   )
 }
-

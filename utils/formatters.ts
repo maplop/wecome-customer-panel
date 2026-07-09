@@ -104,3 +104,15 @@ export function formatMoney(value: number): string {
     maximumFractionDigits: 2,
   })}`;
 }
+
+export function normalizePaymentFrequency(
+  value?: string | null,
+): "QUINCENAL" | "MENSUAL" {
+  return value?.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+}
+
+export function formatPaymentFrequency(value?: string | null): string {
+  return normalizePaymentFrequency(value) === "MENSUAL"
+    ? "Mensual"
+    : "Quincenal";
+}

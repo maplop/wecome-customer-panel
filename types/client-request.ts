@@ -2,11 +2,20 @@ export interface ClientRequestData {
   plazo?: string;
   tipo_de_credito?: string;
   monto_solicitado?: number;
-  estado?: RequestStatus;
   monto_maximo_solicitable?: number;
+  estado?: RequestStatus;
+  capacidad_endeudamiento_max?: number;
   monto_ofertado?: number;
   frecuencia_de_pago?: "QUINCENAL" | "MENSUAL";
   paso_actual?: string;
+  perfil?: string;
+  score_consolidado?: string;
+  score_ajustado?: string;
+  probabilidad_rotacion_promedio?: string;
+  sueldo_neto_mensual?: number;
+  tasa_mensual_sin_iva?: number;
+  seguro_vida?: number;
+  seguro_invalidez_total_permanente?: number;
 }
 
 export type RequestStatus =

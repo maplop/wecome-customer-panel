@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore, useClientDataStore } from '@/stores'
 import RiskModal from './RiskModal'
-import { formatMoney } from '@/utils/formatters'
+import { formatMoney, normalizePaymentFrequency } from '@/utils/formatters'
 import { normalizeCreditType } from '@/utils/credit-type'
 import { Shield, ShieldCheck } from '@/lib/icons'
 
@@ -39,12 +39,7 @@ export default function CreditSelection() {
 
   const [term, setTerm] = useState(resolvedTerm)
 
-  const resolvedPaymentFrequency = (() => {
-    const value = String(requestData.frecuencia_de_pago ?? '').toUpperCase()
-    return PAYMENT_FREQUENCIES.includes(value as 'QUINCENAL' | 'MENSUAL')
-      ? (value as 'QUINCENAL' | 'MENSUAL')
-      : 'QUINCENAL'
-  })()
+  const resolvedPaymentFrequency = normalizePaymentFrequency(requestData.frecuencia_de_pago)
 
   const [paymentFrequency, setPaymentFrequency] = useState<'QUINCENAL' | 'MENSUAL'>(resolvedPaymentFrequency)
 
@@ -151,7 +146,7 @@ export default function CreditSelection() {
       await updateActiveRequestData({
         monto_solicitado: amount,
         tipo_de_credito: hasInsurance === 'protected' ? 'protected' : 'esencial',
-        monto_maximo_solicitable: maxAmount,
+        capacidad_endeudamiento_max: maxAmount,
         plazo: String(term),
         frecuencia_de_pago: paymentFrequency,
         paso_actual: nextStep,
@@ -353,8 +348,8 @@ export default function CreditSelection() {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 divide-x divide-border border-t border-border pt-4 mt-3">
+          {/*
+                    <div className="grid grid-cols-3 divide-x divide-border border-t border-border pt-4 mt-3">
             {[
               { label: 'Tasa mensual', value: '4.0%' },
               { label: 'Apertura', value: '3.0%' },
@@ -366,6 +361,7 @@ export default function CreditSelection() {
               </div>
             ))}
           </div>
+          */}
 
           <div className="flex flex-col gap-3 mt-3">
             <ButtonCard

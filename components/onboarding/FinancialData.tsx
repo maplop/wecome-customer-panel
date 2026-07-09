@@ -47,7 +47,7 @@ export default function FinancialData() {
 
       await updateActiveRequestData(
         {
-          monto_maximo_solicitable: Number(montoMaximoSolicitable),
+          capacidad_endeudamiento_max: Number(montoMaximoSolicitable),
           paso_actual: nextStep,
         },
       )

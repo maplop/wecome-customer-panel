@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
-import { formatMoney } from '@/utils/formatters'
+import { formatMoney, formatPaymentFrequency, normalizePaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel, isProtectedCredit } from '@/utils/credit-type'
 
 const MONTHLY_RATE = 0.04
@@ -26,12 +26,16 @@ export default function CreditResult() {
 
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0
   const term = toPositiveNumber(data.plazo) ?? 12
+  const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago)
   const isProtected = isProtectedCredit(data.tipo_de_credito)
 
   const totalInterest = amount * MONTHLY_RATE * term
   const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
   const totalToPay = amount + totalInterest + insuranceTotal
-  const biweeklyPayment = totalToPay / (term * 2)
+  const paymentCount = paymentFrequency === 'MENSUAL' ? term : term * 2
+  const paymentAmount = totalToPay / paymentCount
+  const paymentLabel = paymentFrequency === 'MENSUAL' ? 'Pago mensual' : 'Pago quincenal'
+  const paymentFrequencyLabel = formatPaymentFrequency(paymentFrequency)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -80,15 +84,21 @@ export default function CreditResult() {
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">Pago quincenal</p>
+            <p className="text-xs text-muted-foreground">{paymentLabel}</p>
             <p className="text-sm font-semibold text-foreground">
-              {formatMoney(biweeklyPayment)}
+              {formatMoney(paymentAmount)}
             </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Total a pagar</p>
             <p className="text-sm font-semibold text-foreground">
               {formatMoney(totalToPay)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
+            <p className="text-sm font-semibold text-foreground">
+              {paymentFrequencyLabel}
             </p>
           </div>
           <div>
