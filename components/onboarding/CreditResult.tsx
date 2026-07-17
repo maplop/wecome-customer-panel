@@ -41,7 +41,7 @@ export default function CreditResult() {
   const [error, setError] = useState('')
 
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
+    const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
     setIsSubmitting(true)
     setError('')
     try {

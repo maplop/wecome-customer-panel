@@ -15,6 +15,7 @@ export const ROUTES = {
     ROOT: "/onboarding",
     CREATE_ACCOUNT: "/onboarding/create-account",
     CREDIT_RESULT: "/onboarding/credit-result",
+    CREDIT_AUTHORIZATION: "/onboarding/credit-authorization",
     CREDIT_SELECTION: "/onboarding/credit-selection",
     CREDIT_SUCCESS: "/onboarding/credit-success",
     CURP_VERIFICATION: "/onboarding/curp-verification",
@@ -87,13 +88,18 @@ export const ONBOARDING_STEPS = [
   },
   */
   {
-    title: "Aceptación de términos",
+    title: "Autorización de consulta",
     step: 9,
+    route: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
+  },
+  {
+    title: "Aceptación de términos",
+    step: 10,
     route: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
   },
   {
     title: "Crédito exitoso",
-    step: 10,
+    step: 11,
     route: ROUTES.ONBOARDING.CREDIT_SUCCESS,
   },
 ] as const;
@@ -103,6 +109,7 @@ export const PROTECTED_ONBOARDING_ROUTES = new Set<string>([
   ROUTES.ONBOARDING.PERSONAL_DATA,
   ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
   ROUTES.ONBOARDING.FINANCIAL_DATA,
+  ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
   ROUTES.ONBOARDING.CREDIT_RESULT,
   ROUTES.ONBOARDING.CREDIT_SELECTION,
   ROUTES.ONBOARDING.FINAL_CONFIRM,
