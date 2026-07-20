@@ -21,7 +21,7 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
   const estadoCfg = ESTADO_CONFIG[estado]
 
   const solicitado = Number(data.monto_solicitado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -61,7 +61,7 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
 
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Tipo de crédito</span>
-              <span className="text-sm font-medium text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
+              <span className="text-sm font-medium text-foreground">{getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}</span>
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -72,7 +72,7 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Plazo</span>
               <span className="text-sm font-medium text-foreground">
-                {data.plazo ? `${data.plazo} meses` : '—'}
+                {data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}
               </span>
             </div>
 

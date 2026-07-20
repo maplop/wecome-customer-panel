@@ -25,9 +25,9 @@ export default function CreditResult() {
   const data = activeRequest?.data ?? {}
 
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0
-  const term = toPositiveNumber(data.plazo) ?? 12
-  const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago)
-  const isProtected = isProtectedCredit(data.tipo_de_credito)
+  const term = toPositiveNumber(data.plazo_solicitado) ?? 12
+  const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago_solicitada)
+  const isProtected = isProtectedCredit(data.tipo_de_credito_solicitado)
 
   const totalInterest = amount * MONTHLY_RATE * term
   const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
@@ -114,7 +114,7 @@ export default function CreditResult() {
           <div>
             <p className="text-xs text-muted-foreground">Tipo</p>
             <p className="text-sm font-semibold text-foreground">
-              {getCreditTypeLabel(data.tipo_de_credito)}
+              {getCreditTypeLabel(data.tipo_de_credito_solicitado)}
             </p>
           </div>
         </div>

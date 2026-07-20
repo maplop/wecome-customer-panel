@@ -52,8 +52,8 @@ export default function FinalConfirm() {
   const data = activeRequest?.data ?? {}
 
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0
-  const term = toPositiveNumber(data.plazo) ?? 12
-  const isProtected = isProtectedCredit(data.tipo_de_credito)
+  const term = toPositiveNumber(data.plazo_solicitado) ?? 12
+  const isProtected = isProtectedCredit(data.tipo_de_credito_solicitado)
 
   const totalInterest = amount * MONTHLY_RATE * term
   const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
@@ -75,7 +75,7 @@ export default function FinalConfirm() {
     },
     {
       label: 'Seguro',
-      value: getCreditTypeLabel(data.tipo_de_credito),
+      value: data.tipo_de_credito_solicitado ?? '-',
     },
     {
       label: 'Interés anual',

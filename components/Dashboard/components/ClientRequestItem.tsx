@@ -26,7 +26,7 @@ export default function ClientRequestItem({
   const estadoCfg = ESTADO_CONFIG[estado]
 
   const solicitado = Number(data.monto_solicitado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
 
   return (
     <div className="rounded-2xl border border-border bg-card px-5 pt-3 pb-5 flex flex-col gap-3">
@@ -65,7 +65,7 @@ export default function ClientRequestItem({
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">Tipo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {getCreditTypeLabel(data.tipo_de_credito)}
+            {getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}
           </span>
         </div>
 
@@ -79,7 +79,7 @@ export default function ClientRequestItem({
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">Plazo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {data.plazo ? `${data.plazo}m` : "—"}
+            {data.plazo_solicitado ? `${data.plazo_solicitado}m` : '-'}
           </span>
         </div>
 

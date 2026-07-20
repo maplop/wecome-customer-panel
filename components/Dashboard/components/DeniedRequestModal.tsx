@@ -22,7 +22,7 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
   const data = credit.data
 
   const solicitado = Number(data.monto_solicitado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -76,7 +76,7 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
                 <span className="text-xs text-muted-foreground">Plazo</span>
-                <span className="text-sm font-semibold text-foreground">{data.plazo ? `${data.plazo} meses` : '—'}</span>
+                <span className="text-sm font-semibold text-foreground">{data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}</span>
               </div>
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
@@ -86,7 +86,7 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
                 <span className="text-xs text-muted-foreground">Tipo de crédito</span>
-                <span className="text-sm font-semibold text-foreground">{getCreditTypeLabel(data.tipo_de_credito)}</span>
+                <span className="text-sm font-semibold text-foreground">{getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}</span>
               </div>
 
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">

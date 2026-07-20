@@ -12,7 +12,7 @@ import { normalizeCreditType } from '@/utils/credit-type'
 import { Shield, ShieldCheck } from '@/lib/icons'
 
 
-const TERMS = [12, 18]
+const TERMS = [12, 24]
 const MIN_AMOUNT = 10000
 const MAX_AMOUNT_CAP = 250000
 const PAYMENT_FREQUENCIES = ['QUINCENAL', 'MENSUAL'] as const
@@ -145,10 +145,10 @@ export default function CreditSelection() {
     try {
       await updateActiveRequestData({
         monto_solicitado: amount,
-        tipo_de_credito: hasInsurance === 'protected' ? 'protected' : 'esencial',
+        tipo_de_credito_solicitado: hasInsurance === 'protected' ? 'protected' : 'esencial',
         capacidad_endeudamiento_max: maxAmount,
-        plazo: String(term),
-        frecuencia_de_pago: paymentFrequency,
+        plazo_solicitado: term,
+        frecuencia_de_pago_solicitada: paymentFrequency === 'QUINCENAL' ? 1 : 2,
         paso_actual: nextStep,
       })
 

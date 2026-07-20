@@ -1,5 +1,6 @@
 export interface ClientProfileType {
   actividad_economica: string;
+  aguinaldo_proporcional: string;
   antiguedad: string;
   correo_electronico: string;
   curp: string;
@@ -8,6 +9,7 @@ export interface ClientProfileType {
   edad: number;
   empresa: string;
   fecha_de_nacimiento: string;
+  historial_crediticio: "Bueno" | "Regular" | "Débil" | "Malo" | "No disponible";
   nacionalidad: string;
   nivel_de_estudios: string;
   nombres: string;
@@ -19,6 +21,8 @@ export interface ClientProfileType {
   segundo_apellido: string;
   telefono: string;
   tipo_identificacion_oficial: string;
+  vacaciones_pendientes: string;
+  vigencia_preautorizacion: string;
   _regimen_conyugal: string;
   created_at: string;
 }

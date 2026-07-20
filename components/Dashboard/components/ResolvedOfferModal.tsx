@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { X, CheckCircle } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
 import { getCreditTypeLabel } from '@/utils/credit-type'
+import { formatPaymentFrequency } from '@/utils/formatters'
 
 interface ResolvedOfferModalProps {
   credit: ClientRequestRecord
@@ -16,19 +17,14 @@ function formatMoney(n: number) {
 }
 
 export default function ResolvedOfferModal({ credit, onClose, onAccept }: ResolvedOfferModalProps) {
-  // Fallback temporal para datos que aún no lleguen desde backend.
-  const mockOffer = {
-    monto: 50000,
-    plazo: 18,
-    totalAPagar: 50400,
-  }
+
 
   const data = credit.data
-  const montoOfertado = Number(data.monto_ofertado ?? data.monto_solicitado ?? mockOffer.monto)
-  const montoSolicitado = Number(data.monto_solicitado ?? mockOffer.monto)
-  const frecuenciaDePago = String(data.frecuencia_de_pago ?? 'Mensual')
-  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito)
-  const plazo = Number(data.plazo ?? mockOffer.plazo)
+  const montoOfertado = Number(data.monto_ofertado)
+  const montoSolicitado = Number(data.monto_solicitado)
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_ofertada)
+  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito_ofertado) ?? '-'
+  const plazo = data.plazo_ofertado
   const ofertado = formatMoney(montoOfertado)
   const solicitado = formatMoney(montoSolicitado)
 
@@ -77,7 +73,7 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
               <span className="text-xs text-muted-foreground">Plazo</span>
-              <span className="text-lg font-semibold text-foreground">{plazo} meses</span>
+              <span className="text-lg font-semibold text-foreground">{plazo ? `${plazo} meses` : '-'}</span>
             </div>
 
             <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
@@ -101,7 +97,7 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
             </div>
           </div>
 
-          {/* Resumen */}
+          {/*
           <div className="flex flex-col gap-3 p-4 rounded-xl bg-secondary/30 border border-border">
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground">Monto a desembolsar</span>
@@ -117,10 +113,11 @@ export default function ResolvedOfferModal({ credit, onClose, onAccept }: Resolv
               <span className="text-lg font-bold text-brand-accent">{formatMoney(mockOffer.totalAPagar)}</span>
             </div>
           </div>
+          */}
 
           {/* Info */}
           <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-accent/5">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full flex-shrink-0 bg-brand-accent/20 text-brand-accent text-xs font-bold">i</div>
+            <div className="flex h-5 w-5 items-center justify-center rounded-full shrink-0 bg-brand-accent/20 text-brand-accent text-xs font-bold">i</div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Al aceptar esta oferta, autorizas el desembolso del crédito en tu cuenta registrada. Tendrás 30 días para cambiar de opinión sin penalidad.
             </p>

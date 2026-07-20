@@ -1,9 +1,9 @@
 export type NormalizedCreditType = "protected" | "esencial";
 
 export function normalizeCreditType(
-  value?: string | null,
+  value?: string | { id?: string } | null,
 ): NormalizedCreditType | null {
-  const raw = value?.trim().toLowerCase();
+  const raw = (typeof value === "object" ? (value as { id?: string }).id : value)?.trim().toLowerCase();
   if (!raw) return null;
 
   if (raw === "protected" || raw === "protegido") return "protected";

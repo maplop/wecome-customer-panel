@@ -106,12 +106,15 @@ export function formatMoney(value: number): string {
 }
 
 export function normalizePaymentFrequency(
-  value?: string | null,
+  value?: string | number | { id?: number } | null,
 ): "QUINCENAL" | "MENSUAL" {
-  return value?.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+  if (typeof value === "number") return value === 2 ? "MENSUAL" : "QUINCENAL";
+  if (value && typeof value === "object") return (value as { id?: number }).id === 2 ? "MENSUAL" : "QUINCENAL";
+  if (typeof value === "string") return value.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+  return "QUINCENAL";
 }
 
-export function formatPaymentFrequency(value?: string | null): string {
+export function formatPaymentFrequency(value?: string | number | null): string {
   return normalizePaymentFrequency(value) === "MENSUAL"
     ? "Mensual"
     : "Quincenal";
