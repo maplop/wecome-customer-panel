@@ -79,7 +79,7 @@ export default function ClientRequestItem({
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">Plazo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {data.plazo_solicitado ? `${data.plazo_solicitado}m` : '-'}
+            {data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}
           </span>
         </div>
 

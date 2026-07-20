@@ -110,7 +110,10 @@ export function normalizePaymentFrequency(
 ): "QUINCENAL" | "MENSUAL" {
   if (typeof value === "number") return value === 2 ? "MENSUAL" : "QUINCENAL";
   if (value && typeof value === "object") return (value as { id?: number }).id === 2 ? "MENSUAL" : "QUINCENAL";
-  if (typeof value === "string") return value.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+  if (typeof value === "string") {
+    if (value === "1" || value === "2") return value === "2" ? "MENSUAL" : "QUINCENAL";
+    return value.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+  }
   return "QUINCENAL";
 }
 

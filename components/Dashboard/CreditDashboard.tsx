@@ -147,13 +147,6 @@ export default function CreditDashboard() {
     router.push(`${ROUTES.ONBOARDING.CURP_VERIFICATION}?requestId=${id}`)
   }
 
-  const handleAcceptOffer = () => {
-    // Mock: en producción aquí se haría una llamada API
-    handleCloseResolvedOfferModal()
-    // Redirigir a confirmación de desembolso
-    router.push(ROUTES.DASHBOARD.ROOT)
-  }
-
   const handleRetryDeniedRequest = () => {
     // Mock: en producción aquí se permitiría intentar de nuevo con datos actualizados
     if (!deniedRequestModal.credit) return
@@ -179,7 +172,6 @@ export default function CreditDashboard() {
         <ResolvedOfferModal
           credit={resolvedOfferModal.credit}
           onClose={handleCloseResolvedOfferModal}
-          onAccept={handleAcceptOffer}
         />
       )}
 
