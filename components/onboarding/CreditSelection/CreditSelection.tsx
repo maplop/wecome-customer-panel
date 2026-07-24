@@ -33,13 +33,13 @@ export default function CreditSelection() {
 
   // 1️⃣ term primero porque maxAmount depende de él
   const resolvedTerm = (() => {
-    const parsed = Number(requestData.plazo)
+    const parsed = Number(requestData.plazo_solicitado)
     return TERMS.includes(parsed) ? parsed : TERMS[0]
   })()
 
   const [term, setTerm] = useState(resolvedTerm)
 
-  const resolvedPaymentFrequency = normalizePaymentFrequency(requestData.frecuencia_de_pago)
+  const resolvedPaymentFrequency = normalizePaymentFrequency(requestData.frecuencia_de_pago_solicitada)
 
   const [paymentFrequency, setPaymentFrequency] = useState<'QUINCENAL' | 'MENSUAL'>(resolvedPaymentFrequency)
 
@@ -51,7 +51,7 @@ export default function CreditSelection() {
   const maxAmount = Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, Math.round(maxFromSalary)))
 
   // 3️⃣ resolvedAmount depende de maxAmount
-  const resolvedType = normalizeCreditType(requestData.tipo_de_credito) ?? 'protected'
+  const resolvedType = normalizeCreditType(requestData.tipo_de_credito_solicitado) ?? 'protected'
   const requestedAmount = toPositiveNumber(requestData.monto_solicitado)
   const resolvedAmount = Math.min(
     maxAmount,

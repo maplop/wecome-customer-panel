@@ -1,8 +1,6 @@
 export interface ClientRequestData {
-  plazo?: string;
   plazo_solicitado?: number;
   plazo_ofertado?: number;
-  tipo_de_credito?: string;
   tipo_de_credito_solicitado?: string;
   tipo_de_credito_ofertado?: string;
   monto_solicitado?: number;
@@ -11,7 +9,6 @@ export interface ClientRequestData {
   capacidad_endeudamiento_max?: number;
   monto_ofertado?: number;
   frecuencia_de_pago_ofertada?: number;
-  frecuencia_de_pago?: "QUINCENAL" | "MENSUAL";
   frecuencia_de_pago_solicitada?: number;
   paso_actual?: string;
   perfil?: string;

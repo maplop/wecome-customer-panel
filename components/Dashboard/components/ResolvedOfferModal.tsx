@@ -6,6 +6,8 @@ import type { ClientRequestRecord } from '@/types/client-request'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 import { formatPaymentFrequency } from '@/utils/formatters'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { useClientDataStore, useClientProfileStore } from '@/stores'
+import { apiClient } from '@/api/dynamicore/frontend'
 import confetti from 'canvas-confetti'
 
 interface ResolvedOfferModalProps {
