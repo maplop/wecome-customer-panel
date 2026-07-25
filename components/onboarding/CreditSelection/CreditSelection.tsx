@@ -170,7 +170,7 @@ export default function CreditSelection() {
 
         // Resultado del score
         perfil: scoreResult.perfil,
-        historial_crediticio_usado: scoreResult.historial_crediticio_usado ?? undefined,
+        historial_crediticio_usado: scoreResult.historial_crediticio_usado ?? "",
         score_consolidado: String(scoreResult.score_consolidado),
         score_ajustado: String(scoreResult.score_ajustado),
         probabilidad_rotacion_promedio: String(scoreResult.probabilidad_rotacion_promedio),
