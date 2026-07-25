@@ -4,7 +4,6 @@ export interface ClientRequestData {
   tipo_de_credito_solicitado?: string;
   tipo_de_credito_ofertado?: string;
   monto_solicitado?: number;
-  monto_maximo_solicitable?: number;
   estado?: RequestStatus;
   capacidad_endeudamiento_max?: number;
   monto_ofertado?: number;
@@ -19,6 +18,13 @@ export interface ClientRequestData {
   tasa_mensual_sin_iva?: number;
   seguro_vida?: number;
   seguro_invalidez_total_permanente?: number;
+  historial_crediticio_usado?: string;
+  comision_apertura?: number;
+  pago_por_periodo_sin_seguros?: number;
+  pago_por_periodo_con_seguros_iva?: number;
+  numero_de_periodos?: number;
+  monto_total_a_pagar?: number;
+  evaluation_id?: string;
 }
 
 export type RequestStatus =

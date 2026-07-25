@@ -55,4 +55,6 @@ export const SERVICES = {
 
   GET_CABLE: "/private/accounts/get_cable",
   USERS_WEBCLIENTS: API_ENDPOINTS.AUTH.REGISTER,
+
+  WECOME_SCORE: "/marketplace/apps/wecome/score",
 };

@@ -5,6 +5,7 @@ import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { evaluateScore } from '@/services/onboarding/evaluate-score'
 import { useClientRequestStore, useClientDataStore } from '@/stores'
 import RiskModal from './RiskModal'
 import { formatMoney, normalizePaymentFrequency } from '@/utils/formatters'
@@ -143,13 +144,47 @@ export default function CreditSelection() {
     setIsSubmitting(true)
     setError('')
     try {
+      // 1. Evaluar el score primero
+      const scoreResult = await evaluateScore({
+        action: 'evaluate',
+        employer_id: String(client?.id ?? ''),
+        employee_key: client?.pii?.rfc ?? '',
+        monto_solicitado: amount,
+        plazo_meses: term,
+        periodicidad: paymentFrequency,
+      })
+
+      // Guard: si no hay resultado, no continuamos
+      if (!scoreResult) {
+        throw new Error('No se pudo obtener el resultado de la evaluación.')
+      }
+
+      // 2. Guardar en un solo request: datos elegidos por el usuario + resultado del score
       await updateActiveRequestData({
+        // Datos de la solicitud del usuario
         monto_solicitado: amount,
         tipo_de_credito_solicitado: hasInsurance === 'protected' ? 'protected' : 'esencial',
-        capacidad_endeudamiento_max: maxAmount,
         plazo_solicitado: term,
         frecuencia_de_pago_solicitada: paymentFrequency === 'QUINCENAL' ? 1 : 2,
         paso_actual: nextStep,
+
+        // Resultado del score
+        perfil: scoreResult.perfil,
+        historial_crediticio_usado: scoreResult.historial_crediticio_usado ?? undefined,
+        score_consolidado: String(scoreResult.score_consolidado),
+        score_ajustado: String(scoreResult.score_ajustado),
+        probabilidad_rotacion_promedio: String(scoreResult.probabilidad_rotacion_promedio),
+        sueldo_neto_mensual: scoreResult.sueldo_neto_mensual,
+        capacidad_endeudamiento_max: scoreResult.capacidad_endeudamiento_max,
+        tasa_mensual_sin_iva: parseFloat(scoreResult.tasa_mensual_sin_iva),
+        seguro_vida: scoreResult.seguro_vida_al_millar,
+        seguro_invalidez_total_permanente: scoreResult.seguro_invalidez_al_millar,
+        comision_apertura: scoreResult.comision_apertura,
+        pago_por_periodo_sin_seguros: scoreResult.pago_por_periodo_sin_seguros,
+        pago_por_periodo_con_seguros_iva: scoreResult.pago_por_periodo_con_seguros_iva,
+        numero_de_periodos: scoreResult.numero_de_periodos,
+        monto_total_a_pagar: scoreResult.monto_total_a_pagar,
+        evaluation_id: scoreResult.evaluation_id,
       })
 
       router.push(nextStep)
@@ -157,7 +192,7 @@ export default function CreditSelection() {
       setError(
         err instanceof Error
           ? err.message
-          : 'No se pudo actualizar el paso actual. Intenta nuevamente.',
+          : 'No se pudo completar la evaluación. Intenta nuevamente.',
       )
     } finally {
       setIsSubmitting(false)
