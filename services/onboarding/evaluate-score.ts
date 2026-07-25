@@ -1,5 +1,6 @@
 import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
 import { ApiResponse } from "@/types/api-response";
+import type { AmortizacionRow } from "@/types/client-request";
 
 export interface EvaluateScorePayload {
   action: "evaluate";
@@ -8,6 +9,12 @@ export interface EvaluateScorePayload {
   monto_solicitado: number;
   plazo_meses: number;
   periodicidad: string;
+}
+
+export interface CalculateScorePayload {
+  action: "calculate";
+  evaluation_id: string;
+  monto_solicitado: number;
 }
 
 export interface EvaluateScoreResponse {
@@ -26,12 +33,21 @@ export interface EvaluateScoreResponse {
   pago_por_periodo_con_seguros_iva: number;
   numero_de_periodos: number;
   monto_total_a_pagar: number;
-  tabla_amortizacion: unknown;
+  tabla_amortizacion: AmortizacionRow[];
   evaluation_id: string;
 }
 
 export async function evaluateScore(
   payload: EvaluateScorePayload,
+): Promise<EvaluateScoreResponse | null> {
+  const result = await apiClient.post(SERVICES.WECOME_SCORE, payload);
+  const response = result.data as ApiResponse<EvaluateScoreResponse>;
+
+  return response?.data ?? null;
+}
+
+export async function calculateScore(
+  payload: CalculateScorePayload,
 ): Promise<EvaluateScoreResponse | null> {
   const result = await apiClient.post(SERVICES.WECOME_SCORE, payload);
   const response = result.data as ApiResponse<EvaluateScoreResponse>;

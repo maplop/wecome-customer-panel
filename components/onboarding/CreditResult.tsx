@@ -7,11 +7,7 @@ import { Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
 import { formatMoney, formatPaymentFrequency, normalizePaymentFrequency } from '@/utils/formatters'
-import { getCreditTypeLabel, isProtectedCredit } from '@/utils/credit-type'
-
-const MONTHLY_RATE = 0.04
-const ANNUAL_RATE = MONTHLY_RATE * 12
-const INSURANCE_RATE = 0.02
+import { getCreditTypeLabel } from '@/utils/credit-type'
 
 function toPositiveNumber(value: unknown): number | null {
   const parsed = Number(value)
@@ -27,15 +23,16 @@ export default function CreditResult() {
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0
   const term = toPositiveNumber(data.plazo_solicitado) ?? 12
   const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago_solicitada)
-  const isProtected = isProtectedCredit(data.tipo_de_credito_solicitado)
-
-  const totalInterest = amount * MONTHLY_RATE * term
-  const insuranceTotal = isProtected ? amount * INSURANCE_RATE : 0
-  const totalToPay = amount + totalInterest + insuranceTotal
-  const paymentCount = paymentFrequency === 'MENSUAL' ? term : term * 2
-  const paymentAmount = totalToPay / paymentCount
-  const paymentLabel = paymentFrequency === 'MENSUAL' ? 'Pago mensual' : 'Pago quincenal'
   const paymentFrequencyLabel = formatPaymentFrequency(paymentFrequency)
+  const isProtected = data.tipo_de_credito_solicitado === 'protected'
+
+  const monthlyRate = toPositiveNumber(data.tasa_mensual_sin_iva) ?? 4
+  const annualRate = monthlyRate * 12
+
+  const paymentAmount = toPositiveNumber(
+    isProtected ? data.pago_por_periodo_con_seguros_iva : data.pago_por_periodo_sin_seguros,
+  ) ?? 0
+  const totalToPay = toPositiveNumber(data.monto_total_a_pagar) ?? 0
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -63,7 +60,7 @@ export default function CreditResult() {
         </SubtitleCard>
       </div>
 
-      {/* Hero — monto solicitado */}
+      {/* Hero */}
       <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark">
         <div className="flex justify-center items-center w-10 h-10 rounded-full bg-brand-accent">
           <Check className="stroke-brand-dark w-8 h-8" />
@@ -77,14 +74,16 @@ export default function CreditResult() {
         <span className="text-sm text-white/50">MXN</span>
       </div>
 
-      {/* Detalles del crédito */}
+      {/* Detalles */}
       <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Detalle del crédito
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">{paymentLabel}</p>
+            <p className="text-xs text-muted-foreground">
+              {paymentFrequency === 'MENSUAL' ? 'Pago mensual' : 'Pago quincenal'}
+            </p>
             <p className="text-sm font-semibold text-foreground">
               {formatMoney(paymentAmount)}
             </p>
@@ -108,7 +107,7 @@ export default function CreditResult() {
           <div>
             <p className="text-xs text-muted-foreground">Tasa anual</p>
             <p className="text-sm font-semibold text-foreground">
-              {(ANNUAL_RATE * 100).toFixed(0)}%
+              {annualRate.toFixed(2)}%
             </p>
           </div>
           <div>
@@ -142,4 +141,3 @@ export default function CreditResult() {
     </WrapperCard>
   )
 }
-

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, CheckCircle } from '@/lib/icons'
-import type { ClientRequestRecord } from '@/types/client-request'
+import type { ClientRequestRecord, AmortizacionRow } from '@/types/client-request'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 import { formatPaymentFrequency } from '@/utils/formatters'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { calculateScore } from '@/services/onboarding/evaluate-score'
 import { useClientDataStore, useClientProfileStore } from '@/stores'
 import { apiClient } from '@/api/dynamicore/frontend'
 import confetti from 'canvas-confetti'
@@ -25,6 +26,10 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
   const [showSuccess, setShowSuccess] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState('')
+  const [tab, setTab] = useState<'detalles' | 'amortizacion'>('detalles')
+  const [amortizacion, setAmortizacion] = useState<AmortizacionRow[]>([])
+  const [loadingAmortizacion, setLoadingAmortizacion] = useState(false)
+  const [amortError, setAmortError] = useState('')
 
   const data = credit.data
   const montoOfertado = Number(data.monto_ofertado)
@@ -34,6 +39,47 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
   const plazo = data.plazo_ofertado
   const ofertado = formatMoney(montoOfertado)
   const solicitado = formatMoney(montoSolicitado)
+  const isProtected = data.tipo_de_credito_ofertado === 'protected'
+  const evaluationId = data.evaluation_id ?? ''
+
+  const paymentAmount = (() => {
+    const v = isProtected ? data.pago_por_periodo_con_seguros_iva : data.pago_por_periodo_sin_seguros
+    return v ? Number(v) : 0
+  })()
+  const totalToPay = Number(data.monto_total_a_pagar) || 0
+  const monthlyRate = Number(data.tasa_mensual_sin_iva) || 0
+  const annualRate = monthlyRate * 12
+  const commission = Number(data.comision_apertura) || 0
+  const insuranceLife = Number(data.seguro_vida) || 0
+  const insuranceDisability = Number(data.seguro_invalidez_total_permanente) || 0
+  const insuranceTotal = insuranceLife + insuranceDisability
+
+  const fetchAmortizacion = useCallback(async () => {
+    if (!evaluationId || amortizacion.length > 0) return
+
+    setLoadingAmortizacion(true)
+    setAmortError('')
+    try {
+      const result = await calculateScore({
+        action: 'calculate',
+        evaluation_id: evaluationId,
+        monto_solicitado: montoOfertado,
+      })
+      if (result?.tabla_amortizacion) {
+        setAmortizacion(result.tabla_amortizacion)
+      }
+    } catch {
+      setAmortError('No se pudo obtener la tabla de amortización.')
+    } finally {
+      setLoadingAmortizacion(false)
+    }
+  }, [evaluationId, montoOfertado, amortizacion.length])
+
+  useEffect(() => {
+    if (tab === 'amortizacion') {
+      fetchAmortizacion()
+    }
+  }, [tab, fetchAmortizacion])
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -128,33 +174,158 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                 <span className="text-sm text-white/50">MXN</span>
               </div>
 
-              <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Detalle de la oferta
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Monto solicitado</p>
-                    <p className="text-sm font-semibold text-foreground">{solicitado}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Monto ofertado</p>
-                    <p className="text-sm font-semibold text-foreground">{ofertado}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Plazo</p>
-                    <p className="text-sm font-semibold text-foreground">{plazo ? `${plazo} meses` : '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
-                    <p className="text-sm font-semibold text-foreground">{frecuenciaDePago}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Tipo de crédito</p>
-                    <p className="text-sm font-semibold text-foreground">{tipoDeCredito}</p>
+              {/* Tabs */}
+              <div className="flex rounded-xl bg-secondary p-1">
+                {(['detalles', 'amortizacion'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
+                      tab === t
+                        ? 'bg-brand-dark text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {t === 'detalles' ? 'Detalles' : 'Amortización'}
+                  </button>
+                ))}
+              </div>
+
+              {tab === 'detalles' && (
+                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Detalle de la oferta
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Monto solicitado</p>
+                      <p className="text-sm font-semibold text-foreground">{solicitado}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Monto ofertado</p>
+                      <p className="text-sm font-semibold text-foreground">{ofertado}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Plazo</p>
+                      <p className="text-sm font-semibold text-foreground">{plazo ? `${plazo} meses` : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
+                      <p className="text-sm font-semibold text-foreground">{frecuenciaDePago}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Tipo de crédito</p>
+                      <p className="text-sm font-semibold text-foreground">{tipoDeCredito}</p>
+                    </div>
+                    {paymentAmount > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          {data.frecuencia_de_pago_ofertada === 2 ? 'Pago mensual' : 'Pago quincenal'}
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatMoney(paymentAmount)}
+                        </p>
+                      </div>
+                    )}
+                    {totalToPay > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total a pagar</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatMoney(totalToPay)}
+                        </p>
+                      </div>
+                    )}
+                    {monthlyRate > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Tasa mensual</p>
+                        <p className="text-sm font-semibold text-foreground">{monthlyRate.toFixed(2)}%</p>
+                      </div>
+                    )}
+                    {annualRate > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Tasa anual</p>
+                        <p className="text-sm font-semibold text-foreground">{annualRate.toFixed(2)}%</p>
+                      </div>
+                    )}
+                    {commission > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Comisión de apertura</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatMoney(commission)}
+                        </p>
+                      </div>
+                    )}
+                    {insuranceTotal > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Seguros</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatMoney(insuranceTotal)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {tab === 'amortizacion' && (
+                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Tabla de amortización
+                  </p>
+
+                  {loadingAmortizacion && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Calculando tabla de amortización...
+                    </p>
+                  )}
+
+                  {amortError && (
+                    <p className="text-xs text-destructive text-center">{amortError}</p>
+                  )}
+
+                  {!loadingAmortizacion && !amortError && amortizacion.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No hay datos de amortización disponibles.
+                    </p>
+                  )}
+
+                  {amortizacion.length > 0 && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border text-muted-foreground">
+                            <th className="text-left py-2 pr-2 font-medium">Período</th>
+                            <th className="text-right py-2 px-2 font-medium">Pago</th>
+                            <th className="text-right py-2 px-2 font-medium">Interés</th>
+                            <th className="text-right py-2 px-2 font-medium">Capital</th>
+                            <th className="text-right py-2 pl-2 font-medium">Saldo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {amortizacion.map((row) => (
+                            <tr key={row.periodo} className="border-b border-border/50">
+                              <td className="py-2 pr-2 text-foreground">{row.periodo}</td>
+                              <td className="py-2 px-2 text-right text-foreground">
+                                {formatMoney(row.pago)}
+                              </td>
+                              <td className="py-2 px-2 text-right text-foreground">
+                                {formatMoney(row.interes)}
+                              </td>
+                              <td className="py-2 px-2 text-right text-foreground">
+                                {formatMoney(row.capital)}
+                              </td>
+                              <td className="py-2 pl-2 text-right text-foreground">
+                                {formatMoney(row.saldo)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-accent/5">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full shrink-0 bg-brand-accent/20 text-brand-accent text-xs font-bold">i</div>

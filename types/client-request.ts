@@ -1,3 +1,11 @@
+export interface AmortizacionRow {
+  periodo: number;
+  pago: number;
+  interes: number;
+  capital: number;
+  saldo: number;
+}
+
 export interface ClientRequestData {
   plazo_solicitado?: number;
   plazo_ofertado?: number;
@@ -25,6 +33,7 @@ export interface ClientRequestData {
   numero_de_periodos?: number;
   monto_total_a_pagar?: number;
   evaluation_id?: string;
+  tabla_amortizacion?: AmortizacionRow[];
 }
 
 export type RequestStatus =
