@@ -104,7 +104,7 @@ export default function CreditSelection() {
           </div>
 
           {/* Plazo + Frecuencia de pago, lado a lado */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-[2fr_3fr] gap-4">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-foreground">Plazo</label>
               <div className="flex rounded-xl bg-secondary p-1">
@@ -137,7 +137,7 @@ export default function CreditSelection() {
                       : 'text-muted-foreground hover:text-foreground'
                       }`}
                   >
-                    {freq === 'QUINCENAL' ? 'Quincenal' : 'Mensual'}
+                    {freq === 'SEMANAL' ? 'Semanal' : freq === 'QUINCENAL' ? 'Quincenal' : 'Mensual'}
                   </button>
                 ))}
               </div>

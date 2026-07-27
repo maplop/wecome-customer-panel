@@ -78,6 +78,12 @@ export interface ClientPiiType {
   comision_por_apertura: string;
   comisiones_por_cobrar: string;
   empresa_donde_trabaja: string;
+  anios_trabajados: number;
+  antiguedad_empresa_anios: number;
+  sueldo_bruto: number;
+  vacaciones_pendientes_dias: number;
+  aguinaldo_proporcional: number;
+  historial_crediticio: string;
   fecha_limite_del_pago: string;
   comision_por_anualidad: string;
   tipo_de_identificacion: string;

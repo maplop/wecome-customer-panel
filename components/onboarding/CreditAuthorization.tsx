@@ -17,7 +17,10 @@ export default function CreditAuthorization() {
     setIsSubmitting(true)
     setError('')
     try {
-      await updateActiveRequestData({ paso_actual: nextStep })
+      await updateActiveRequestData({
+        paso_actual: nextStep,
+        autorizacion_de_consulta_de_historial_crediticio: accepted,
+      })
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')

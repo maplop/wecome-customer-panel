@@ -10,7 +10,7 @@ import { normalizeCreditType } from "@/utils/credit-type";
 export const TERMS = [12, 24] as const;
 export const MIN_AMOUNT = 10000;
 export const MAX_AMOUNT_CAP = 250000;
-export const PAYMENT_FREQUENCIES = ["QUINCENAL", "MENSUAL"] as const;
+export const PAYMENT_FREQUENCIES = ["SEMANAL", "QUINCENAL", "MENSUAL"] as const;
 
 export type PaymentFrequency = (typeof PAYMENT_FREQUENCIES)[number];
 export type CreditType = "protected" | "esencial";
@@ -18,6 +18,22 @@ export type CreditType = "protected" | "esencial";
 function toPositiveNumber(value: unknown): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function calculateMaxCredit(
+  monthlySalary: number,
+  term: number,
+  monthlyRate: number = 0.04,
+  debtCapacity: number = 0.33,
+) {
+  // capacidad máxima de pago mensual
+  const maxPayment = monthlySalary * debtCapacity;
+
+  // fórmula valor presente de una anualidad
+  const maxCredit =
+    maxPayment * ((1 - Math.pow(1 + monthlyRate, -term)) / monthlyRate);
+
+  return Math.round(maxCredit);
 }
 
 export function useCreditSelection() {
@@ -28,7 +44,7 @@ export function useCreditSelection() {
   const requestData = activeRequest?.data ?? {};
 
   const { client } = useClientDataStore();
-  const salary = client?.pii?.salario ?? 0;
+  const salary = client?.pii?.sueldo_bruto ?? 0;
 
   // 1️⃣ term primero porque maxAmount depende de él
   const resolvedTerm = (() => {
@@ -47,12 +63,17 @@ export function useCreditSelection() {
 
   // 2️⃣ maxAmount depende de term
   const salaryNum = toPositiveNumber(salary) ?? 0;
-  const paymentCapacity = salaryNum * 0.33; // 33% del salario mensual
-  const maxFromSalary = paymentCapacity * term; // capacidad mensual × meses del plazo
   const minAmount = MIN_AMOUNT;
+  const maxFromSalary = calculateMaxCredit(
+    salaryNum,
+    term,
+    0.04, // tasa mensual con IVA
+    0.33, // capacidad endeudamiento
+  );
+
   const maxAmount = Math.min(
     MAX_AMOUNT_CAP,
-    Math.max(MIN_AMOUNT, Math.round(maxFromSalary)),
+    Math.max(MIN_AMOUNT, maxFromSalary),
   );
 
   // 3️⃣ resolvedAmount depende de maxAmount
@@ -181,7 +202,7 @@ export function useCreditSelection() {
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
         plazo_solicitado: term,
-        frecuencia_de_pago_solicitada: paymentFrequency === "QUINCENAL" ? 1 : 2,
+        frecuencia_de_pago_solicitada: paymentFrequency === "SEMANAL" ? 3 : paymentFrequency === "QUINCENAL" ? 1 : 2,
         paso_actual: nextStep,
 
         perfil: scoreResult.perfil,

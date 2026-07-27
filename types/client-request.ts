@@ -7,6 +7,7 @@ export interface AmortizacionRow {
 }
 
 export interface ClientRequestData {
+  autorizacion_de_consulta_de_historial_crediticio?: boolean;
   plazo_solicitado?: number;
   plazo_ofertado?: number;
   tipo_de_credito_solicitado?: string;

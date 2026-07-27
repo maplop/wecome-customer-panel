@@ -221,7 +221,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                     {paymentAmount > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground">
-                          {data.frecuencia_de_pago_ofertada === 2 ? 'Pago mensual' : 'Pago quincenal'}
+                          {data.frecuencia_de_pago_ofertada === 3 ? 'Pago semanal' : data.frecuencia_de_pago_ofertada === 2 ? 'Pago mensual' : 'Pago quincenal'}
                         </p>
                         <p className="text-sm font-semibold text-foreground">
                           {formatMoney(paymentAmount)}

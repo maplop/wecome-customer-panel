@@ -97,8 +97,8 @@ export default function PersonalData() {
         <DataRow label="Nacionalidad" value={clientData.nationality} />
         <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
         <DataRow label="Ocupación" value={clientData.cargo_en_empresa} />
-        <DataRow label="Salario" value={`${formatMoney(Number(clientData.salario))} MXN`} />
-        <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial} />
+        <DataRow label="Salario" value={`${formatMoney(Number(clientData.sueldo_bruto))} MXN`} />
+        <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial.split(' y ').filter(p => /\d/.test(p)).join(' y ')} />
         <DataRow label="Teléfono" value={formatMxPhoneNumber(clientData.phone)} />
         <DataRow label="Correo electrónico" value={clientData.email} />
       </div>

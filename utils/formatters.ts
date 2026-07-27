@@ -107,18 +107,22 @@ export function formatMoney(value: number): string {
 
 export function normalizePaymentFrequency(
   value?: string | number | { id?: number } | null,
-): "QUINCENAL" | "MENSUAL" {
-  if (typeof value === "number") return value === 2 ? "MENSUAL" : "QUINCENAL";
-  if (value && typeof value === "object") return (value as { id?: number }).id === 2 ? "MENSUAL" : "QUINCENAL";
+): "SEMANAL" | "QUINCENAL" | "MENSUAL" {
+  if (typeof value === "number") return value === 2 ? "MENSUAL" : value === 3 ? "SEMANAL" : "QUINCENAL";
+  if (value && typeof value === "object") return (value as { id?: number }).id === 2 ? "MENSUAL" : (value as { id?: number }).id === 3 ? "SEMANAL" : "QUINCENAL";
   if (typeof value === "string") {
-    if (value === "1" || value === "2") return value === "2" ? "MENSUAL" : "QUINCENAL";
-    return value.toUpperCase() === "MENSUAL" ? "MENSUAL" : "QUINCENAL";
+    if (value === "1" || value === "2" || value === "3") return value === "2" ? "MENSUAL" : value === "3" ? "SEMANAL" : "QUINCENAL";
+    const upper = value.toUpperCase();
+    if (upper === "SEMANAL") return "SEMANAL";
+    if (upper === "MENSUAL") return "MENSUAL";
+    return "QUINCENAL";
   }
   return "QUINCENAL";
 }
 
 export function formatPaymentFrequency(value?: string | number | null): string {
-  return normalizePaymentFrequency(value) === "MENSUAL"
-    ? "Mensual"
-    : "Quincenal";
+  const freq = normalizePaymentFrequency(value);
+  if (freq === "SEMANAL") return "Semanal";
+  if (freq === "MENSUAL") return "Mensual";
+  return "Quincenal";
 }
