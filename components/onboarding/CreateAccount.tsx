@@ -113,6 +113,8 @@ export default function CreateAccount() {
           curp: data?.curp,
           rfc: data?.rfc,
           birthdate: data?.fecha_de_nacimiento,
+          fullname: `${data?.nombres} ${data?.primer_apellido} ${data?.segundo_apellido}`.trim(),
+          edad: data?.edad,
           nationality: data?.nacionalidad,
           empresa_donde_trabaja: data?.empresa,
           salario: data?.salario,
