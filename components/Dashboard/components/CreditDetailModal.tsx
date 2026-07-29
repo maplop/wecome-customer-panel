@@ -1,4 +1,3 @@
-'use client'
 import { X, CheckCircle, CircleDollarSign, Calendar, HandCoins, ShieldCheck, Check } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
 import { ESTADO_CONFIG } from '../constants/request-status'

@@ -1,5 +1,0 @@
-1:"$Sreact.fragment"
-2:I[40599,["/_next/static/chunks/16fyeomf7p9oz.js","/_next/static/chunks/0d21n0vhs4zns.js"],"ViewportBoundary"]
-3:I[40599,["/_next/static/chunks/16fyeomf7p9oz.js","/_next/static/chunks/0d21n0vhs4zns.js"],"MetadataBoundary"]
-4:"$Sreact.suspense"
-0:{"rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Wecome — Solicitud de Crédito"}],["$","meta","1",{"name":"description","content":"Solicita tu crédito de nómina de forma rápida, segura y 100% en línea."}],["$","meta","2",{"name":"generator","content":"v0.app"}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"MbwCtKd8vOd_gsxTPNDeH"}

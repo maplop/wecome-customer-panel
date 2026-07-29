@@ -1,4 +1,3 @@
-'use client'
 import CreditDashboard from '@/components/Dashboard/CreditDashboard'
 
 export default function DashboardPage() {
