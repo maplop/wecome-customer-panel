@@ -8,6 +8,7 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Search, Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { InfoNote } from '../common/InfoNote'
 
 export default function CreditAuthorization() {
   const router = useRouter()
@@ -76,13 +77,11 @@ export default function CreditAuthorization() {
         </ul>
       </div>
 
-      <div className="rounded-2xl border border-border bg-amber-50 p-4">
-        <p className="text-xs text-amber-800 leading-relaxed">
-          Esta consulta quedará registrada en tu historial crediticio. Si realizas
+      <InfoNote
+        text="Esta consulta quedará registrada en tu historial crediticio. Si realizas
           solicitudes de crédito en múltiples instituciones en un periodo corto,
-          esto puede afectar tu calificación crediticia.
-        </p>
-      </div>
+          esto puede afectar tu calificación crediticia."
+      />
 
       <div className="flex items-start gap-3">
         <button

@@ -8,9 +8,8 @@ import { formatPaymentFrequency } from '@/utils/formatters'
 import { InfoCard } from '@/components/common/InfoCard'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { calculateScore } from '@/services/onboarding/evaluate-score'
-import { useClientDataStore, useClientProfileStore } from '@/stores'
-import { apiClient } from '@/api/dynamicore/frontend'
 import confetti from 'canvas-confetti'
+import { InfoNote } from '@/components/common/InfoNote'
 
 interface ResolvedOfferModalProps {
   credit: ClientRequestRecord
@@ -304,12 +303,9 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                 </div>
               )}
 
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-accent/5">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full shrink-0 bg-brand-accent/20 text-brand-accent text-xs font-bold">i</div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Al aceptar esta oferta, autorizas el desembolso del crédito en tu cuenta registrada. Tendrás 30 días para cambiar de opinión sin penalidad.
-                </p>
-              </div>
+              <InfoNote
+                text=" Al aceptar esta oferta, autorizas el desembolso del crédito en tu cuenta registrada. Tendrás 30 días para cambiar de opinión sin penalidad."
+              />
             </div>
 
             {/* Footer */}

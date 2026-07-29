@@ -17,7 +17,7 @@ export function InfoNote({
   textClassName = ""
 }: InfoNoteProps) {
   return (
-    <div className={`rounded-2xl border border-border bg-secondary/40 p-4 flex gap-3 items-center ${className}`}>
+    <div className={`rounded-2xl border-brand-accent bg-brand-accent/5 border  p-4 flex gap-3 items-center ${className}`}>
       {icon ? (
         <div className={`shrink-0 ${iconClassName}`}>
           {icon}
@@ -25,7 +25,7 @@ export function InfoNote({
       ) : (
         <Info className="text-brand-accent shrink-0" />
       )}
-      <p className={`text-xs text-muted-foreground leading-relaxed ${textClassName}`}>
+      <p className={`text-xs leading-relaxed text-brand-accent ${textClassName}`}>
         {text}
       </p>
     </div>

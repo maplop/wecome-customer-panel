@@ -3,6 +3,7 @@ import { useState } from "react"
 import { AlertTriangle } from '@/lib/icons'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { InfoNote } from "@/components/common/InfoNote"
 
 
 export default function RiskModal({
@@ -19,17 +20,15 @@ export default function RiskModal({
       <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent"
-            >
-              <AlertTriangle className="stroke-white w-5 h-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent/10">
+              <AlertTriangle className="h-5 w-5 text-brand-accent" />
             </div>
             <h2 className="text-lg font-bold text-foreground">Crédito sin seguro</h2>
           </div>
         </div>
 
         <div className="px-6 py-5 flex flex-col gap-4">
-          <div className="rounded-xl bg-brand-warning/10 border border-brand-warning/30 p-4 flex flex-col gap-2">
+          <div className="rounded-xl bg-brand-warning/5 border border-brand-warning/30 p-4 flex flex-col gap-2">
             <p className="text-sm font-semibold text-brand-warning">Aviso importante</p>
             <p className="text-sm text-brand-warning/80 leading-relaxed">
               Al seleccionar un crédito <strong>sin seguro</strong>, asumes los siguientes riesgos:

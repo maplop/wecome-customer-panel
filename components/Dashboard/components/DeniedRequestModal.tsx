@@ -114,18 +114,6 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
               />
             </div>
           </div>
-
-          {/* Contacto */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-accent/5">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full shrink-0 bg-brand-accent/20 text-brand-accent text-xs font-bold">i</div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              ¿Tienes preguntas? Contacta a nuestro equipo en{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-accent hover:underline">
-                {SUPPORT_EMAIL}
-              </a>
-            </p>
-          </div>
-
         </div>
 
         {/* Footer */}
