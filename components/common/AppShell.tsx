@@ -33,10 +33,10 @@ export function AppShell({
   wrapInCard = false,
 }: AppShellProps) {
   const router = useRouter()
-  const session = useClientDataStore((state) => state)
+  const client = useClientDataStore((state) => state.client)
 
 
-  const canShowAccountMenu = isAccessTokenValid()
+  const canShowAccountMenu = useMemo(() => isAccessTokenValid(), [])
 
   const handleLogout = async () => {
     await logout()
@@ -44,9 +44,9 @@ export function AppShell({
   }
 
   const userEmail = useMemo(() => {
-    const userName = session.client?.pii.email || `${session.client?.pii.name} ${session.client?.pii.apellido_paterno}`.trim() || 'Mi cuenta'
+    const userName = client?.pii.email || `${client?.pii.name} ${client?.pii.apellido_paterno}`.trim() || 'Mi cuenta'
     return userName
-  }, [session?.client])
+  }, [client])
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
