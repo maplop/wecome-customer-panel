@@ -236,7 +236,9 @@ export default function UploadDocuments() {
   const [activeTab, setActiveTab] = useState<1 | 2>(1)
   const [documents, setDocuments] = useState<Record<string, UploadedDocumentState>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [uploading, setUploading] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<Set<string>>(new Set())
+
+  const isUploading = (docId: string) => uploading.has(docId)
   const [loadingExistingDocs, setLoadingExistingDocs] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [removingDocumentId, setRemovingDocumentId] = useState<string | null>(null)
@@ -332,7 +334,7 @@ export default function UploadDocuments() {
     if (docId === INE_FRONT_DOC_ID || docId === INE_BACK_DOC_ID) {
       setJumioFailures((prev) => ({ ...prev, [docId]: false }))
     }
-    setUploading(docId)
+    setUploading(prev => new Set(prev).add(docId))
 
     try {
       const key = `company/${client.company}/onboarding/${docId}/${Date.now()}-${sanitizeFilename(file.name)}`
@@ -371,7 +373,7 @@ export default function UploadDocuments() {
     } catch {
       setErrors((e) => ({ ...e, [docId]: 'No se pudo cargar el documento. Intenta nuevamente.' }))
     } finally {
-      setUploading(null)
+      setUploading(prev => { const next = new Set(prev); next.delete(docId); return next; })
     }
   }
 
@@ -566,9 +568,9 @@ export default function UploadDocuments() {
             acceptedTypes={doc.acceptedTypes}
             fileData={documents[doc.id]}
             error={errors[doc.id] || (jumioFailures[doc.id] ? 'No se pudo validar el INE.' : '')}
-            uploading={uploading === doc.id}
+            uploading={isUploading(doc.id)}
             loadingExisting={Boolean(loadingExistingDocs[doc.id])}
-            disabled={Boolean(uploading) || isSubmitting || Boolean(removingDocumentId) || Boolean(loadingExistingDocs[doc.id])}
+            disabled={isUploading(doc.id) || isSubmitting || Boolean(removingDocumentId) || Boolean(loadingExistingDocs[doc.id])}
             onFileChange={handleFileChange}
             onRemove={removeDocument}
           />
@@ -580,14 +582,14 @@ export default function UploadDocuments() {
           {activeTab === 1 ? (
             <ButtonCard
               onClick={() => setActiveTab(2)}
-              disabled={!tab1Complete || Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
+              disabled={!tab1Complete || uploading.size > 0 || isSubmitting || Boolean(removingDocumentId)}
             >
               Siguiente
             </ButtonCard>
           ) : (
             <ButtonCard
               submit
-              disabled={!allRequiredUploaded || Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
+              disabled={!allRequiredUploaded || uploading.size > 0 || isSubmitting || Boolean(removingDocumentId)}
               loading={isSubmitting}
               loadingText="Subiendo documentos..."
             >
@@ -597,7 +599,7 @@ export default function UploadDocuments() {
 
           <ButtonCard
             variant="secondary"
-            disabled={Boolean(uploading) || isSubmitting || Boolean(removingDocumentId)}
+            disabled={uploading.size > 0 || isSubmitting || Boolean(removingDocumentId)}
             onClick={activeTab === 2
               ? () => setActiveTab(1)
               : () => router.push(ROUTES.ONBOARDING.PERSONAL_DATA)}

@@ -1,6 +1,8 @@
 'use client'
 
-import { File, Trash, Upload } from '@/lib/icons'
+import { useState } from 'react'
+import { File, Trash, Upload, Eye } from '@/lib/icons'
+import DocumentViewer from './DocumentViewer'
 
 interface DocumentUploadFieldProps {
   docId: string
@@ -29,6 +31,7 @@ export default function DocumentUploadField({
   onFileChange,
   onRemove,
 }: DocumentUploadFieldProps) {
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   const isImagePreview = Boolean(
     fileData?.preview &&
@@ -50,9 +53,9 @@ export default function DocumentUploadField({
       {fileData ? (
         <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/50">
           {isImagePreview ? (
-            <img src={fileData.preview} alt={label} className="w-12 h-12 object-cover rounded-lg" />
+            <img src={fileData.preview} alt={label} className="w-12 h-12 object-cover rounded-lg shrink-0" />
           ) : (
-            <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted">
+            <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-muted shrink-0">
               <File className="text-muted-foreground" />
             </div>
           )}
@@ -62,9 +65,16 @@ export default function DocumentUploadField({
           </div>
           <button
             type="button"
+            onClick={() => setViewerOpen(true)}
+            className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition shrink-0"
+          >
+            <Eye className="w-4.5 h-4.5" />
+          </button>
+          <button
+            type="button"
             disabled={disabled}
             onClick={() => onRemove(docId)}
-            className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition"
+            className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition shrink-0"
           >
             <Trash className="w-4.5 h-4.5" />
           </button>
@@ -96,6 +106,15 @@ export default function DocumentUploadField({
       )}
 
       {error && <p className="text-xs text-destructive">{error}</p>}
+
+      {fileData && (
+        <DocumentViewer
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+          url={fileData.preview}
+          name={fileData.name}
+        />
+      )}
     </div>
   )
 }

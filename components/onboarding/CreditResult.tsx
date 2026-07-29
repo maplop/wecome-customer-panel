@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { InfoNote } from '@/components/common/InfoNote'
 import { InfoCard } from '@/components/common/InfoCard'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check, CircleDollarSign, Calendar, HandCoins, ShieldCheck } from '@/lib/icons'
@@ -21,6 +22,12 @@ function toPositiveNumber(value: unknown): number | null {
 
 export default function CreditResult() {
   const router = useRouter()
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
   const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
 
   const data = activeRequest?.data ?? {}
@@ -38,6 +45,10 @@ export default function CreditResult() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  if (!hydrated) {
+    return <CreditResultSkeleton />
+  }
 
   const handleContinue = async () => {
     const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
@@ -147,6 +158,39 @@ export default function CreditResult() {
           Regresar
         </ButtonCard>
         {error && <p className="text-xs text-destructive">{error}</p>}
+      </div>
+    </WrapperCard>
+  )
+}
+
+function CreditResultSkeleton() {
+  return (
+    <WrapperCard>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-muted">
+        <Skeleton className="w-10 h-10 rounded-full bg-muted-foreground/20" />
+        <Skeleton className="h-3 w-28 bg-muted-foreground/20" />
+        <Skeleton className="h-10 w-40 bg-muted-foreground/20" />
+        <Skeleton className="h-4 w-8 bg-muted-foreground/20" />
+      </div>
+      <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
+        <Skeleton className="h-3 w-32" />
+        <div className="grid grid-cols-2 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <Skeleton className="h-4 w-full bg-muted-foreground/20" />
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
       </div>
     </WrapperCard>
   )
