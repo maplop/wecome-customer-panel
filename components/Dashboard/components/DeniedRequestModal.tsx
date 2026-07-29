@@ -5,7 +5,7 @@ import { X, AlertCircle, CircleDollarSign, Calendar, ShieldCheck } from '@/lib/i
 import type { ClientRequestRecord } from '@/types/client-request'
 import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
-import { InfoCard } from '@/components/common'
+import { InfoCard } from '@/components/common/InfoCard'
 
 interface DeniedRequestModalProps {
   credit: ClientRequestRecord

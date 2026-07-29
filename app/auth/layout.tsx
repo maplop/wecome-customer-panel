@@ -1,6 +1,7 @@
 'use client'
 
-import { Header, Footer } from '@/components/common'
+import { Header } from '@/components/common/Header'
+import { Footer } from '@/components/common/Footer'
 
 interface AuthLayoutProps {
   children: React.ReactNode

@@ -4,7 +4,7 @@ import type { ClientRequestRecord } from '@/types/client-request'
 import { ESTADO_CONFIG } from '../constants/request-status'
 import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
-import { InfoCard } from '@/components/common'
+import { InfoCard } from '@/components/common/InfoCard'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })

@@ -1,7 +1,11 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { WrapperCard, TitleCard, SubtitleCard, TogglePasswordVisibility, ButtonCard } from '@/components/common'
+import { WrapperCard } from '@/components/common/WrapperCard'
+import { TitleCard } from '@/components/common/TitleCard'
+import { SubtitleCard } from '@/components/common/SubtitleCard'
+import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisibility'
+import { ButtonCard } from '@/components/common/ButtonCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { isApiClientError } from '@/api/dynamicore/frontend'

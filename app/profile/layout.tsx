@@ -1,6 +1,6 @@
 'use client'
 
-import { AppShell } from '@/components/common'
+import { AppShell } from '@/components/common/AppShell'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 
 interface ProfileLayoutProps {

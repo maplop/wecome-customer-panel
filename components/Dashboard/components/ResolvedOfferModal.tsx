@@ -5,7 +5,7 @@ import { X, CheckCircle, Check, CircleDollarSign, Calendar, HandCoins, ShieldChe
 import type { ClientRequestRecord, AmortizacionRow } from '@/types/client-request'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 import { formatPaymentFrequency } from '@/utils/formatters'
-import { InfoCard } from '@/components/common'
+import { InfoCard } from '@/components/common/InfoCard'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { calculateScore } from '@/services/onboarding/evaluate-score'
 import { useClientDataStore, useClientProfileStore } from '@/stores'

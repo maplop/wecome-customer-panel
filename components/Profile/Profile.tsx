@@ -4,7 +4,11 @@ import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 import { useClientDataStore } from "@/stores/client-data-store";
 import { formatDateLongEs, formatMoney, formatMxPhoneNumber } from '@/utils/formatters'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard, InfoNote } from '@/components/common'
+import { ButtonCard } from '@/components/common/ButtonCard'
+import { SubtitleCard } from '@/components/common/SubtitleCard'
+import { TitleCard } from '@/components/common/TitleCard'
+import { WrapperCard } from '@/components/common/WrapperCard'
+import { InfoNote } from '@/components/common/InfoNote'
 
 interface DataItemProps {
   label: string

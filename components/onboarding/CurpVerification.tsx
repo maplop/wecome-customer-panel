@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { useClientProfileStore } from '@/stores/client-profile-store'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
+import { ButtonCard } from '@/components/common/ButtonCard'
+import { SubtitleCard } from '@/components/common/SubtitleCard'
+import { TitleCard } from '@/components/common/TitleCard'
+import { WrapperCard } from '@/components/common/WrapperCard'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/routes'
 

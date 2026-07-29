@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { AppShell } from '@/components/common'
+import { AppShell } from '@/components/common/AppShell'
 import { ONBOARDING_STEPS, PROTECTED_ONBOARDING_ROUTES } from '@/lib/routes'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 

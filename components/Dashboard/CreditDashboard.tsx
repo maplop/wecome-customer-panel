@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ButtonCard } from '@/components/common'
+import { ButtonCard } from '@/components/common/ButtonCard'
+import { TitleCard } from '@/components/common/TitleCard'
+import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { CreditDetailModal, ClientRequestItem, ResolvedOfferModal, DeniedRequestModal } from './components'
 import { Plus, RefreshCw } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
@@ -10,7 +12,6 @@ import { useClientDataStore } from '@/stores/client-data-store'
 import { useClientRequestStore } from '@/stores'
 import type { RequestStatus, ClientRequestRecord } from '@/types/client-request'
 import { addRequest, getRequestsByClient } from '@/services/client-requests'
-import { TitleCard, SubtitleCard } from '@/components/common'
 
 export type TabFilter = RequestStatus | 'all'
 

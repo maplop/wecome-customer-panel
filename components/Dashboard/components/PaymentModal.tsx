@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { CircleDollarSign, X, Pencil } from '@/lib/icons'
-import { ButtonCard } from '@/components/common'
+import { ButtonCard } from '@/components/common/ButtonCard'
 
 
 interface PaymentModalProps {

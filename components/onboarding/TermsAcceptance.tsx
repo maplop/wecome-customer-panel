@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ButtonCard, SubtitleCard, TitleCard, WrapperCard } from '../common'
+import { ButtonCard } from '@/components/common/ButtonCard'
+import { SubtitleCard } from '@/components/common/SubtitleCard'
+import { TitleCard } from '@/components/common/TitleCard'
+import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { X, Check } from '@/lib/icons'
