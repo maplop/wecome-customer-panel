@@ -1,9 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote } from '../common'
+import { WrapperCard, TitleCard, SubtitleCard, ButtonCard, InfoNote, InfoCard } from '../common'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { Check } from '@/lib/icons'
+import { Check, CircleDollarSign, Calendar, HandCoins, ShieldCheck } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { useClientRequestStore } from '@/stores'
 import { formatMoney, formatPaymentFrequency, normalizePaymentFrequency } from '@/utils/formatters'
@@ -25,9 +25,6 @@ export default function CreditResult() {
   const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago_solicitada)
   const paymentFrequencyLabel = formatPaymentFrequency(paymentFrequency)
   const isProtected = data.tipo_de_credito_solicitado === 'protected'
-
-  const monthlyRate = toPositiveNumber(data.tasa_mensual_sin_iva) ?? 4
-  const annualRate = monthlyRate * 12
 
   const paymentAmount = toPositiveNumber(
     isProtected ? data.pago_por_periodo_con_seguros_iva : data.pago_por_periodo_sin_seguros,
@@ -75,46 +72,54 @@ export default function CreditResult() {
       </div>
 
       {/* Detalles */}
-      <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Detalle del crédito
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-muted-foreground">
-              {paymentFrequency === 'MENSUAL' ? 'Pago mensual' : 'Pago quincenal'}
-            </p>
-            <p className="text-sm font-semibold text-foreground">
-              {formatMoney(paymentAmount)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Total a pagar</p>
-            <p className="text-sm font-semibold text-foreground">
-              {formatMoney(totalToPay)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
-            <p className="text-sm font-semibold text-foreground">
-              {paymentFrequencyLabel}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Plazo</p>
-            <p className="text-sm font-semibold text-foreground">{term} meses</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Tasa anual</p>
-            <p className="text-sm font-semibold text-foreground">
-              {annualRate.toFixed(2)}%
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Tipo</p>
-            <p className="text-sm font-semibold text-foreground">
-              {getCreditTypeLabel(data.tipo_de_credito_solicitado)}
-            </p>
+      <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+            Detalles del crédito
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+
+            <InfoCard
+              icon={CircleDollarSign}
+              label={paymentFrequency}
+              value={formatMoney(paymentAmount)}
+            />
+
+            <InfoCard
+              icon={HandCoins}
+              label="Total a pagar"
+              value={formatMoney(totalToPay)}
+            />
+
+            <InfoCard
+              icon={Calendar}
+              label="Frecuencia"
+              value={paymentFrequencyLabel}
+              valueSize="sm"
+            />
+
+            <InfoCard
+              icon={Calendar}
+              label="Plazo"
+              value={`${term} meses`}
+              valueSize="sm"
+            />
+
+            <InfoCard
+              icon={CircleDollarSign}
+              label="Tasa mensual"
+              value={`${data.tasa_mensual_sin_iva ?? 4}%`}
+              valueSize="sm"
+            />
+
+            <InfoCard
+              icon={ShieldCheck}
+              label="Tipo"
+              value={getCreditTypeLabel(data.tipo_de_credito_solicitado)}
+              valueSize="sm"
+              valueClassName="truncate"
+            />
+
           </div>
         </div>
       </div>

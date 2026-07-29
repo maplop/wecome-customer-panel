@@ -25,8 +25,18 @@ export default function ClientRequestItem({
   const estado = data.estado ?? "pending"
   const estadoCfg = ESTADO_CONFIG[estado]
 
-  const solicitado = Number(data.monto_solicitado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
+  const showOffer = ['approved', 'active', 'completed'].includes(estado)
+
+  const monto = showOffer
+    ? Number(data.monto_ofertado ?? 0)
+    : Number(data.monto_solicitado ?? 0)
+  const frecuenciaDePago = formatPaymentFrequency(
+    showOffer ? data.frecuencia_de_pago_ofertada : data.frecuencia_de_pago_solicitada
+  )
+  const tipoDeCredito = getCreditTypeLabel(
+    showOffer ? data.tipo_de_credito_ofertado : data.tipo_de_credito_solicitado
+  ) ?? '-'
+  const plazo = showOffer ? data.plazo_ofertado : data.plazo_solicitado
 
   return (
     <div className="rounded-2xl border border-border bg-card px-5 pt-3 pb-5 flex flex-col gap-3">
@@ -56,16 +66,18 @@ export default function ClientRequestItem({
         </div>
 
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-xs text-muted-foreground">Solicitado</span>
+          <span className="text-xs text-muted-foreground">
+            {showOffer ? 'Aprobado' : 'Solicitado'}
+          </span>
           <span className="text-base font-bold text-brand-accent truncate">
-            {formatMoney(solicitado)}
+            {formatMoney(monto)}
           </span>
         </div>
 
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">Tipo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}
+            {tipoDeCredito}
           </span>
         </div>
 
@@ -79,7 +91,7 @@ export default function ClientRequestItem({
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">Plazo</span>
           <span className="text-sm font-medium text-foreground truncate">
-            {data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}
+            {plazo ? `${plazo} meses` : '-'}
           </span>
         </div>
 

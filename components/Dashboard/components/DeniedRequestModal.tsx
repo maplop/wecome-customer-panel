@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import { X, AlertCircle } from '@/lib/icons'
+import { X, AlertCircle, CircleDollarSign, Calendar, ShieldCheck } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
 import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
+import { InfoCard } from '@/components/common'
 
 interface DeniedRequestModalProps {
   credit: ClientRequestRecord
@@ -56,43 +57,61 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
         </div>
 
         {/* Body */}
-        <div className="px-6 py-6 flex flex-col gap-6">
+        <div className="px-6 py-6 flex flex-col gap-5">
 
-          {/* Mensaje principal */}
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-foreground leading-relaxed">
-              Lamentablemente tu solicitud de crédito no cumplió con los requisitos necesarios para su aprobación.
+          {/* Hero */}
+          <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-destructive/60">
+            <div className="flex justify-center items-center w-10 h-10 rounded-full bg-white/20">
+              <X className="stroke-white w-8 h-8" />
+            </div>
+            <span className="text-xs font-medium text-white/80 uppercase tracking-widest">
+              Estado de la solicitud
+            </span>
+            <span className="text-2xl font-bold text-white">
+              DENEGADA
+            </span>
+            <p className="text-sm text-white/70 leading-relaxed">
+              Tu solicitud no cumplió con los requisitos necesarios para su aprobación en este momento.
             </p>
           </div>
 
           {/* Información de la solicitud */}
-          <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-foreground">Resumen de tu solicitud</h3>
+          <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Resumen de tu solicitud
+            </p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-                <span className="text-xs text-muted-foreground">Monto solicitado</span>
-                <span className="text-sm font-semibold text-foreground">{formatMoney(solicitado)}</span>
-              </div>
-
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-                <span className="text-xs text-muted-foreground">Plazo</span>
-                <span className="text-sm font-semibold text-foreground">{data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}</span>
-              </div>
-
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-                <span className="text-xs text-muted-foreground">Frecuencia de pago</span>
-                <span className="text-sm font-semibold text-foreground">{frecuenciaDePago}</span>
-              </div>
-
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50">
-                <span className="text-xs text-muted-foreground">Tipo de crédito</span>
-                <span className="text-sm font-semibold text-foreground">{getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}</span>
-              </div>
-
-              <div className="flex flex-col gap-1 p-3 rounded-lg bg-secondary/50 col-span-2">
-                <span className="text-xs text-muted-foreground">Fecha de solicitud</span>
-                <span className="text-sm font-semibold text-foreground">{formatDate(credit.created_at)}</span>
-              </div>
+              <InfoCard
+                icon={CircleDollarSign}
+                label="Monto solicitado"
+                value={formatMoney(solicitado)}
+                valueSize="sm"
+              />
+              <InfoCard
+                icon={Calendar}
+                label="Plazo"
+                value={data.plazo_solicitado ? `${data.plazo_solicitado} meses` : '-'}
+                valueSize="sm"
+              />
+              <InfoCard
+                icon={Calendar}
+                label="Frecuencia"
+                value={frecuenciaDePago}
+                valueSize="sm"
+              />
+              <InfoCard
+                icon={ShieldCheck}
+                label="Tipo"
+                value={getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'}
+                valueSize="sm"
+                valueClassName="truncate"
+              />
+              <InfoCard
+                icon={Calendar}
+                label="Fecha solicitud"
+                value={formatDate(credit.created_at)}
+                valueSize="sm"
+              />
             </div>
           </div>
 
@@ -117,13 +136,6 @@ export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedR
             className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm"
           >
             Cerrar
-          </button>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm"
-          >
-            Intentar de nuevo
           </button>
         </div>
 

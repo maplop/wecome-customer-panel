@@ -199,10 +199,16 @@ export function useCreditSelection() {
 
       await updateActiveRequestData({
         monto_solicitado: amount,
+        sueldo_bruto_mensual: salary,
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
         plazo_solicitado: term,
-        frecuencia_de_pago_solicitada: paymentFrequency === "SEMANAL" ? 3 : paymentFrequency === "QUINCENAL" ? 1 : 2,
+        frecuencia_de_pago_solicitada:
+          paymentFrequency === "SEMANAL"
+            ? 3
+            : paymentFrequency === "QUINCENAL"
+              ? 1
+              : 2,
         paso_actual: nextStep,
 
         perfil: scoreResult.perfil,

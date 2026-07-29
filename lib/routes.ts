@@ -68,25 +68,11 @@ export const ONBOARDING_STEPS = [
     step: 7,
     route: ROUTES.ONBOARDING.CREDIT_SELECTION,
   },
-  /*
-  {
-    title: "Datos financieros",
-    step: 7,
-    route: ROUTES.ONBOARDING.FINANCIAL_DATA,
-  },
-  */
   {
     title: "Resultado de crédito",
     step: 8,
     route: ROUTES.ONBOARDING.CREDIT_RESULT,
   },
-  /*
-  {
-    title: "Confirmación final",
-    step: 9,
-    route: ROUTES.ONBOARDING.FINAL_CONFIRM,
-  },
-  */
   {
     title: "Autorización de consulta",
     step: 9,

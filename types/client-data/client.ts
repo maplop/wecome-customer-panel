@@ -19,7 +19,7 @@ export interface ClientPiiType {
   city: string;
   curp: string;
   name: string;
-  edad: number;
+  age: number;
   aforo: string;
   email: string;
   fecha: string;

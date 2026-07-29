@@ -9,3 +9,4 @@ export { Footer } from "./Footer";
 export { AppShell } from "./AppShell";
 export { TogglePasswordVisibility } from "./TogglePasswordVisibility";
 export { InfoNote } from "./InfoNote";
+export { InfoCard } from "./InfoCard";

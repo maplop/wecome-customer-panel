@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, CheckCircle } from '@/lib/icons'
+import { X, CheckCircle, Check, CircleDollarSign, Calendar, HandCoins, ShieldCheck } from '@/lib/icons'
 import type { ClientRequestRecord, AmortizacionRow } from '@/types/client-request'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 import { formatPaymentFrequency } from '@/utils/formatters'
+import { InfoCard } from '@/components/common'
 import { updateActiveRequestData } from '@/services/client-requests'
 import { calculateScore } from '@/services/onboarding/evaluate-score'
 import { useClientDataStore, useClientProfileStore } from '@/stores'
@@ -48,11 +49,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
   })()
   const totalToPay = Number(data.monto_total_a_pagar) || 0
   const monthlyRate = Number(data.tasa_mensual_sin_iva) || 0
-  const annualRate = monthlyRate * 12
   const commission = Number(data.comision_apertura) || 0
-  const insuranceLife = Number(data.seguro_vida) || 0
-  const insuranceDisability = Number(data.seguro_invalidez_total_permanente) || 0
-  const insuranceTotal = insuranceLife + insuranceDisability
 
   const fetchAmortizacion = useCallback(async () => {
     if (!evaluationId || amortizacion.length > 0) return
@@ -163,7 +160,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
             <div className="px-6 py-6 flex flex-col gap-5">
               <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark">
                 <div className="flex justify-center items-center w-10 h-10 rounded-full bg-brand-accent">
-                  <CheckCircle className="stroke-brand-dark w-8 h-8" />
+                  <Check className="stroke-brand-dark w-8 h-8" />
                 </div>
                 <span className="text-xs font-medium text-white/60 uppercase tracking-widest">
                   Monto aprobado
@@ -181,11 +178,10 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                     key={t}
                     type="button"
                     onClick={() => setTab(t)}
-                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
-                      tab === t
-                        ? 'bg-brand-dark text-white shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${tab === t
+                      ? 'bg-brand-dark text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     {t === 'detalles' ? 'Detalles' : 'Amortización'}
                   </button>
@@ -193,77 +189,58 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
               </div>
 
               {tab === 'detalles' && (
-                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
+                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Detalle de la oferta
                   </p>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Monto solicitado</p>
-                      <p className="text-sm font-semibold text-foreground">{solicitado}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Monto ofertado</p>
-                      <p className="text-sm font-semibold text-foreground">{ofertado}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Plazo</p>
-                      <p className="text-sm font-semibold text-foreground">{plazo ? `${plazo} meses` : '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
-                      <p className="text-sm font-semibold text-foreground">{frecuenciaDePago}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Tipo de crédito</p>
-                      <p className="text-sm font-semibold text-foreground">{tipoDeCredito}</p>
-                    </div>
-                    {paymentAmount > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {data.frecuencia_de_pago_ofertada === 3 ? 'Pago semanal' : data.frecuencia_de_pago_ofertada === 2 ? 'Pago mensual' : 'Pago quincenal'}
-                        </p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatMoney(paymentAmount)}
-                        </p>
-                      </div>
-                    )}
-                    {totalToPay > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Total a pagar</p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatMoney(totalToPay)}
-                        </p>
-                      </div>
-                    )}
-                    {monthlyRate > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Tasa mensual</p>
-                        <p className="text-sm font-semibold text-foreground">{monthlyRate.toFixed(2)}%</p>
-                      </div>
-                    )}
-                    {annualRate > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Tasa anual</p>
-                        <p className="text-sm font-semibold text-foreground">{annualRate.toFixed(2)}%</p>
-                      </div>
-                    )}
-                    {commission > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Comisión de apertura</p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatMoney(commission)}
-                        </p>
-                      </div>
-                    )}
-                    {insuranceTotal > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Seguros</p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatMoney(insuranceTotal)}
-                        </p>
-                      </div>
-                    )}
+                    <InfoCard
+                      icon={CircleDollarSign}
+                      label="Monto solicitado"
+                      value={solicitado}
+                      valueSize="sm"
+                    />
+                    <InfoCard
+                      icon={Calendar}
+                      label="Plazo"
+                      value={plazo ? `${plazo} meses` : '-'}
+                      valueSize="sm"
+                    />
+                    <InfoCard
+                      icon={Calendar}
+                      label="Frecuencia"
+                      value={frecuenciaDePago}
+                      valueSize="sm"
+                    />
+                    <InfoCard
+                      icon={ShieldCheck}
+                      label="Tipo"
+                      value={tipoDeCredito}
+                      valueSize="sm"
+                      valueClassName="truncate"
+                    />
+                    <InfoCard
+                      icon={CircleDollarSign}
+                      label="Pago por periodo"
+                      value={formatMoney(paymentAmount >= 0 ? paymentAmount : 0)}
+                    />
+                    <InfoCard
+                      icon={HandCoins}
+                      label="Total a pagar"
+                      value={formatMoney(totalToPay)}
+                    />
+                    <InfoCard
+                      icon={CircleDollarSign}
+                      label="Tasa mensual"
+                      value={`${monthlyRate.toFixed(2)}%`}
+                      valueSize="sm"
+                    />
+                    <InfoCard
+                      icon={CircleDollarSign}
+                      label="Comisión apertura"
+                      value={formatMoney(commission)}
+                      valueSize="sm"
+                    />
                   </div>
                 </div>
               )}

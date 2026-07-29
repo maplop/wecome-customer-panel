@@ -51,7 +51,7 @@ export default function CreditSelection() {
         {/* Info salario */}
         {salaryNum > 0 && (
           <div className="flex justify-between items-center gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">
-            <span className="text-xs text-muted-foreground leading-tight">Salario mensual registrado</span>
+            <span className="text-xs text-muted-foreground leading-tight">Salario bruto mensual registrado</span>
             <span className="text-sm font-semibold text-foreground">
               {formatMoney(salaryNum)} MXN
             </span>
@@ -80,9 +80,8 @@ export default function CreditSelection() {
                   MXN
                 </label>
               </div>
-
-
             </div>
+
             <div className="relative py-2">
               <input
                 type="range"

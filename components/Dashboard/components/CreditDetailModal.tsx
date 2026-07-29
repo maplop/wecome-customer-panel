@@ -1,9 +1,10 @@
 'use client'
-import { X, CheckCircle } from '@/lib/icons'
+import { X, CheckCircle, CircleDollarSign, Calendar, HandCoins, ShieldCheck, Check } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
 import { ESTADO_CONFIG } from '../constants/request-status'
 import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
+import { InfoCard } from '@/components/common'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -22,10 +23,22 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
 
   const solicitado = Number(data.monto_solicitado ?? 0)
   const ofertado = Number(data.monto_ofertado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
-  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'
-  const plazo = data.plazo_solicitado
   const showOffer = ['approved', 'active', 'completed'].includes(estado)
+  const frecuenciaDePago = formatPaymentFrequency(
+    showOffer ? data.frecuencia_de_pago_ofertada : data.frecuencia_de_pago_solicitada
+  )
+  const tipoDeCredito = getCreditTypeLabel(
+    showOffer ? data.tipo_de_credito_ofertado : data.tipo_de_credito_solicitado
+  ) ?? '-'
+  const plazo = showOffer ? data.plazo_ofertado : data.plazo_solicitado
+
+  const isProtected = (showOffer ? data.tipo_de_credito_ofertado : data.tipo_de_credito_solicitado) === 'protected'
+  const paymentAmount = (() => {
+    const v = isProtected ? data.pago_por_periodo_con_seguros_iva : data.pago_por_periodo_sin_seguros
+    return v ? Number(v) : 0
+  })()
+  const totalToPay = Number(data.monto_total_a_pagar) || 0
+  const monthlyRate = Number(data.tasa_mensual_sin_iva) || 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -57,7 +70,7 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
           {/* Hero */}
           <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark">
             <div className="flex justify-center items-center w-10 h-10 rounded-full bg-brand-accent">
-              <CheckCircle className="stroke-brand-dark w-8 h-8" />
+              <Check className="stroke-brand-dark w-8 h-8" />
             </div>
             <span className="text-xs font-medium text-white/60 uppercase tracking-widest">
               {showOffer ? 'Monto aprobado' : 'Monto solicitado'}
@@ -69,34 +82,58 @@ export default function CreditDetailModal({ credit, onClose }: CreditDetailModal
           </div>
 
           {/* Detalle */}
-          <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
+          <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Detalle del crédito
+              {showOffer ? 'Detalle de la oferta' : 'Detalle del crédito'}
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Plazo</p>
-                <p className="text-sm font-semibold text-foreground">{plazo ? `${plazo} meses` : '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Frecuencia de pago</p>
-                <p className="text-sm font-semibold text-foreground">{frecuenciaDePago}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Tipo de crédito</p>
-                <p className="text-sm font-semibold text-foreground">{tipoDeCredito}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Estado</p>
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium w-fit ${estadoCfg.className}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${estadoCfg.dot}`} />
-                  {estadoCfg.label}
-                </span>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Fecha de solicitud</p>
-                <p className="text-sm font-semibold text-foreground">{formatDate(credit.created_at)}</p>
-              </div>
+              <InfoCard
+                icon={Calendar}
+                label="Plazo"
+                value={plazo ? `${plazo} meses` : '-'}
+                valueSize="sm"
+              />
+              <InfoCard
+                icon={Calendar}
+                label="Frecuencia"
+                value={frecuenciaDePago}
+                valueSize="sm"
+              />
+              <InfoCard
+                icon={ShieldCheck}
+                label="Tipo"
+                value={tipoDeCredito}
+                valueSize="sm"
+                valueClassName="truncate"
+              />
+              <InfoCard
+                icon={Calendar}
+                label="Fecha solicitud"
+                value={formatDate(credit.created_at)}
+                valueSize="sm"
+              />
+              {paymentAmount > 0 && (
+                <InfoCard
+                  icon={CircleDollarSign}
+                  label="Pago por periodo"
+                  value={formatMoney(paymentAmount)}
+                />
+              )}
+              {totalToPay > 0 && (
+                <InfoCard
+                  icon={HandCoins}
+                  label="Total a pagar"
+                  value={formatMoney(totalToPay)}
+                />
+              )}
+              {monthlyRate > 0 && (
+                <InfoCard
+                  icon={CircleDollarSign}
+                  label="Tasa mensual"
+                  value={`${monthlyRate.toFixed(2)}%`}
+                  valueSize="sm"
+                />
+              )}
             </div>
           </div>
 

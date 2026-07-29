@@ -24,6 +24,7 @@ export interface ClientRequestData {
   score_ajustado?: string;
   probabilidad_rotacion_promedio?: string;
   sueldo_neto_mensual?: number;
+  sueldo_bruto_mensual?: number;
   tasa_mensual_sin_iva?: number;
   seguro_vida?: number;
   seguro_invalidez_total_permanente?: number;
