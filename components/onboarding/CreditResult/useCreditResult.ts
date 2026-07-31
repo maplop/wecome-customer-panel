@@ -40,6 +40,7 @@ export function useCreditResult() {
     try {
       await updateActiveRequestData({
         paso_actual: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
+        monto_total_a_pagar_con_seguro: creditData.totales.total,
       });
       router.push(ROUTES.ONBOARDING.CREDIT_AUTHORIZATION);
     } catch (err) {

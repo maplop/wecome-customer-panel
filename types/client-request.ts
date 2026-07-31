@@ -34,7 +34,7 @@ export interface ClientRequestData {
   pago_por_periodo_con_seguros_iva?: number;
   numero_de_periodos?: number;
   monto_total_a_pagar?: number;
-  //monto_total_a_pagar_con_seguro: number;
+  monto_total_a_pagar_con_seguro?: number;
   evaluation_id?: string;
   tabla_amortizacion?: AmortizacionRow[];
 }

@@ -232,7 +232,7 @@ export function useCreditSelection() {
 
       await updateActiveRequestData({
         monto_solicitado: amount,
-        sueldo_bruto_mensual: salary,
+        sueldo_bruto_mensual: salaryBruto,
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
         plazo_solicitado: term,
@@ -276,7 +276,7 @@ export function useCreditSelection() {
     paymentFrequency,
     client?.id,
     client?.pii?.rfc,
-    salary,
+    salaryBruto,
     hasInsurance,
     router,
   ]);
