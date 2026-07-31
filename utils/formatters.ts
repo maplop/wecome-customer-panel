@@ -98,14 +98,10 @@ export function formatMxPhoneNumber(value?: string | number | null): string {
   return `+52 ${lada} ${part1} ${part2}`;
 }
 
-/*
-export function formatMoney(value: number): string {
-  return `${value.toLocaleString("es-MX", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+export function toPositiveNumber(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
-  */
 
 export function formatMoney(value: number) {
   return new Intl.NumberFormat("es-MX", {

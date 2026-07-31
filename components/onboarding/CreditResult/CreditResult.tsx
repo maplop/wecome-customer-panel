@@ -1,201 +1,26 @@
 'use client'
-import { useEffect, useState } from 'react'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { InfoNote } from '@/components/common/InfoNote'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ROUTES } from '@/lib/routes'
-import { useRouter } from 'next/navigation'
 import { ShieldCheck, Wallet, CalendarClock, TrendingUp, Receipt, CalendarDays, Shield, Tag } from '@/lib/icons'
-import { updateActiveRequestData } from '@/services/client-requests'
-import { useClientRequestStore } from '@/stores'
-import { formatMoney, formatPaymentFrequency, normalizePaymentFrequency } from '@/utils/formatters'
+import { formatMoney } from '@/utils/formatters'
+import { TotalRow, FactCard, Row, SectionTitle } from '../../common/CreditDetails'
+import { useCreditResult } from './useCreditResult'
 
-function toPositiveNumber(value: unknown): number | null {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
-}
 
-function FactCard({
-  label,
-  value,
-  icon,
-}: {
-  label: string
-  value: string
-  icon: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-3 shadow-sm">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-        <span className="text-muted-foreground" aria-hidden="true">
-          {icon}
-        </span>
-      </div>
-      <span className="text-sm font-bold text-foreground">{value}</span>
-    </div>
-  )
-}
+const ICONS = { 'shield-check': ShieldCheck, shield: Shield } as const
+
 
 export default function CreditResult() {
-  const router = useRouter()
-  const [hydrated, setHydrated] = useState(false)
 
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
+  const { hydrated, amount, term, paymentFrequencyLabel, creditData, isSubmitting, error, handleContinue, goBack } = useCreditResult()
 
-  const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
-  const data = activeRequest?.data ?? {}
+  if (!hydrated) return <CreditResultSkeleton />
 
-  console.log("Data: ", data)
-
-  // ============================================
-  // 1. EXTRAER DATOS DEL RESPONSE
-  // ============================================
-  const amount = toPositiveNumber(data.monto_solicitado) ?? 0
-  const term = toPositiveNumber(data.plazo_solicitado) ?? 12
-  const paymentFrequency = normalizePaymentFrequency(data.frecuencia_de_pago_solicitada)
-  const paymentFrequencyLabel = formatPaymentFrequency(paymentFrequency)
-  const isProtected = data.tipo_de_credito_solicitado === 'protected'
-
-  // ============================================
-  // 2. CALCULAR VALORES PARA EL DESGLOSE
-  // ============================================
-  const pagoSinSeguros = toPositiveNumber(data.pago_por_periodo_sin_seguros) ?? 0
-  const pagoConSegurosIva = toPositiveNumber(data.pago_por_periodo_con_seguros_iva) ?? 0 // ✅ AHORA SE USA
-  const numeroPeriodos = toPositiveNumber(data.numero_de_periodos) ?? 0
-  const montoTotalAPagar = toPositiveNumber(data.monto_total_a_pagar) ?? 0
-  const comisionApertura = toPositiveNumber(data.comision_apertura) ?? 0
-
-  // Seguros (vienen del response)
-  const seguroVidaAlMillar = toPositiveNumber(data.seguro_vida) ?? 0
-  const seguroInvalidezAlMillar = toPositiveNumber(data.seguro_invalidez_total_permanente) ?? 0
-
-  // Calcular seguros por periodo
-  const seguroVidaPeriodo = amount * (seguroVidaAlMillar / 1000)
-  const seguroInvalidezPeriodo = amount * (seguroInvalidezAlMillar / 1000)
-  const segurosPeriodo = seguroVidaPeriodo + seguroInvalidezPeriodo
-
-  // IVA fijo
-  const iva = 0.16 // 16% fijo
-
-  // ============================================
-  // 3. PREPARAR DATOS SEGÚN TIPO DE CRÉDITO
-  // ============================================
-
-  // 🔑 LÓGICA PRINCIPAL: Dependiendo del tipo de crédito
-  const getCreditData = () => {
-    if (isProtected) {
-      // 🔒 PROTEGIDO: Usamos pagoConSegurosIva del backend
-      // Calculamos los componentes para el desglose visual
-      const subtotal = pagoSinSeguros + segurosPeriodo
-      const ivaPeriodo = subtotal * iva
-
-      // ✅ Usamos el valor del backend para el total
-      const pagoTotal = pagoConSegurosIva
-
-      const totalSeguros = segurosPeriodo * numeroPeriodos
-      const totalIva = ivaPeriodo * numeroPeriodos
-      const totalConTodo = pagoTotal * numeroPeriodos
-
-      return {
-        tipo: 'Protegido',
-        icon: <ShieldCheck className="h-5 w-5 text-primary" />,
-        titulo: 'Crédito Protegido',
-        descripcion: 'Tu crédito incluye seguros de vida e invalidez + IVA',
-
-        // Datos del pago periódico
-        pagoPeriodico: {
-          pagoBase: pagoSinSeguros,
-          seguroVida: seguroVidaPeriodo,
-          seguroInvalidez: seguroInvalidezPeriodo,
-          subtotal: subtotal,
-          iva: ivaPeriodo,
-          total: pagoTotal, // ✅ Usamos el valor del backend
-        },
-
-        // Totales
-        totales: {
-          capitalIntereses: montoTotalAPagar,
-          seguros: totalSeguros,
-          iva: totalIva,
-          total: totalConTodo,
-          comisionApertura: comisionApertura,
-          totalConComision: totalConTodo + comisionApertura,
-        },
-
-        // Mostrar secciones
-        mostrarSeguros: true,
-        mostrarIva: true,
-        mostrarComision: true,
-        mostrarSubtotal: true,
-      }
-    } else {
-      // 🟢 ESENCIAL: Sin seguros y SIN IVA
-      // Solo capital + intereses
-      const pagoTotal = pagoSinSeguros
-
-      return {
-        tipo: 'Esencial',
-        icon: <Shield className="h-5 w-5 text-primary" />,
-        titulo: 'Crédito Esencial',
-        descripcion: 'Tu crédito NO incluye seguros ni IVA',
-
-        // Datos del pago periódico
-        pagoPeriodico: {
-          pagoBase: pagoSinSeguros,
-          seguroVida: 0,
-          seguroInvalidez: 0,
-          subtotal: pagoSinSeguros,
-          iva: 0,
-          total: pagoTotal,
-        },
-
-        // Totales
-        totales: {
-          capitalIntereses: montoTotalAPagar,
-          seguros: 0,
-          iva: 0,
-          total: montoTotalAPagar,
-          comisionApertura: comisionApertura,
-          totalConComision: montoTotalAPagar + comisionApertura,
-        },
-
-        // Mostrar secciones
-        mostrarSeguros: false,
-        mostrarIva: false,
-        mostrarComision: true,
-        mostrarSubtotal: false,
-      }
-    }
-  }
-
-  const creditData = getCreditData()
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
-
-  if (!hydrated) {
-    return <CreditResultSkeleton />
-  }
-
-  const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
-    setIsSubmitting(true)
-    setError('')
-    try {
-      await updateActiveRequestData({ paso_actual: nextStep })
-      router.push(nextStep)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const TipoIcon = ICONS[creditData.iconKey]
 
   return (
     <WrapperCard>
@@ -259,7 +84,7 @@ export default function CreditResult() {
           <FactCard
             label="Tipo"
             value={creditData.tipo}
-            icon={creditData.icon}
+            icon={<TipoIcon className="h-4 w-4" />}
           />
         </section>
 
@@ -268,7 +93,7 @@ export default function CreditResult() {
           <div className="mb-1 flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-primary" aria-hidden="true" />
             <SectionTitle>
-              ¿Qué pagas cada {paymentFrequencyLabel.toLowerCase()}?
+              ¿Qué pagas {paymentFrequencyLabel.toLowerCase()}?
             </SectionTitle>
           </div>
 
@@ -383,84 +208,13 @@ export default function CreditResult() {
         <ButtonCard
           variant="secondary"
           disabled={isSubmitting}
-          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION)}
+          onClick={goBack}
         >
           Regresar
         </ButtonCard>
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </WrapperCard>
-  )
-}
-
-// ============================================
-// COMPONENTES AUXILIARES
-// ============================================
-
-function Row({
-  label,
-  value,
-  icon,
-  operator,
-  tone = "default",
-}: {
-  label: string
-  value: number
-  icon?: React.ReactNode
-  operator?: "+" | "="
-  tone?: "default" | "muted"
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-2.5">
-      <div className="flex min-w-0 items-center gap-2.5">
-        {operator ? (
-          <span
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground"
-            aria-hidden="true"
-          >
-            {operator}
-          </span>
-        ) : icon ? (
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center text-primary" aria-hidden="true">
-            {icon}
-          </span>
-        ) : null}
-        <span
-          className={`truncate text-sm ${tone === "muted" ? "text-muted-foreground" : "text-foreground"}`}
-        >
-          {label}
-        </span>
-      </div>
-      <span className="shrink-0 text-sm tabular-nums text-foreground">{formatMoney(value)}</span>
-    </div>
-  )
-}
-
-function TotalRow({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: number
-  hint?: string
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-brand-dark px-4 py-3.5 text-primary-foreground">
-      <div className="flex flex-col">
-        <span className="text-sm font-semibold">{label}</span>
-        {hint ? <span className="text-xs text-primary-foreground/70">{hint}</span> : null}
-      </div>
-      <span className="text-lg font-bold tabular-nums">{formatMoney(value)}</span>
-    </div>
-  )
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </h2>
   )
 }
 
