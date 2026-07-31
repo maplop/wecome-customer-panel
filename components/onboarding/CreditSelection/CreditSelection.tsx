@@ -105,7 +105,7 @@ export default function CreditSelection() {
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>${formatMoney(minAmount)}</span>
+              <span>{formatMoney(minAmount)}</span>
               {isEvaluating ? (
                 <span className="flex items-center gap-1 italic text-muted-foreground/80">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -113,7 +113,7 @@ export default function CreditSelection() {
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
-                  ${formatMoney(maxAmount)}
+                  {formatMoney(maxAmount)}
                   {isMaxAmountEstimated && (
                     <span className="italic text-muted-foreground/70">
                       (estimado)
@@ -254,7 +254,7 @@ export default function CreditSelection() {
           <div className="flex flex-col gap-3 mt-3">
             <ButtonCard
               onClick={handleContinue}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isEvaluating}
               loading={isSubmitting}
             >
               Continuar con mi crédito

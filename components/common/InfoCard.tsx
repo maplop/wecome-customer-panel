@@ -23,9 +23,9 @@ export function InfoCard({
   const valueTextSize = valueSize === "lg" ? "text-lg" : "text-sm";
 
   return (
-    <div className={`bg-secondary/60 rounded-xl p-3 space-y-1 relative ${className}`}>
+    <div className={`bg-secondary/60 rounded-md p-3 space-y-1 relative ${className}`}>
       {Icon && (
-        <Icon className={`w-5 h-5 text-muted-foreground absolute top-3 right-3 ${iconClassName}`} />
+        <Icon className={`w-4 h-4 text-muted-foreground absolute top-2 right-2 ${iconClassName}`} />
       )}
       <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
         {label}

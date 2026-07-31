@@ -98,20 +98,42 @@ export function formatMxPhoneNumber(value?: string | number | null): string {
   return `+52 ${lada} ${part1} ${part2}`;
 }
 
+/*
 export function formatMoney(value: number): string {
   return `${value.toLocaleString("es-MX", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 }
+  */
+
+export function formatMoney(value: number) {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export function normalizePaymentFrequency(
   value?: string | number | { id?: number } | null,
 ): "SEMANAL" | "QUINCENAL" | "MENSUAL" {
-  if (typeof value === "number") return value === 2 ? "MENSUAL" : value === 3 ? "SEMANAL" : "QUINCENAL";
-  if (value && typeof value === "object") return (value as { id?: number }).id === 2 ? "MENSUAL" : (value as { id?: number }).id === 3 ? "SEMANAL" : "QUINCENAL";
+  if (typeof value === "number")
+    return value === 2 ? "MENSUAL" : value === 3 ? "SEMANAL" : "QUINCENAL";
+  if (value && typeof value === "object")
+    return (value as { id?: number }).id === 2
+      ? "MENSUAL"
+      : (value as { id?: number }).id === 3
+        ? "SEMANAL"
+        : "QUINCENAL";
   if (typeof value === "string") {
-    if (value === "1" || value === "2" || value === "3") return value === "2" ? "MENSUAL" : value === "3" ? "SEMANAL" : "QUINCENAL";
+    if (value === "1" || value === "2" || value === "3")
+      return value === "2"
+        ? "MENSUAL"
+        : value === "3"
+          ? "SEMANAL"
+          : "QUINCENAL";
     const upper = value.toUpperCase();
     if (upper === "SEMANAL") return "SEMANAL";
     if (upper === "MENSUAL") return "MENSUAL";

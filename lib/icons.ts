@@ -25,4 +25,10 @@ export {
   Shield,
   ShieldCheck,
   Loader2,
+  Wallet,
+  TrendingUp,
+  CalendarClock,
+  Receipt,
+  CalendarDays,
+  Tag,
 } from "lucide-react";
