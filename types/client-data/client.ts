@@ -83,7 +83,7 @@ export interface ClientPiiType {
   sueldo_bruto: number;
   vacaciones_pendientes_dias: number;
   aguinaldo_proporcional: number;
-  historial_crediticio: string;
+  historial_crediticio: string | null;
   fecha_limite_del_pago: string;
   comision_por_anualidad: string;
   tipo_de_identificacion: string;

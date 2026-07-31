@@ -7,13 +7,13 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import RiskModal from './RiskModal'
 import { formatMoney } from '@/utils/formatters'
-import { Shield, ShieldCheck } from '@/lib/icons'
+import { Shield, ShieldCheck, Loader2 } from '@/lib/icons'
 import { useCreditSelection, TERMS, PAYMENT_FREQUENCIES } from './useCreditSelection'
 
 
 export default function CreditSelection() {
   const {
-    salaryNum,
+    salaryBrutoNum,
     minAmount,
     maxAmount,
     pct,
@@ -24,6 +24,9 @@ export default function CreditSelection() {
     hasInsurance,
     showRiskModal,
     isSubmitting,
+    isEvaluating,
+    isMaxAmountEstimated,
+    hasMaxAmountError,
     error,
     setTerm,
     setPaymentFrequency,
@@ -35,9 +38,11 @@ export default function CreditSelection() {
     handleRiskAccept,
     handleRiskCancel,
     handleContinue,
+    retryMaxAmountEstimate,
     router,
 
   } = useCreditSelection()
+
 
   return (
     <>
@@ -52,11 +57,11 @@ export default function CreditSelection() {
         </div>
 
         {/* Info salario */}
-        {salaryNum > 0 && (
+        {salaryBrutoNum > 0 && (
           <div className="flex justify-between items-center gap-1 rounded-xl border border-border bg-secondary/40 p-3 text-center">
             <span className="text-xs text-muted-foreground leading-tight">Salario bruto mensual registrado</span>
             <span className="text-sm font-semibold text-foreground">
-              {formatMoney(salaryNum)} MXN
+              {formatMoney(salaryBrutoNum)} MXN
             </span>
           </div>
         )}
@@ -101,7 +106,30 @@ export default function CreditSelection() {
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>${formatMoney(minAmount)}</span>
-              <span>${formatMoney(maxAmount)}</span>
+              {isEvaluating ? (
+                <span className="flex items-center gap-1 italic text-muted-foreground/80">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Calculando...
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  ${formatMoney(maxAmount)}
+                  {isMaxAmountEstimated && (
+                    <span className="italic text-muted-foreground/70">
+                      (estimado)
+                      {hasMaxAmountError && (
+                        <button
+                          type="button"
+                          onClick={retryMaxAmountEstimate}
+                          className="ml-1 underline hover:text-brand-accent"
+                        >
+                          Reintentar
+                        </button>
+                      )}
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
           </div>
 

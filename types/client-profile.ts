@@ -21,7 +21,8 @@ export interface ClientProfileType {
     | "Regular"
     | "Débil"
     | "Malo"
-    | "No disponible";
+    | "No disponible"
+    | null;
 
   nacionalidad: string;
   nivel_de_estudios: string;

@@ -1,5 +1,5 @@
-'use client'
-import { useState, useEffect } from "react";
+"use client";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
 import { updateActiveRequestData } from "@/services/client-requests";
@@ -7,35 +7,25 @@ import { evaluateScore } from "@/services/onboarding/evaluate-score";
 import { useClientRequestStore, useClientDataStore } from "@/stores";
 import { formatMoney, normalizePaymentFrequency } from "@/utils/formatters";
 import { normalizeCreditType } from "@/utils/credit-type";
+import {
+  TERMS,
+  MIN_AMOUNT,
+  MAX_AMOUNT_CAP,
+  PAYMENT_FREQUENCIES,
+  type PaymentFrequency,
+  type CreditType,
+  calcularSueldoNeto,
+  toPositiveNumber,
+  calculateMaxCreditHeuristic,
+  clampAmount,
+  roundUpToThousand,
+  parseFormattedAmount,
+  frequencyToApiCode,
+} from "./credit-math";
+import { useMaxCreditEstimate } from "./useMaxCreditEstimate";
 
-export const TERMS = [12, 24] as const;
-export const MIN_AMOUNT = 10000;
-export const MAX_AMOUNT_CAP = 250000;
-export const PAYMENT_FREQUENCIES = ["SEMANAL", "QUINCENAL", "MENSUAL"] as const;
-
-export type PaymentFrequency = (typeof PAYMENT_FREQUENCIES)[number];
-export type CreditType = "protected" | "esencial";
-
-function toPositiveNumber(value: unknown): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function calculateMaxCredit(
-  monthlySalary: number,
-  term: number,
-  monthlyRate: number = 0.04,
-  debtCapacity: number = 0.33,
-) {
-  // capacidad máxima de pago mensual
-  const maxPayment = monthlySalary * debtCapacity;
-
-  // fórmula valor presente de una anualidad
-  const maxCredit =
-    maxPayment * ((1 - Math.pow(1 + monthlyRate, -term)) / monthlyRate);
-
-  return Math.round(maxCredit);
-}
+export { TERMS, MIN_AMOUNT, MAX_AMOUNT_CAP, PAYMENT_FREQUENCIES };
+export type { PaymentFrequency, CreditType };
 
 export function useCreditSelection() {
   const router = useRouter();
@@ -45,50 +35,76 @@ export function useCreditSelection() {
   const requestData = activeRequest?.data ?? {};
 
   const { client } = useClientDataStore();
-  const salary = client?.pii?.sueldo_bruto ?? 0;
 
-  // 1️⃣ term primero porque maxAmount depende de él
+  // calculamos el neto real a partir del bruto con la fórmula verificada
+  const salaryBruto = toPositiveNumber(client?.pii?.sueldo_bruto) ?? 0;
+  const salary = useMemo(() => calcularSueldoNeto(salaryBruto), [salaryBruto]);
+
+  // Resolvemos los valores iniciales de requestData ANTES de crear el estado,
+  // para poder usarlos como lazy initializer. Esto evita que term/paymentFrequency
+  // arranquen en un default (12, QUINCENAL) y luego "salten" al valor real vía
+  // setState — ese salto era justo lo que disparaba la sonda dos veces (una con
+  // el default, otra con el valor correcto) además del duplicado de Strict Mode.
   const resolvedTerm = (() => {
     const parsed = Number(requestData.plazo_solicitado);
     return TERMS.includes(parsed as (typeof TERMS)[number]) ? parsed : TERMS[0];
   })();
-
-  const [term, setTerm] = useState<number>(resolvedTerm);
-
+  const resolvedType =
+    normalizeCreditType(requestData.tipo_de_credito_solicitado) ?? "protected";
   const resolvedPaymentFrequency = normalizePaymentFrequency(
     requestData.frecuencia_de_pago_solicitada,
   );
+
+  const [term, setTerm] = useState<number>(() => resolvedTerm);
   const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency>(
-    resolvedPaymentFrequency,
+    () => resolvedPaymentFrequency,
   );
 
-  // 2️⃣ maxAmount depende de term
-  const salaryNum = toPositiveNumber(salary) ?? 0;
+  const salaryBrutoNum = toPositiveNumber(salaryBruto) ?? 0; // para mostrar en pantalla
+  const salaryNetoNum = toPositiveNumber(salary) ?? 0; // para el cálculo de crédito
+
   const minAmount = MIN_AMOUNT;
-  const maxFromSalary = calculateMaxCredit(
-    salaryNum,
+
+  // Fallback heurístico local: se calcula al instante, sin red.
+  const maxFromSalary = useMemo(
+    () => calculateMaxCreditHeuristic(salaryNetoNum, term, 0.33),
+    [salaryNetoNum, term],
+  );
+
+  // Evaluación "sonda" en backend para conocer la capacidad_endeudamiento_max real.
+  // Solo depende de term (salario no cambia en la sesión, paymentFrequency no
+  // afecta este cálculo). Se cachea por plazo dentro del hook: cambiar de tab
+  // hacia atrás y hacia adelante no vuelve a golpear el backend.
+  const {
+    scoreResult,
+    isEvaluating,
+    hasError: hasMaxAmountError,
+    retry: retryMaxAmountEstimate,
+  } = useMaxCreditEstimate({
+    employerId: client?.id,
+    employeeKey: client?.pii?.rfc,
     term,
-    0.04, // tasa mensual con IVA
-    0.33, // capacidad endeudamiento
-  );
+  });
 
-  const maxAmount = Math.min(
-    MAX_AMOUNT_CAP,
-    Math.max(MIN_AMOUNT, maxFromSalary),
-  );
+  const maxFromScore = scoreResult?.capacidad_endeudamiento_max ?? null;
 
-  // 3️⃣ resolvedAmount depende de maxAmount
-  const resolvedType =
-    normalizeCreditType(requestData.tipo_de_credito_solicitado) ?? "protected";
-  const requestedAmount = toPositiveNumber(requestData.monto_solicitado);
-  const resolvedAmount = Math.min(
-    maxAmount,
-    Math.max(minAmount, Math.round(requestedAmount ?? maxAmount / 2)),
-  );
+  // true cuando NO tenemos el valor real del backend todavía (cargando,
+  // falló, o aún no hay client disponible) y por lo tanto maxAmount viene
+  // del heurístico local — la UI puede usar esto para marcarlo como "estimado".
+  const isMaxAmountEstimated = maxFromScore === null;
 
-  const [amount, setAmount] = useState(resolvedAmount);
-  const [amountInput, setAmountInput] = useState(formatMoney(resolvedAmount));
-  const [hasInsurance, setHasInsurance] = useState<CreditType>(resolvedType);
+  // Prioriza el valor real del backend; cae al heurístico mientras carga o si falla.
+  // Redondeamos hacia arriba al millar más cercano (31597.07 -> 32000) para
+  // que el máximo mostrado en el slider/label sea un número limpio.
+  const maxAmount = useMemo(() => {
+    const base = maxFromScore ?? maxFromSalary;
+    const rounded = roundUpToThousand(base);
+    return Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, rounded));
+  }, [maxFromScore, maxFromSalary]);
+
+  const [amount, setAmount] = useState(MIN_AMOUNT);
+  const [amountInput, setAmountInput] = useState(formatMoney(MIN_AMOUNT));
+  const [hasInsurance, setHasInsurance] = useState<CreditType>("protected");
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -98,17 +114,31 @@ export function useCreditSelection() {
     setAmountInput(formatMoney(amount));
   }, [amount]);
 
-  // Clamp amount si cambia el rango (p. ej. al cambiar el plazo)
+  // Clamp amount si cambia el rango (p. ej. al cambiar el plazo o llegar maxFromScore)
   useEffect(() => {
-    setAmount((prev) => Math.max(minAmount, Math.min(prev, maxAmount)));
+    setAmount((prev) => clampAmount(prev, minAmount, maxAmount));
   }, [minAmount, maxAmount]);
 
-  // Inicialización desde requestData (solo al montar)
+  // amount sí depende de maxAmount (que a su vez depende de la sonda), así que
+  // este uno sigue necesitando un useEffect: no podemos conocer el maxAmount
+  // real en el primer render. hasInsurance no depende de nada async, pero lo
+  // dejamos aquí junto a amount por venir de la misma fuente (requestData).
+  //
+  // Si ya había un monto elegido antes (requestData), lo respetamos (y el
+  // clamp de abajo lo ajusta si el maxAmount real terminó siendo menor).
+  // Si NO había nada elegido, arrancamos en minAmount — a diferencia de
+  // maxAmount, minAmount es la constante MIN_AMOUNT y nunca cambia, así
+  // que es un default estable y predecible (maxAmount/2 podía variar según
+  // si el heurístico o el score ya habían resuelto en ese momento).
+  const requestedAmount = toPositiveNumber(requestData.monto_solicitado);
+  const resolvedAmount = clampAmount(
+    requestedAmount ?? minAmount,
+    minAmount,
+    maxAmount,
+  );
   useEffect(() => {
     setAmount(resolvedAmount);
-    setTerm(resolvedTerm);
     setHasInsurance(resolvedType);
-    setPaymentFrequency(resolvedPaymentFrequency);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -120,72 +150,74 @@ export function useCreditSelection() {
     };
   }, [showRiskModal]);
 
-  const pct =
-    maxAmount === minAmount
-      ? 100
-      : ((amount - minAmount) / (maxAmount - minAmount)) * 100;
+  const pct = useMemo(() => {
+    if (maxAmount === minAmount) return 100;
+    return ((amount - minAmount) / (maxAmount - minAmount)) * 100;
+  }, [amount, minAmount, maxAmount]);
 
-  const handleAmountChange = (value: number) => {
-    if (Number.isNaN(value)) return;
-    const clamped = Math.max(minAmount, Math.min(maxAmount, Math.round(value)));
-    setAmount(clamped);
-  };
-
-  const parseFormattedAmount = (text: string): number | null => {
-    const cleaned = text.replace(/[\s,]/g, "");
-    if (cleaned === "") return null;
-    const parsed = Number(cleaned);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
+  const handleAmountChange = useCallback(
+    (value: number) => {
+      if (Number.isNaN(value)) return;
+      setAmount(clampAmount(value, minAmount, maxAmount));
+    },
+    [minAmount, maxAmount],
+  );
 
   // Mientras escribe: solo filtramos caracteres inválidos, NO clampamos todavía
-  const handleAmountInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const filtered = e.target.value.replace(/[^\d\s,]/g, "");
-    setAmountInput(filtered);
-  };
+  const handleAmountInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const filtered = e.target.value.replace(/[^\d\s,]/g, "");
+      setAmountInput(filtered);
+    },
+    [],
+  );
 
   // Al salir del campo (o Enter): ahí sí clampamos y sincronizamos con el slider
-  const handleAmountInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const parsed = parseFormattedAmount(e.target.value);
-    if (parsed !== null) {
-      handleAmountChange(parsed);
-    } else {
-      setAmountInput(formatMoney(amount));
-    }
-  };
+  const handleAmountInputBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const parsed = parseFormattedAmount(e.target.value);
+      if (parsed !== null) {
+        handleAmountChange(parsed);
+      } else {
+        setAmountInput(formatMoney(amount));
+      }
+    },
+    [amount, handleAmountChange],
+  );
 
-  const handleAmountInputKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Enter") {
-      e.currentTarget.blur();
-    }
-  };
+  const handleAmountInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.currentTarget.blur();
+      }
+    },
+    [],
+  );
 
-  const handleInsuranceClick = (value: boolean) => {
+  const handleInsuranceClick = useCallback((value: boolean) => {
     if (!value) {
       setShowRiskModal(true);
     } else {
       setShowRiskModal(false);
       setHasInsurance("protected");
     }
-  };
+  }, []);
 
-  const handleRiskAccept = () => {
+  const handleRiskAccept = useCallback(() => {
     setHasInsurance("esencial");
     setShowRiskModal(false);
-  };
+  }, []);
 
-  const handleRiskCancel = () => {
+  const handleRiskCancel = useCallback(() => {
     setShowRiskModal(false);
-  };
+  }, []);
 
-  const handleContinue = async () => {
+  const handleContinue = useCallback(async () => {
     const nextStep = ROUTES.ONBOARDING.CREDIT_RESULT;
     setIsSubmitting(true);
     setError("");
     try {
-      const scoreResult = await evaluateScore({
+      const result = await evaluateScore({
         action: "evaluate",
         employer_id: String(client?.id ?? ""),
         employee_key: client?.pii?.rfc ?? "",
@@ -194,7 +226,7 @@ export function useCreditSelection() {
         periodicidad: paymentFrequency,
       });
 
-      if (!scoreResult) {
+      if (!result) {
         throw new Error("No se pudo obtener el resultado de la evaluación.");
       }
 
@@ -204,35 +236,28 @@ export function useCreditSelection() {
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
         plazo_solicitado: term,
-        frecuencia_de_pago_solicitada:
-          paymentFrequency === "SEMANAL"
-            ? 3
-            : paymentFrequency === "QUINCENAL"
-              ? 1
-              : 2,
+        frecuencia_de_pago_solicitada: frequencyToApiCode(paymentFrequency),
         paso_actual: nextStep,
 
-        perfil: scoreResult.perfil,
-        historial_crediticio_usado:
-          scoreResult.historial_crediticio_usado ?? "",
-        score_consolidado: String(scoreResult.score_consolidado),
-        score_ajustado: String(scoreResult.score_ajustado),
+        perfil: result.perfil,
+        historial_crediticio_usado: result.historial_crediticio_usado ?? "",
+        score_consolidado: String(result.score_consolidado),
+        score_ajustado: String(result.score_ajustado),
         probabilidad_rotacion_promedio: String(
-          scoreResult.probabilidad_rotacion_promedio,
+          result.probabilidad_rotacion_promedio,
         ),
-        sueldo_neto_mensual: scoreResult.sueldo_neto_mensual,
-        capacidad_endeudamiento_max: scoreResult.capacidad_endeudamiento_max,
-        tasa_mensual_sin_iva: parseFloat(scoreResult.tasa_mensual_sin_iva),
-        seguro_vida: scoreResult.seguro_vida_al_millar,
-        seguro_invalidez_total_permanente:
-          scoreResult.seguro_invalidez_al_millar,
-        comision_apertura: scoreResult.comision_apertura,
-        pago_por_periodo_sin_seguros: scoreResult.pago_por_periodo_sin_seguros,
+        sueldo_neto_mensual: result.sueldo_neto_mensual,
+        capacidad_endeudamiento_max: result.capacidad_endeudamiento_max,
+        tasa_mensual_sin_iva: parseFloat(result.tasa_mensual_sin_iva),
+        seguro_vida: result.seguro_vida_al_millar,
+        seguro_invalidez_total_permanente: result.seguro_invalidez_al_millar,
+        comision_apertura: result.comision_apertura,
+        pago_por_periodo_sin_seguros: result.pago_por_periodo_sin_seguros,
         pago_por_periodo_con_seguros_iva:
-          scoreResult.pago_por_periodo_con_seguros_iva,
-        numero_de_periodos: scoreResult.numero_de_periodos,
-        monto_total_a_pagar: scoreResult.monto_total_a_pagar,
-        evaluation_id: scoreResult.evaluation_id,
+          result.pago_por_periodo_con_seguros_iva,
+        numero_de_periodos: result.numero_de_periodos,
+        monto_total_a_pagar: result.monto_total_a_pagar,
+        evaluation_id: result.evaluation_id,
       });
 
       router.push(nextStep);
@@ -245,11 +270,20 @@ export function useCreditSelection() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [
+    amount,
+    term,
+    paymentFrequency,
+    client?.id,
+    client?.pii?.rfc,
+    salary,
+    hasInsurance,
+    router,
+  ]);
 
   return {
     // datos de referencia
-    salaryNum,
+    salaryBrutoNum,
     minAmount,
     maxAmount,
     pct,
@@ -262,6 +296,9 @@ export function useCreditSelection() {
     hasInsurance,
     showRiskModal,
     isSubmitting,
+    isEvaluating,
+    isMaxAmountEstimated,
+    hasMaxAmountError,
     error,
 
     // setters directos usados en la UI
@@ -277,6 +314,7 @@ export function useCreditSelection() {
     handleRiskAccept,
     handleRiskCancel,
     handleContinue,
+    retryMaxAmountEstimate,
 
     // navegación
     router,

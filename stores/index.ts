@@ -1,4 +1,4 @@
-// store/index.ts
+// stores/index.ts
 import { useClientDataStore } from "@/stores/client-data-store";
 import { useClientProfileStore } from "@/stores/client-profile-store";
 import { useClientRequestStore } from "@/stores/client-request-store";

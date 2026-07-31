@@ -24,4 +24,5 @@ export {
   Search,
   Shield,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
