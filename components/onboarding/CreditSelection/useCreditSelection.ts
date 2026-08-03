@@ -257,6 +257,7 @@ export function useCreditSelection() {
           result.pago_por_periodo_con_seguros_iva,
         numero_de_periodos: result.numero_de_periodos,
         monto_total_a_pagar: result.monto_total_a_pagar,
+        monto_total_a_pagar_con_seguros: result.monto_total_a_pagar_con_seguros,
         evaluation_id: result.evaluation_id,
       });
 

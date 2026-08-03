@@ -10,7 +10,10 @@ import {
   formatPaymentFrequency,
   toPositiveNumber,
 } from "@/utils/formatters";
-import { calculateCreditBreakdown } from "@/utils/calculateCreditBreakdown";
+import {
+  calculateCreditBreakdown,
+  CreditBreakdownInput,
+} from "@/utils/calculateCreditBreakdown";
 
 export function useCreditResult() {
   const router = useRouter();
@@ -27,12 +30,27 @@ export function useCreditResult() {
   );
   const data = activeRequest?.data ?? {};
 
+  console.log("Data --- ", data);
+
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0;
   const term = toPositiveNumber(data.plazo_solicitado) ?? 12;
   const paymentFrequencyLabel = formatPaymentFrequency(
     normalizePaymentFrequency(data.frecuencia_de_pago_solicitada),
   );
-  const creditData = calculateCreditBreakdown(data);
+
+  const creditInput: CreditBreakdownInput = {
+    tipo_de_credito_solicitado:
+      data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
+    pago_por_periodo_sin_seguros: data.pago_por_periodo_sin_seguros,
+    pago_por_periodo_con_seguros_iva: data.pago_por_periodo_con_seguros_iva,
+    numero_de_periodos: data.numero_de_periodos,
+    comision_apertura: data.comision_apertura,
+    seguro_vida: data.seguro_vida,
+    seguro_invalidez_total_permanente: data.seguro_invalidez_total_permanente,
+    monto_total_a_pagar: data.monto_total_a_pagar ?? 0,
+  };
+
+  const creditData = calculateCreditBreakdown(creditInput, amount);
 
   const handleContinue = async () => {
     setIsSubmitting(true);
@@ -40,7 +58,6 @@ export function useCreditResult() {
     try {
       await updateActiveRequestData({
         paso_actual: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
-        monto_total_a_pagar_con_seguro: creditData.totales.total,
       });
       router.push(ROUTES.ONBOARDING.CREDIT_AUTHORIZATION);
     } catch (err) {

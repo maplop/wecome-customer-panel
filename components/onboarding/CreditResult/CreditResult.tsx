@@ -46,29 +46,6 @@ export default function CreditResult() {
           </p>
         </section>
 
-        {/* Comisión por apertura - informativa */}
-        <section
-          className=" rounded-2xl border border-dashed border-border bg-muted/40 p-4"
-          aria-label="Comisión por apertura"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-start gap-2.5">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-primary" aria-hidden="true">
-                <Tag className="h-4 w-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">Comisión por apertura</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  Se descuenta una sola vez al inicio. No se suma a tu pago semanal ni al total.
-                </p>
-              </div>
-            </div>
-            <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-              {formatMoney(creditData.totales.comisionApertura)}
-            </span>
-          </div>
-        </section>
-
         {/* Datos rápidos del crédito */}
         <section className=" grid grid-cols-3 gap-3" aria-label="Resumen del crédito">
           <FactCard
@@ -90,8 +67,7 @@ export default function CreditResult() {
 
         {/* Pago periódico */}
         <section className=" rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-1 flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-primary" aria-hidden="true" />
+          <div className="mb-1">
             <SectionTitle>
               ¿Qué pagas {paymentFrequencyLabel.toLowerCase()}?
             </SectionTitle>
@@ -142,17 +118,16 @@ export default function CreditResult() {
 
           <div className="mt-4">
             <TotalRow
-              label={`Total por ${paymentFrequencyLabel.toLowerCase()}`}
+              label={`Total ${paymentFrequencyLabel.toLowerCase()}`}
               value={creditData.pagoPeriodico.total}
-              hint={`Lo que pagas cada ${paymentFrequencyLabel.toLowerCase()}`}
+              hint={`Lo que pagas ${paymentFrequencyLabel.toLowerCase()}`}
             />
           </div>
         </section>
 
         {/* Total a pagar */}
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-1 flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-primary" aria-hidden="true" />
+          <div className="mb-1">
             <SectionTitle>¿Cuánto pagarás en total?</SectionTitle>
           </div>
 
@@ -191,6 +166,29 @@ export default function CreditResult() {
                 : 'Suma de capital + intereses (sin seguros ni IVA)'
               }
             />
+          </div>
+        </section>
+
+        {/* Comisión por apertura - informativa */}
+        <section
+          className=" rounded-2xl border border-dashed border-border bg-muted/40 p-4"
+          aria-label="Comisión por apertura"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-2.5">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-primary" aria-hidden="true">
+                <Tag className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Comisión por apertura</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  Se descuenta una sola vez al inicio. No se suma a tu pago semanal ni al total.
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 text-lg font-semibold tabular-nums text-foreground">
+              {formatMoney(creditData.totales.comisionApertura)}
+            </span>
           </div>
         </section>
 

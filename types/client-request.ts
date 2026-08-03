@@ -28,13 +28,15 @@ export interface ClientRequestData {
   tasa_mensual_sin_iva?: number;
   seguro_vida?: number;
   seguro_invalidez_total_permanente?: number;
+  seguro_vida_al_millar?: number;
+  seguro_invalidez_al_millar?: number;
   historial_crediticio_usado?: string;
   comision_apertura?: number;
   pago_por_periodo_sin_seguros?: number;
   pago_por_periodo_con_seguros_iva?: number;
   numero_de_periodos?: number;
   monto_total_a_pagar?: number;
-  monto_total_a_pagar_con_seguro?: number;
+  monto_total_a_pagar_con_seguros?: number;
   evaluation_id?: string;
   tabla_amortizacion?: AmortizacionRow[];
 }

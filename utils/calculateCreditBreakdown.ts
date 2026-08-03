@@ -1,7 +1,17 @@
-import { ClientRequestData } from "@/types/client-request";
 import { toPositiveNumber } from "./formatters";
 
 export type IconKey = "shield-check" | "shield";
+
+export interface CreditBreakdownInput {
+  tipo_de_credito_solicitado?: string;
+  pago_por_periodo_sin_seguros?: number;
+  pago_por_periodo_con_seguros_iva?: number;
+  numero_de_periodos?: number;
+  comision_apertura?: number;
+  seguro_vida?: number;
+  seguro_invalidez_total_permanente?: number;
+  monto_total_a_pagar: number;
+}
 
 export interface CreditBreakdown {
   tipo: string;
@@ -33,9 +43,9 @@ export interface CreditBreakdown {
 const IVA_RATE = 0.16;
 
 export function calculateCreditBreakdown(
-  data: ClientRequestData,
+  data: CreditBreakdownInput,
+  amount: number,
 ): CreditBreakdown {
-  const amount = toPositiveNumber(data.monto_solicitado) ?? 0;
   const isProtected = data.tipo_de_credito_solicitado === "protected";
 
   const pagoSinSeguros =

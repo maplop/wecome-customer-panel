@@ -33,6 +33,7 @@ export interface EvaluateScoreResponse {
   pago_por_periodo_con_seguros_iva: number;
   numero_de_periodos: number;
   monto_total_a_pagar: number;
+  monto_total_a_pagar_con_seguros?: number;
   tabla_amortizacion: AmortizacionRow[];
   evaluation_id: string;
 }

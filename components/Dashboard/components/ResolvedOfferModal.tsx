@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, CheckCircle, Check, CircleDollarSign, Calendar, HandCoins, ShieldCheck } from '@/lib/icons'
+import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, Shield, ShieldCheck, Tag, AlertCircle } from '@/lib/icons'
 import type { ClientRequestRecord, AmortizacionRow } from '@/types/client-request'
-import { getCreditTypeLabel } from '@/utils/credit-type'
 import { formatPaymentFrequency } from '@/utils/formatters'
-import { InfoCard } from '@/components/common/InfoCard'
 import { updateActiveRequestData } from '@/services/client-requests'
-import { calculateScore } from '@/services/onboarding/evaluate-score'
+import { calculateScore, type EvaluateScoreResponse } from '@/services/onboarding/evaluate-score'
 import confetti from 'canvas-confetti'
-import { InfoNote } from '@/components/common/InfoNote'
+import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
+import { calculateCreditBreakdown, type CreditBreakdownInput } from '@/utils/calculateCreditBreakdown'
 
 interface ResolvedOfferModalProps {
   credit: ClientRequestRecord
@@ -22,6 +21,18 @@ function formatMoney(n: number) {
 
 const CONFETTI_Z_INDEX = 9999
 
+// Definir los iconos con tipo seguro
+const ICONS = { 'shield-check': ShieldCheck, shield: Shield } as const
+type IconKey = keyof typeof ICONS
+
+// Función helper para obtener el icono de forma segura
+const getIcon = (key: string | undefined): React.ComponentType<any> => {
+  if (key && key in ICONS) {
+    return ICONS[key as IconKey]
+  }
+  return Shield // Fallback al icono por defecto
+}
+
 export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferModalProps) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -30,52 +41,77 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
   const [amortizacion, setAmortizacion] = useState<AmortizacionRow[]>([])
   const [loadingAmortizacion, setLoadingAmortizacion] = useState(false)
   const [amortError, setAmortError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [creditData, setCreditData] = useState<any>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [scoreData, setScoreData] = useState<EvaluateScoreResponse | null>(null)
 
   const data = credit.data
-  const montoOfertado = Number(data.monto_ofertado)
-  const montoSolicitado = Number(data.monto_solicitado)
-  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_ofertada)
-  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito_ofertado) ?? '-'
-  const plazo = data.plazo_ofertado
-  const ofertado = formatMoney(montoOfertado)
-  const solicitado = formatMoney(montoSolicitado)
-  const isProtected = data.tipo_de_credito_ofertado === 'protected'
+
+  const montoOfertado = Number(data.monto_ofertado) || Number(data.monto_solicitado) || 0
   const evaluationId = data.evaluation_id ?? ''
 
-  const paymentAmount = (() => {
-    const v = isProtected ? data.pago_por_periodo_con_seguros_iva : data.pago_por_periodo_sin_seguros
-    return v ? Number(v) : 0
-  })()
-  const totalToPay = Number(data.monto_total_a_pagar) || 0
-  const monthlyRate = Number(data.tasa_mensual_sin_iva) || 0
-  const commission = Number(data.comision_apertura) || 0
-
-  const fetchAmortizacion = useCallback(async () => {
-    if (!evaluationId || amortizacion.length > 0) return
-
-    setLoadingAmortizacion(true)
-    setAmortError('')
-    try {
-      const result = await calculateScore({
-        action: 'calculate',
-        evaluation_id: evaluationId,
-        monto_solicitado: montoOfertado,
-      })
-      if (result?.tabla_amortizacion) {
-        setAmortizacion(result.tabla_amortizacion)
-      }
-    } catch {
-      setAmortError('No se pudo obtener la tabla de amortización.')
-    } finally {
-      setLoadingAmortizacion(false)
+  // Función para construir el CreditBreakdownInput desde los datos del endpoint
+  const buildCreditInput = useCallback((endpointData: any): CreditBreakdownInput => {
+    return {
+      tipo_de_credito_solicitado: data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado ?? "essential",
+      pago_por_periodo_sin_seguros: endpointData.pago_por_periodo_sin_seguros ?? 0,
+      pago_por_periodo_con_seguros_iva: endpointData.pago_por_periodo_con_seguros_iva ?? 0,
+      numero_de_periodos: endpointData.numero_de_periodos ?? 0,
+      monto_total_a_pagar: endpointData.monto_total_a_pagar ?? 0,
+      comision_apertura: endpointData.comision_apertura ?? 0,
+      seguro_vida: endpointData.seguro_vida_al_millar ?? endpointData.seguro_vida ?? 0,
+      seguro_invalidez_total_permanente: endpointData.seguro_invalidez_al_millar ?? endpointData.seguro_invalidez_total_permanente ?? 0,
     }
-  }, [evaluationId, montoOfertado, amortizacion.length])
+  }, [data.tipo_de_credito_ofertado, data.tipo_de_credito_solicitado])
 
+  // Función para calcular el crédito
+  const calculateCredit = useCallback((endpointData: any) => {
+    const creditInput = buildCreditInput(endpointData)
+    const result = calculateCreditBreakdown(creditInput, montoOfertado)
+    return result
+  }, [buildCreditInput, montoOfertado])
+
+  // Obtener datos del endpoint
   useEffect(() => {
-    if (tab === 'amortizacion') {
-      fetchAmortizacion()
+    const fetchData = async () => {
+      setIsLoading(true)
+      setFetchError(null)
+
+      try {
+        if (!evaluationId) {
+          setFetchError('No se pudo obtener la información del crédito.')
+          setIsLoading(false)
+          return
+        }
+
+        const result = await calculateScore({
+          action: 'calculate',
+          evaluation_id: evaluationId,
+          monto_solicitado: montoOfertado,
+        })
+
+        if (result) {
+          setScoreData(result)
+          const calculatedData = calculateCredit(result)
+          setCreditData(calculatedData)
+
+          if (result.tabla_amortizacion) {
+            setAmortizacion(result.tabla_amortizacion)
+          }
+        } else {
+          setFetchError('No se recibieron datos del servidor.')
+        }
+      } catch (error) {
+        setFetchError('Ocurrió un error al obtener la información del crédito. Por favor, intenta más tarde.')
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [tab, fetchAmortizacion])
+
+    fetchData()
+  }, [])
+
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -120,7 +156,29 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
     setIsUpdating(true)
     setError('')
     try {
-      await updateActiveRequestData({ estado: 'approved' })
+      await updateActiveRequestData({
+        estado: 'approved',
+        ...(scoreData ? {
+          perfil: scoreData.perfil,
+          historial_crediticio_usado: scoreData.historial_crediticio_usado ?? '',
+          score_consolidado: String(scoreData.score_consolidado),
+          score_ajustado: String(scoreData.score_ajustado),
+          probabilidad_rotacion_promedio: String(scoreData.probabilidad_rotacion_promedio),
+          sueldo_neto_mensual: scoreData.sueldo_neto_mensual,
+          capacidad_endeudamiento_max: scoreData.capacidad_endeudamiento_max,
+          tasa_mensual_sin_iva: parseFloat(scoreData.tasa_mensual_sin_iva),
+          seguro_vida_al_millar: scoreData.seguro_vida_al_millar,
+          seguro_invalidez_al_millar: scoreData.seguro_invalidez_al_millar,
+          comision_apertura: scoreData.comision_apertura,
+          pago_por_periodo_sin_seguros: scoreData.pago_por_periodo_sin_seguros,
+          pago_por_periodo_con_seguros_iva: scoreData.pago_por_periodo_con_seguros_iva,
+          numero_de_periodos: scoreData.numero_de_periodos,
+          monto_total_a_pagar: scoreData.monto_total_a_pagar,
+          monto_total_a_pagar_con_seguros: scoreData.monto_total_a_pagar_con_seguros,
+          evaluation_id: scoreData.evaluation_id ?? evaluationId,
+          tabla_amortizacion: scoreData.tabla_amortizacion,
+        } : {}),
+      })
       setShowSuccess(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo actualizar la solicitud.')
@@ -128,6 +186,13 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
       setIsUpdating(false)
     }
   }
+
+  // Datos para mostrar
+  const frecuenciaDePago = formatPaymentFrequency(
+    data.frecuencia_de_pago_ofertada ?? data.frecuencia_de_pago_solicitada
+  )
+  const plazo = data.plazo_ofertado ?? data.plazo_solicitado
+  const TipoIcon = creditData ? getIcon(creditData.iconKey) : Shield
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -165,147 +230,258 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                   Monto aprobado
                 </span>
                 <span className="text-4xl font-bold text-white">
-                  {ofertado}
+                  {formatMoney(montoOfertado)}
                 </span>
                 <span className="text-sm text-white/50">MXN</span>
               </div>
 
-              {/* Tabs */}
-              <div className="flex rounded-xl bg-secondary p-1">
-                {(['detalles', 'amortizacion'] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTab(t)}
-                    className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${tab === t
-                      ? 'bg-brand-dark text-white shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                  >
-                    {t === 'detalles' ? 'Detalles' : 'Amortización'}
-                  </button>
-                ))}
-              </div>
-
-              {tab === 'detalles' && (
-                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Detalle de la oferta
+              {/* Estado de carga */}
+              {isLoading && (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-accent" />
+                  <p className="text-sm text-muted-foreground">
+                    Obteniendo la información de tu crédito...
                   </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <InfoCard
-                      icon={CircleDollarSign}
-                      label="Monto solicitado"
-                      value={solicitado}
-                      valueSize="sm"
-                    />
-                    <InfoCard
-                      icon={Calendar}
-                      label="Plazo"
-                      value={plazo ? `${plazo} meses` : '-'}
-                      valueSize="sm"
-                    />
-                    <InfoCard
-                      icon={Calendar}
-                      label="Frecuencia"
-                      value={frecuenciaDePago}
-                      valueSize="sm"
-                    />
-                    <InfoCard
-                      icon={ShieldCheck}
-                      label="Tipo"
-                      value={tipoDeCredito}
-                      valueSize="sm"
-                      valueClassName="truncate"
-                    />
-                    <InfoCard
-                      icon={CircleDollarSign}
-                      label="Pago por periodo"
-                      value={formatMoney(paymentAmount >= 0 ? paymentAmount : 0)}
-                    />
-                    <InfoCard
-                      icon={HandCoins}
-                      label="Total a pagar"
-                      value={formatMoney(totalToPay)}
-                    />
-                    <InfoCard
-                      icon={CircleDollarSign}
-                      label="Tasa mensual"
-                      value={`${monthlyRate.toFixed(2)}%`}
-                      valueSize="sm"
-                    />
-                    <InfoCard
-                      icon={CircleDollarSign}
-                      label="Comisión apertura"
-                      value={formatMoney(commission)}
-                      valueSize="sm"
-                    />
-                  </div>
                 </div>
               )}
 
-              {tab === 'amortizacion' && (
-                <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Tabla de amortización
+              {/* Estado de error */}
+              {fetchError && (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                    <AlertCircle className="h-6 w-6 text-red-600" />
+                  </div>
+                  <p className="text-sm text-center text-muted-foreground">
+                    {fetchError}
                   </p>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-brand-dark rounded-lg hover:bg-brand-dark/90 transition"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              )}
 
-                  {loadingAmortizacion && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Calculando tabla de amortización...
-                    </p>
-                  )}
+              {/* Contenido normal */}
+              {!isLoading && !fetchError && creditData && (
+                <>
+                  {/* Tabs */}
+                  <div className="flex rounded-xl bg-secondary p-1">
+                    {(['detalles', 'amortizacion'] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTab(t)}
+                        className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${tab === t
+                          ? 'bg-brand-dark text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                      >
+                        {t === 'detalles' ? 'Detalles' : 'Amortización'}
+                      </button>
+                    ))}
+                  </div>
 
-                  {amortError && (
-                    <p className="text-xs text-destructive text-center">{amortError}</p>
-                  )}
+                  {tab === 'detalles' && (
+                    <div className="flex flex-col gap-4">
+                      <section className="grid grid-cols-3 gap-3">
+                        <FactCard
+                          label="Frecuencia"
+                          value={frecuenciaDePago}
+                          icon={<CalendarClock className="h-4 w-4" />}
+                        />
+                        <FactCard
+                          label="Plazo"
+                          value={plazo ? `${plazo} meses` : '-'}
+                          icon={<CalendarDays className="h-4 w-4" />}
+                        />
+                        <FactCard
+                          label="Tipo"
+                          value={creditData.tipo}
+                          icon={<TipoIcon className="h-4 w-4" />}
+                        />
+                      </section>
 
-                  {!loadingAmortizacion && !amortError && amortizacion.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No hay datos de amortización disponibles.
-                    </p>
-                  )}
+                      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                        <div className="mb-1">
+                          <SectionTitle>
+                            ¿Qué pagas {frecuenciaDePago.toLowerCase()}?
+                          </SectionTitle>
+                        </div>
 
-                  {amortizacion.length > 0 && (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="border-b border-border text-muted-foreground">
-                            <th className="text-left py-2 pr-2 font-medium">Período</th>
-                            <th className="text-right py-2 px-2 font-medium">Pago</th>
-                            <th className="text-right py-2 px-2 font-medium">Interés</th>
-                            <th className="text-right py-2 px-2 font-medium">Capital</th>
-                            <th className="text-right py-2 pl-2 font-medium">Saldo</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {amortizacion.map((row) => (
-                            <tr key={row.periodo} className="border-b border-border/50">
-                              <td className="py-2 pr-2 text-foreground">{row.periodo}</td>
-                              <td className="py-2 px-2 text-right text-foreground">
-                                {formatMoney(row.pago)}
-                              </td>
-                              <td className="py-2 px-2 text-right text-foreground">
-                                {formatMoney(row.interes)}
-                              </td>
-                              <td className="py-2 px-2 text-right text-foreground">
-                                {formatMoney(row.capital)}
-                              </td>
-                              <td className="py-2 pl-2 text-right text-foreground">
-                                {formatMoney(row.saldo)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                        <div className="divide-y divide-border">
+                          <Row
+                            label="Pago base (capital + intereses)"
+                            value={creditData.pagoPeriodico.pagoBase}
+                            icon={<TrendingUp className="h-4 w-4" />}
+                          />
+
+                          {creditData.mostrarSeguros && (
+                            <>
+                              <Row
+                                label="Seguro de vida"
+                                value={creditData.pagoPeriodico.seguroVida}
+                                operator="+"
+                              />
+                              <Row
+                                label="Seguro de invalidez"
+                                value={creditData.pagoPeriodico.seguroInvalidez}
+                                operator="+"
+                              />
+                            </>
+                          )}
+
+                          {creditData.mostrarSubtotal && (
+                            <Row
+                              label="Subtotal"
+                              value={creditData.pagoPeriodico.subtotal}
+                              operator="="
+                              tone="muted"
+                            />
+                          )}
+
+                          {creditData.mostrarIva && (
+                            <Row
+                              label="IVA (16%)"
+                              value={creditData.pagoPeriodico.iva}
+                              operator="+"
+                            />
+                          )}
+                        </div>
+
+                        <div className="mt-4">
+                          <TotalRow
+                            label={`Total ${frecuenciaDePago.toLowerCase()}`}
+                            value={creditData.pagoPeriodico.total}
+                            hint={`Lo que pagas ${frecuenciaDePago.toLowerCase()}`}
+                          />
+                        </div>
+                      </section>
+
+                      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                        <div className="mb-1">
+                          <SectionTitle>¿Cuánto pagarás en total?</SectionTitle>
+                        </div>
+
+                        <div className="divide-y divide-border">
+                          <Row
+                            label="Total capital + intereses"
+                            value={creditData.totales.capitalIntereses}
+                            icon={<TrendingUp className="h-4 w-4" />}
+                          />
+
+                          {creditData.mostrarSeguros && (
+                            <Row
+                              label="Total seguros"
+                              value={creditData.totales.seguros}
+                              icon={<ShieldCheck className="h-4 w-4" />}
+                            />
+                          )}
+
+                          {creditData.mostrarIva && (
+                            <Row
+                              label="Total IVA"
+                              value={creditData.totales.iva}
+                              operator="+"
+                            />
+                          )}
+                        </div>
+
+                        <div className="mt-4">
+                          <TotalRow
+                            label="Total a pagar"
+                            value={creditData.totales.total}
+                            hint={creditData.mostrarSeguros
+                              ? 'Suma de capital + intereses + seguros + IVA'
+                              : 'Suma de capital + intereses (sin seguros ni IVA)'
+                            }
+                          />
+                        </div>
+                      </section>
+
+                      <section className="rounded-2xl border border-dashed border-border bg-muted/40 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-start gap-2.5">
+                            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
+                              <Tag className="h-4 w-4" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">Comisión por apertura</p>
+                              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                                Se descuenta una sola vez al inicio. No se suma a tu pago semanal ni al total.
+                              </p>
+                            </div>
+                          </div>
+                          <span className="shrink-0 text-lg font-semibold tabular-nums text-foreground">
+                            {formatMoney(creditData.totales.comisionApertura)}
+                          </span>
+                        </div>
+                      </section>
                     </div>
                   )}
-                </div>
-              )}
 
-              <InfoNote
-                text=" Al aceptar esta oferta, autorizas el desembolso del crédito en tu cuenta registrada. Tendrás 30 días para cambiar de opinión sin penalidad."
-              />
+                  {tab === 'amortizacion' && (
+                    <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-3">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Tabla de amortización
+                      </p>
+
+                      {loadingAmortizacion && (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Calculando tabla de amortización...
+                        </p>
+                      )}
+
+                      {amortError && (
+                        <p className="text-xs text-destructive text-center">{amortError}</p>
+                      )}
+
+                      {!loadingAmortizacion && !amortError && amortizacion.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No hay datos de amortización disponibles.
+                        </p>
+                      )}
+
+                      {amortizacion.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-border text-muted-foreground">
+                                <th className="text-left py-2 pr-2 font-medium">Período</th>
+                                <th className="text-right py-2 px-2 font-medium">Pago</th>
+                                <th className="text-right py-2 px-2 font-medium">Interés</th>
+                                <th className="text-right py-2 px-2 font-medium">Capital</th>
+                                <th className="text-right py-2 pl-2 font-medium">Saldo</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {amortizacion.map((row) => (
+                                <tr key={row.periodo} className="border-b border-border/50">
+                                  <td className="py-2 pr-2 text-foreground">{row.periodo}</td>
+                                  <td className="py-2 px-2 text-right text-foreground">
+                                    {formatMoney(row.pago)}
+                                  </td>
+                                  <td className="py-2 px-2 text-right text-foreground">
+                                    {formatMoney(row.interes)}
+                                  </td>
+                                  <td className="py-2 px-2 text-right text-foreground">
+                                    {formatMoney(row.capital)}
+                                  </td>
+                                  <td className="py-2 pl-2 text-right text-foreground">
+                                    {formatMoney(row.saldo)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Footer */}
@@ -315,7 +491,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={isUpdating}
+                  disabled={isUpdating || isLoading || !!fetchError}
                   className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
                 >
                   Revisar después
@@ -323,7 +499,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                 <button
                   type="button"
                   onClick={handleAccept}
-                  disabled={isUpdating}
+                  disabled={isUpdating || isLoading || !!fetchError || !creditData}
                   className="flex-1 px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm disabled:opacity-50"
                 >
                   {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
@@ -344,7 +520,7 @@ export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferMod
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Tu crédito ha sido aprobado y el monto de{' '}
-                  <strong className="text-foreground">{ofertado} MXN</strong>{' '}
+                  <strong className="text-foreground">{formatMoney(montoOfertado)} MXN</strong>{' '}
                   será depositado en tu cuenta registrada.
                 </p>
               </div>
