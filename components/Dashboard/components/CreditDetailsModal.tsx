@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti'
 import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
 import { calculateCreditBreakdown, type CreditBreakdownInput } from '@/utils/calculateCreditBreakdown'
 
-interface ResolvedOfferModalProps {
+interface CreditDetailsModalProps {
   credit: ClientRequestRecord
   onClose: () => void
 }
@@ -33,7 +33,7 @@ const getIcon = (key: string | undefined): React.ComponentType<any> => {
   return Shield // Fallback al icono por defecto
 }
 
-export default function ResolvedOfferModal({ credit, onClose }: ResolvedOfferModalProps) {
+export default function CreditDetailsModal({ credit, onClose }: CreditDetailsModalProps) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState('')
