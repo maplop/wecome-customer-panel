@@ -257,7 +257,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                   <button
                     type="button"
                     onClick={onClose}
-                    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-brand-dark rounded-lg hover:bg-brand-dark/90 transition"
+                    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-brand-accent rounded-lg hover:bg-brand-accent/90 transition"
                   >
                     Cerrar
                   </button>
@@ -500,7 +500,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                   type="button"
                   onClick={handleAccept}
                   disabled={isUpdating || isLoading || !!fetchError || !creditData}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm disabled:opacity-50"
                 >
                   {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
                 </button>
@@ -530,7 +530,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm"
+                className="w-full px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm"
               >
                 Ir al panel principal
               </button>
