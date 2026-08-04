@@ -1,4 +1,3 @@
-// hooks/useCreditResult.ts
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,20 +16,14 @@ import {
 
 export function useCreditResult() {
   const router = useRouter();
-  const [hydrated, setHydrated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   const activeRequest = useClientRequestStore((state) =>
     state.getActiveRequest(),
   );
-  const data = activeRequest?.data ?? {};
 
-  console.log("Data --- ", data);
+  const data = activeRequest?.data ?? {};
 
   const amount = toPositiveNumber(data.monto_solicitado) ?? 0;
   const term = toPositiveNumber(data.plazo_solicitado) ?? 12;
@@ -74,7 +67,6 @@ export function useCreditResult() {
   const goBack = () => router.push(ROUTES.ONBOARDING.CREDIT_SELECTION);
 
   return {
-    hydrated,
     amount,
     term,
     paymentFrequencyLabel,

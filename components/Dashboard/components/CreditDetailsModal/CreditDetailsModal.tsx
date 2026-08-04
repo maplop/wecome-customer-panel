@@ -1,14 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, Shield, ShieldCheck, Tag, AlertCircle } from '@/lib/icons'
-import type { ClientRequestRecord, AmortizacionRow } from '@/types/client-request'
-import { formatPaymentFrequency } from '@/utils/formatters'
-import { updateActiveRequestData } from '@/services/client-requests'
-import { calculateScore, type EvaluateScoreResponse } from '@/services/onboarding/evaluate-score'
-import confetti from 'canvas-confetti'
+import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, ShieldCheck, Tag, AlertCircle, CheckCircle2 } from '@/lib/icons'
+import type { ClientRequestRecord } from '@/types/client-request'
 import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
-import { calculateCreditBreakdown, type CreditBreakdownInput } from '@/utils/calculateCreditBreakdown'
+import { LoadingState } from '@/components/common/LoadingState'
+import { SuccessView } from './SuccessView'
+import { useCreditDetails } from './useCreditDetails'
 
 interface CreditDetailsModalProps {
   credit: ClientRequestRecord
@@ -19,180 +16,23 @@ function formatMoney(n: number) {
   return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 }
 
-const CONFETTI_Z_INDEX = 9999
-
-// Definir los iconos con tipo seguro
-const ICONS = { 'shield-check': ShieldCheck, shield: Shield } as const
-type IconKey = keyof typeof ICONS
-
-// Función helper para obtener el icono de forma segura
-const getIcon = (key: string | undefined): React.ComponentType<any> => {
-  if (key && key in ICONS) {
-    return ICONS[key as IconKey]
-  }
-  return Shield // Fallback al icono por defecto
-}
-
 export default function CreditDetailsModal({ credit, onClose }: CreditDetailsModalProps) {
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [error, setError] = useState('')
-  const [tab, setTab] = useState<'detalles' | 'amortizacion'>('detalles')
-  const [amortizacion, setAmortizacion] = useState<AmortizacionRow[]>([])
-  const [loadingAmortizacion, setLoadingAmortizacion] = useState(false)
-  const [amortError, setAmortError] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [creditData, setCreditData] = useState<any>(null)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-  const [scoreData, setScoreData] = useState<EvaluateScoreResponse | null>(null)
-
-  const data = credit.data
-
-  const montoOfertado = Number(data.monto_ofertado) || Number(data.monto_solicitado) || 0
-  const evaluationId = data.evaluation_id ?? ''
-
-  // Función para construir el CreditBreakdownInput desde los datos del endpoint
-  const buildCreditInput = useCallback((endpointData: any): CreditBreakdownInput => {
-    return {
-      tipo_de_credito_solicitado: data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado ?? "essential",
-      pago_por_periodo_sin_seguros: endpointData.pago_por_periodo_sin_seguros ?? 0,
-      pago_por_periodo_con_seguros_iva: endpointData.pago_por_periodo_con_seguros_iva ?? 0,
-      numero_de_periodos: endpointData.numero_de_periodos ?? 0,
-      monto_total_a_pagar: endpointData.monto_total_a_pagar ?? 0,
-      comision_apertura: endpointData.comision_apertura ?? 0,
-      seguro_vida: endpointData.seguro_vida_al_millar ?? endpointData.seguro_vida ?? 0,
-      seguro_invalidez_total_permanente: endpointData.seguro_invalidez_al_millar ?? endpointData.seguro_invalidez_total_permanente ?? 0,
-    }
-  }, [data.tipo_de_credito_ofertado, data.tipo_de_credito_solicitado])
-
-  // Función para calcular el crédito
-  const calculateCredit = useCallback((endpointData: any) => {
-    const creditInput = buildCreditInput(endpointData)
-    const result = calculateCreditBreakdown(creditInput, montoOfertado)
-    return result
-  }, [buildCreditInput, montoOfertado])
-
-  // Obtener datos del endpoint
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      setFetchError(null)
-
-      try {
-        if (!evaluationId) {
-          setFetchError('No se pudo obtener la información del crédito.')
-          setIsLoading(false)
-          return
-        }
-
-        const result = await calculateScore({
-          action: 'calculate',
-          evaluation_id: evaluationId,
-          monto_solicitado: montoOfertado,
-        })
-
-        if (result) {
-          setScoreData(result)
-          const calculatedData = calculateCredit(result)
-          setCreditData(calculatedData)
-
-          if (result.tabla_amortizacion) {
-            setAmortizacion(result.tabla_amortizacion)
-          }
-        } else {
-          setFetchError('No se recibieron datos del servidor.')
-        }
-      } catch (error) {
-        setFetchError('Ocurrió un error al obtener la información del crédito. Por favor, intenta más tarde.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!showSuccess) return
-
-    const end = Date.now() + 5 * 1000
-    const colors = ['#E1941F', '#FFFFFF']
-
-    const frame = () => {
-      confetti({
-        particleCount: 2,
-        angle: 60,
-        spread: 55,
-        zIndex: CONFETTI_Z_INDEX,
-        origin: { x: 0 },
-        colors,
-      })
-      confetti({
-        particleCount: 2,
-        angle: 120,
-        spread: 55,
-        zIndex: CONFETTI_Z_INDEX,
-        origin: { x: 1 },
-        colors,
-      })
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame)
-      }
-    }
-
-    frame()
-  }, [showSuccess])
-
-  const handleAccept = async () => {
-    setIsUpdating(true)
-    setError('')
-    try {
-      await updateActiveRequestData({
-        estado: 'approved',
-        ...(scoreData ? {
-          perfil: scoreData.perfil,
-          historial_crediticio_usado: scoreData.historial_crediticio_usado ?? '',
-          score_consolidado: String(scoreData.score_consolidado),
-          score_ajustado: String(scoreData.score_ajustado),
-          probabilidad_rotacion_promedio: String(scoreData.probabilidad_rotacion_promedio),
-          sueldo_neto_mensual: scoreData.sueldo_neto_mensual,
-          capacidad_endeudamiento_max: scoreData.capacidad_endeudamiento_max,
-          tasa_mensual_sin_iva: parseFloat(scoreData.tasa_mensual_sin_iva),
-          seguro_vida_al_millar: scoreData.seguro_vida_al_millar,
-          seguro_invalidez_al_millar: scoreData.seguro_invalidez_al_millar,
-          comision_apertura: scoreData.comision_apertura,
-          pago_por_periodo_sin_seguros: scoreData.pago_por_periodo_sin_seguros,
-          pago_por_periodo_con_seguros_iva: scoreData.pago_por_periodo_con_seguros_iva,
-          numero_de_periodos: scoreData.numero_de_periodos,
-          monto_total_a_pagar: scoreData.monto_total_a_pagar,
-          monto_total_a_pagar_con_seguros: scoreData.monto_total_a_pagar_con_seguros,
-          evaluation_id: scoreData.evaluation_id ?? evaluationId,
-          tabla_amortizacion: scoreData.tabla_amortizacion,
-        } : {}),
-      })
-      setShowSuccess(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo actualizar la solicitud.')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  // Datos para mostrar
-  const frecuenciaDePago = formatPaymentFrequency(
-    data.frecuencia_de_pago_ofertada ?? data.frecuencia_de_pago_solicitada
-  )
-  const plazo = data.plazo_ofertado ?? data.plazo_solicitado
-  const TipoIcon = creditData ? getIcon(creditData.iconKey) : Shield
+  const {
+    showSuccess,
+    isUpdating,
+    error,
+    tab,
+    setTab,
+    amortizacion,
+    isLoading,
+    creditData,
+    fetchError,
+    montoOfertado,
+    frecuenciaDePago,
+    plazo,
+    TipoIcon,
+    handleAccept,
+  } = useCreditDetails(credit)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -237,12 +77,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
 
               {/* Estado de carga */}
               {isLoading && (
-                <div className="flex flex-col items-center justify-center py-8 gap-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-accent" />
-                  <p className="text-sm text-muted-foreground">
-                    Obteniendo la información de tu crédito...
-                  </p>
-                </div>
+                <LoadingState label='Obteniendo la información de tu crédito...' />
               )}
 
               {/* Estado de error */}
@@ -428,17 +263,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                         Tabla de amortización
                       </p>
 
-                      {loadingAmortizacion && (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          Calculando tabla de amortización...
-                        </p>
-                      )}
-
-                      {amortError && (
-                        <p className="text-xs text-destructive text-center">{amortError}</p>
-                      )}
-
-                      {!loadingAmortizacion && !amortError && amortizacion.length === 0 && (
+                      {!isLoading && amortizacion.length === 0 && (
                         <p className="text-sm text-muted-foreground text-center py-4">
                           No hay datos de amortización disponibles.
                         </p>
@@ -508,34 +333,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
             </div>
           </>
         ) : (
-          <>
-            {/* Success view */}
-            <div className="px-6 py-10 flex flex-col items-center gap-5 text-center">
-              <div className="flex justify-center items-center w-16 h-16 rounded-full bg-brand-accent">
-                <CheckCircle className="stroke-brand-dark w-12 h-12" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <p className="text-xl font-bold text-foreground">
-                  ¡Felicidades!
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Tu crédito ha sido aprobado y el monto de{' '}
-                  <strong className="text-foreground">{formatMoney(montoOfertado)} MXN</strong>{' '}
-                  será depositado en tu cuenta registrada.
-                </p>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 border-t border-border">
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm"
-              >
-                Ir al panel principal
-              </button>
-            </div>
-          </>
+          <SuccessView amount={formatMoney(montoOfertado)} onClose={onClose} />
         )}
 
       </div>

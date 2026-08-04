@@ -59,7 +59,7 @@ export default function ClientRequestItem({
             <span className="text-base font-semibold text-foreground">
               Crédito Nómina
             </span>
-            <span className="text-xs text-muted-foreground font-mono truncate">
+            <span className="text-xs text-muted-foreground truncate">
               {request.id}
             </span>
           </div>

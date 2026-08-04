@@ -4,8 +4,7 @@ import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { InfoNote } from '@/components/common/InfoNote'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ShieldCheck, Wallet, CalendarClock, TrendingUp, Receipt, CalendarDays, Shield, Tag } from '@/lib/icons'
+import { ShieldCheck, Wallet, CalendarClock, TrendingUp, CalendarDays, Shield, Tag } from '@/lib/icons'
 import { formatMoney } from '@/utils/formatters'
 import { TotalRow, FactCard, Row, SectionTitle } from '../../common/CreditDetails'
 import { useCreditResult } from './useCreditResult'
@@ -16,9 +15,7 @@ const ICONS = { 'shield-check': ShieldCheck, shield: Shield } as const
 
 export default function CreditResult() {
 
-  const { hydrated, amount, term, paymentFrequencyLabel, creditData, isSubmitting, error, handleContinue, goBack } = useCreditResult()
-
-  if (!hydrated) return <CreditResultSkeleton />
+  const { amount, term, paymentFrequencyLabel, creditData, isSubmitting, error, handleContinue, goBack } = useCreditResult()
 
   const TipoIcon = ICONS[creditData.iconKey]
 
@@ -216,35 +213,3 @@ export default function CreditResult() {
   )
 }
 
-function CreditResultSkeleton() {
-  return (
-    <WrapperCard>
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-4 w-72" />
-      </div>
-      <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-muted">
-        <Skeleton className="w-10 h-10 rounded-full bg-muted-foreground/20" />
-        <Skeleton className="h-3 w-28 bg-muted-foreground/20" />
-        <Skeleton className="h-10 w-40 bg-muted-foreground/20" />
-        <Skeleton className="h-4 w-8 bg-muted-foreground/20" />
-      </div>
-      <div className="rounded-2xl border border-border bg-secondary/40 p-4 flex flex-col gap-4">
-        <Skeleton className="h-3 w-32" />
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-1">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-5 w-24" />
-            </div>
-          ))}
-        </div>
-      </div>
-      <Skeleton className="h-4 w-full bg-muted-foreground/20" />
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-12 w-full rounded-xl" />
-        <Skeleton className="h-12 w-full rounded-xl" />
-      </div>
-    </WrapperCard>
-  )
-}
