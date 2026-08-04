@@ -34,6 +34,8 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
     handleAccept,
   } = useCreditDetails(credit)
 
+  const canAcceptOffer = credit.data.estado === 'resolved'
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto">
@@ -312,24 +314,35 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
             {/* Footer */}
             <div className="px-6 py-4 border-t border-border flex flex-col gap-3">
               {error && <p className="text-xs text-destructive text-center">{error}</p>}
-              <div className="flex gap-3">
+              {!canAcceptOffer ? (
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={isUpdating || isLoading || !!fetchError}
-                  className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
+                  disabled={isLoading || !!fetchError}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
                 >
-                  Revisar después
+                  Cerrar
                 </button>
-                <button
-                  type="button"
-                  onClick={handleAccept}
-                  disabled={isUpdating || isLoading || !!fetchError || !creditData}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm disabled:opacity-50"
-                >
-                  {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
-                </button>
-              </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isUpdating || isLoading || !!fetchError}
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
+                  >
+                    Revisar después
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAccept}
+                    disabled={isUpdating || isLoading || !!fetchError || !creditData}
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
+                  </button>
+                </div>
+              )}
             </div>
           </>
         ) : (
