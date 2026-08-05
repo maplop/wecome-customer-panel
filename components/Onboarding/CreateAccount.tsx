@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { isApiClientError } from '@/api/dynamicore/frontend'
+import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
 import { addRequest, updateActiveRequestData } from '@/services/client-requests'
 import { updateClientData } from '@/services/client-data'

@@ -1,4 +1,4 @@
-import AwsCognito, { SERVICES } from "@/api/aws/cognito";
+import AwsCognito, { SERVICES } from "@/sdk/aws/cognito";
 import { getCognitoAuthSession } from "@/lib/auth-session";
 
 export interface ChangePasswordRequest {

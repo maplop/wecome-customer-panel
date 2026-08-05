@@ -2,7 +2,7 @@ import {
   CONNECTOR_SERVICES,
   NOTIFICATION_TEMPLATE,
   connectorApiClient,
-} from "@/api/dynamicore/connector";
+} from "@/sdk/dynamicore/connector";
 import {
   ONBOARDING_OTP_CLIENT,
   ONBOARDING_OTP_TYPE,

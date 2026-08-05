@@ -8,7 +8,7 @@ import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisibility'
-import { isApiClientError } from '@/api/dynamicore/frontend'
+import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { changePassword } from '@/services/profile'
 import { evaluatePasswordStrength } from '@/utils/password-strength'
 

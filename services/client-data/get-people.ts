@@ -1,4 +1,4 @@
-import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
+import { apiClient, SERVICES } from "@/sdk/dynamicore/frontend";
 import { ApiResponse } from "@/types/api-response";
 import { ClientType } from "@/types/client-data/client";
 import { ClientPeopleType } from "@/types/client-data/client-type";

@@ -7,7 +7,7 @@ import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { isApiClientError } from '@/api/dynamicore/frontend'
+import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { forgotPassword } from '@/services/auth'
 
 export default function RecoverRequest() {

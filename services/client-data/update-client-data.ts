@@ -1,4 +1,4 @@
-import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
+import { apiClient, SERVICES } from "@/sdk/dynamicore/frontend";
 import { useClientDataStore } from "@/stores/client-data-store";
 import { ClientPiiType } from "@/types/client-data/client";
 import { AxiosProgressEvent } from "axios";
