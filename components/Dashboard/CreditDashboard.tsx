@@ -9,7 +9,7 @@ import { Plus, RefreshCw } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientDataStore } from '@/stores/client-data-store'
-import { useClientRequestStore } from '@/stores'
+import { useClientRequestStore, useCreditDetailsStore } from '@/stores'
 import type { RequestStatus, ClientRequestRecord } from '@/types/client-request'
 import { addRequest, getRequestsByClient } from '@/services/client-requests'
 
@@ -124,6 +124,7 @@ export default function CreditDashboard() {
     try {
       const latestRequests = await getRequestsByClient(String(clientId))
       useClientRequestStore.getState().syncClientRequests(clientId, latestRequests)
+      useCreditDetailsStore.getState().clearCreditDetails()
     } catch (error) {
       setRefreshRequestsError(
         error instanceof Error

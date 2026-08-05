@@ -10,6 +10,7 @@ import {
   calculateCreditBreakdown,
   type CreditBreakdownInput,
 } from "@/utils/calculateCreditBreakdown";
+import { useCreditDetailsStore } from "@/stores/credit-details-store";
 
 const CONFETTI_Z_INDEX = 9999;
 
@@ -26,23 +27,17 @@ const getIcon = (key: string | undefined): React.ComponentType<any> => {
 };
 
 export const useCreditDetails = (credit: ClientRequestRecord) => {
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState("");
-  const [tab, setTab] = useState<"detalles" | "amortizacion">("detalles");
-  const [amortizacion, setAmortizacion] = useState<AmortizacionRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [creditData, setCreditData] = useState<any>(null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [scoreData, setScoreData] = useState<EvaluateScoreResponse | null>(
-    null,
-  );
-
   const data = credit.data;
 
   const montoOfertado =
     Number(data.monto_ofertado) || Number(data.monto_solicitado) || 0;
   const evaluationId = data.evaluation_id ?? "";
+
+  // Caché del detalle por evaluation_id: evita re-peticiones al backend
+  // al reabrir el modal. Se limpia al presionar "Actualizar solicitudes".
+  const cached = useCreditDetailsStore((state) =>
+    state.detailsCache[evaluationId],
+  );
 
   // Función para construir el CreditBreakdownInput desde los datos del endpoint
   const buildCreditInput = useCallback(
@@ -80,8 +75,26 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     [buildCreditInput, montoOfertado],
   );
 
-  // Obtener datos del endpoint
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState("");
+  const [tab, setTab] = useState<"detalles" | "amortizacion">("detalles");
+  const [isLoading, setIsLoading] = useState(!cached);
+  const [creditData, setCreditData] = useState<any>(() =>
+    cached ? calculateCredit(cached.scoreData) : null,
+  );
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [scoreData, setScoreData] = useState<EvaluateScoreResponse | null>(
+    cached?.scoreData ?? null,
+  );
+  const [amortizacion, setAmortizacion] = useState<AmortizacionRow[]>(
+    cached?.scoreData.tabla_amortizacion ?? [],
+  );
+
+  // Obtener datos del endpoint (o usar la caché si ya se pidieron antes)
   useEffect(() => {
+    if (cached) return;
+
     const fetchData = async () => {
       setIsLoading(true);
       setFetchError(null);
@@ -101,12 +114,18 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
 
         if (result) {
           setScoreData(result);
-          const calculatedData = calculateCredit(result);
-          setCreditData(calculatedData);
+          setCreditData(calculateCredit(result));
 
           if (result.tabla_amortizacion) {
             setAmortizacion(result.tabla_amortizacion);
           }
+
+          useCreditDetailsStore
+            .getState()
+            .setCreditDetails(evaluationId, {
+              scoreData: result,
+              fetchedAt: Date.now(),
+            });
         } else {
           setFetchError("No se recibieron datos del servidor.");
         }
@@ -121,7 +140,7 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
 
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [evaluationId]);
+  }, [evaluationId, cached]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
