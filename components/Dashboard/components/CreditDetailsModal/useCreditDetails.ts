@@ -187,6 +187,13 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     try {
       await updateActiveRequestData({
         estado: "approved",
+        monto_ofertado: montoOfertado,
+        frecuencia_de_pago_ofertada:
+          data.frecuencia_de_pago_ofertada ??
+          data.frecuencia_de_pago_solicitada,
+        plazo_ofertado: data.plazo_ofertado ?? data.plazo_solicitado,
+        tipo_de_credito_ofertado:
+          data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
         ...(scoreData
           ? {
               perfil: scoreData.perfil,

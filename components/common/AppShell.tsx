@@ -1,7 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { Header } from './Header'
 import { StepIndicator } from './StepIndicator'
 import { Footer } from './Footer'
@@ -35,8 +34,7 @@ export function AppShell({
   const router = useRouter()
   const client = useClientDataStore((state) => state.client)
 
-
-  const canShowAccountMenu = useMemo(() => isAccessTokenValid(), [])
+  const canShowAccountMenu = isAccessTokenValid()
 
   const handleLogout = async () => {
     await logout()
@@ -44,7 +42,7 @@ export function AppShell({
   }
 
   const userEmail = useMemo(() => {
-    const userName = client?.pii.email || `${client?.pii.name} ${client?.pii.apellido_paterno}`.trim() || 'Mi cuenta'
+    const userName = client?.pii?.email || `${client?.pii?.name} ${client?.pii?.apellido_paterno}`.trim() || 'Mi cuenta'
     return userName
   }, [client])
 

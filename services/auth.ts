@@ -125,7 +125,14 @@ export async function login(data: LoginRequest): Promise<CognitoAuthResponse> {
 
     // guarda solo el pii en zustand
     if (clientData.data?.people) {
-      useClientDataStore.getState().setClient(clientData.data.people);
+      const people = clientData.data.people;
+      useClientDataStore.getState().setClient({
+        ...people,
+        pii: {
+          ...people.pii,
+          email: people.pii?.email || data.email,
+        },
+      });
     }
 
     const resolvedClientId = String(
