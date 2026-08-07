@@ -13,8 +13,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <AppShell
-      mainClassName="flex-1 w-full px-6 py-8"
-      contentClassName="w-full max-w-5xl mx-auto"
+      fillViewport
+      mainClassName="flex flex-1 w-full px-6 py-8 min-h-0 overflow-hidden"
+      contentClassName="w-full max-w-5xl mx-auto flex flex-col min-h-0"
     >
       {children}
     </AppShell>

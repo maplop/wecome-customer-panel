@@ -164,98 +164,100 @@ export default function CreditDashboard() {
         />
       )}
 
-      {/* Welcome + New Request */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <TitleCard>
-            ¡Bienvenido {user.name}!
-          </TitleCard>
+      <div className="flex flex-1 min-h-0 flex-col">
+        {/* Welcome + New Request */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <TitleCard>
+              ¡Bienvenido {user.name}!
+            </TitleCard>
 
-          <SubtitleCard>
-            Consulta el estado de tus solicitudes de crédito, revisa los detalles  <br /> y continúa con los trámites pendientes.
-          </SubtitleCard>
-        </div>
-        <div className="flex items-center gap-3">
-          <ButtonCard
-            variant="secondary"
-            onClick={handleRefreshRequests}
-            disabled={isRefreshingRequests}
-            loading={isRefreshingRequests}
-            loadingText="Actualizando..."
-            className="w-auto px-4 py-2"
-          >
-            <RefreshCw size={16} />
-            Actualizar solicitudes
-          </ButtonCard>
+            <SubtitleCard>
+              Consulta el estado de tus solicitudes de crédito, revisa los detalles  <br /> y continúa con los trámites pendientes.
+            </SubtitleCard>
+          </div>
+          <div className="flex items-center gap-3">
+            <ButtonCard
+              variant="secondary"
+              onClick={handleRefreshRequests}
+              disabled={isRefreshingRequests}
+              loading={isRefreshingRequests}
+              loadingText="Actualizando..."
+              className="w-auto px-4 py-2"
+            >
+              <RefreshCw size={16} />
+              Actualizar solicitudes
+            </ButtonCard>
 
-          <ButtonCard
-            onClick={handleCreateNewRequest}
-            disabled={isCreatingRequest}
-            loading={isCreatingRequest}
-            loadingText="Creando solicitud..."
-            className="w-auto px-4 py-2"
-          >
-            <Plus />
-            Nueva solicitud de crédito
-          </ButtonCard>
+            <ButtonCard
+              onClick={handleCreateNewRequest}
+              disabled={isCreatingRequest}
+              loading={isCreatingRequest}
+              loadingText="Creando solicitud..."
+              className="w-auto px-4 py-2"
+            >
+              <Plus />
+              Nueva solicitud de crédito
+            </ButtonCard>
+          </div>
         </div>
+        {createRequestError && (
+          <p className="mb-4 text-sm text-destructive">{createRequestError}</p>
+        )}
+        {refreshRequestsError && (
+          <p className="mb-4 text-sm text-destructive">{refreshRequestsError}</p>
+        )}
+
+        {filteredCredits.length === 0 && activeTab === 'all' ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-4">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                <path d="M9 12h6" /><path d="M12 9v6" /><circle cx="12" cy="12" r="10" />
+              </svg>
+            </div>
+            <p className="text-base font-semibold text-foreground mb-1">Sin créditos activos</p>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              Aún no tienes ningún crédito. Solicita uno ahora y recibe tu dinero en minutos.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Tabs */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {TABS.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === tab
+                    ? 'bg-brand-dark text-background'
+                    : 'bg-transparent text-foreground border border-border hover:bg-secondary'
+                    }`}
+                >
+                  {TAB_LABELS[tab]}
+                </button>
+              ))}
+            </div>
+
+            {/* Credit list */}
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2">
+              {filteredCredits.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">
+                  No hay créditos en esta categoría.
+                </p>
+              ) : (
+                filteredCredits.map((record) => (
+                  <ClientRequestItem
+                    key={record.id}
+                    request={record}
+                    handleOpenDetail={handleOpenDetail}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
-      {createRequestError && (
-        <p className="mb-4 text-sm text-destructive">{createRequestError}</p>
-      )}
-      {refreshRequestsError && (
-        <p className="mb-4 text-sm text-destructive">{refreshRequestsError}</p>
-      )}
-
-      {filteredCredits.length === 0 && activeTab === 'all' ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-4">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-              <path d="M9 12h6" /><path d="M12 9v6" /><circle cx="12" cy="12" r="10" />
-            </svg>
-          </div>
-          <p className="text-base font-semibold text-foreground mb-1">Sin créditos activos</p>
-          <p className="text-sm text-muted-foreground max-w-xs">
-            Aún no tienes ningún crédito. Solicita uno ahora y recibe tu dinero en minutos.
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === tab
-                  ? 'bg-brand-dark text-background'
-                  : 'bg-transparent text-foreground border border-border hover:bg-secondary'
-                  }`}
-              >
-                {TAB_LABELS[tab]}
-              </button>
-            ))}
-          </div>
-
-          {/* Credit list */}
-          <div className="flex flex-col gap-4">
-            {filteredCredits.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                No hay créditos en esta categoría.
-              </p>
-            ) : (
-              filteredCredits.map((record) => (
-                <ClientRequestItem
-                  key={record.id}
-                  request={record}
-                  handleOpenDetail={handleOpenDetail}
-                />
-              ))
-            )}
-          </div>
-        </>
-      )}
     </>
   )
 }

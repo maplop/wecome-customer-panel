@@ -46,7 +46,7 @@ export function Header({
   ]
 
   return (
-    <header className="flex items-center justify-between px-5 py-4 border-b border-border/60 md:px-6 bg-brand-dark">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-5 py-4 border-b border-border/60 md:px-6 bg-brand-dark">
       <img
         src="/wecome-log.png"
         alt="CreditoNomina"

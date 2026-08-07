@@ -20,6 +20,7 @@ interface AppShellProps {
   mainClassName?: string
   contentClassName?: string
   wrapInCard?: boolean
+  fillViewport?: boolean
 }
 
 export function AppShell({
@@ -30,6 +31,7 @@ export function AppShell({
   mainClassName = 'flex flex-1 flex-col items-center px-4 py-8 md:py-12',
   contentClassName = 'w-full max-w-110 flex flex-col gap-6',
   wrapInCard = false,
+  fillViewport = false,
 }: AppShellProps) {
   const router = useRouter()
   const client = useClientDataStore((state) => state.client)
@@ -47,7 +49,7 @@ export function AppShell({
   }, [client])
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={`${fillViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'} bg-background flex flex-col`}>
       <Header showLogout={canShowAccountMenu} onLogout={handleLogout} userEmail={userEmail} />
 
       <main className={mainClassName}>
