@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { WrapperCard } from '@/components/common/WrapperCard'
@@ -8,7 +8,7 @@ import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisi
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { isApiClientError } from '@/api/dynamicore/frontend'
+import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { login } from '@/services/auth'
 import { useClientRequestStore } from '@/stores/client-request-store'
 

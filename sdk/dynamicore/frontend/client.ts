@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 
-import { createHttpClient } from "@/api/core";
+import { createHttpClient } from "@/sdk/core";
 import { ROUTES } from "@/lib/routes";
 
 import { API_CONTEXT, API_ENDPOINTS, API_URL } from "./constants";

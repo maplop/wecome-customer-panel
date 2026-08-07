@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/dynamicore/frontend";
+import { apiClient } from "@/sdk/dynamicore/frontend";
 
 const BUCKET = process.env.NEXT_PUBLIC_AWS_BUCKET || "";
 const REGION = process.env.NEXT_PUBLIC_AWS_REGION || "us-west-2";

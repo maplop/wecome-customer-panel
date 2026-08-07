@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 
-import { createHttpClient } from "@/api/core";
+import { createHttpClient } from "@/sdk/core";
 
 import { CONNECTOR_API_URL } from "./constants";
 import {

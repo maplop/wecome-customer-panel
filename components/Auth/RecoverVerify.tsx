@@ -8,7 +8,7 @@ import { ButtonCard } from '@/components/common/ButtonCard'
 import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisibility'
 import { ROUTES } from '@/lib/routes'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { isApiClientError } from '@/api/dynamicore/frontend'
+import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { confirmForgotPassword, forgotPassword } from '@/services/auth'
 import { evaluatePasswordStrength } from '@/utils/password-strength'
 

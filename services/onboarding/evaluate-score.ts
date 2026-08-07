@@ -1,4 +1,4 @@
-import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
+import { apiClient, SERVICES } from "@/sdk/dynamicore/frontend";
 import { ApiResponse } from "@/types/api-response";
 import type { AmortizacionRow } from "@/types/client-request";
 

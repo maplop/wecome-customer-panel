@@ -1,4 +1,4 @@
-import { isApiClientError } from "@/api/core";
+import { isApiClientError } from "@/sdk/core";
 import { buildClientSession } from "./build-client-session";
 import { ClientSessionType } from "@/types/client-data/client-session";
 import { getClientInfo } from "./get-client-info";

@@ -1,4 +1,4 @@
-import { createHttpClient } from "@/api/core";
+import { createHttpClient } from "@/sdk/core";
 
 import { API_CLIENT_ID, API_URL } from "./constants";
 import { ClientResponse, Payload } from "./types";

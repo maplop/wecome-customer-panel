@@ -1,4 +1,4 @@
-import { apiClient, SERVICES } from "@/api/dynamicore/frontend";
+import { apiClient, SERVICES } from "@/sdk/dynamicore/frontend";
 import { getSignedUrl } from "@/utils/aws/s3";
 
 interface JumioVerificationPayload {

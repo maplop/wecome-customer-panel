@@ -1,6 +1,6 @@
-import { apiClient, API_ENDPOINTS } from "@/api/dynamicore/frontend";
-import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/api/aws/cognito";
-import { isApiClientError } from "@/api/core";
+import { apiClient, API_ENDPOINTS } from "@/sdk/dynamicore/frontend";
+import AwsCognito, { SERVICES as COGNITO_SERVICES } from "@/sdk/aws/cognito";
+import { isApiClientError } from "@/sdk/core";
 import {
   clearCognitoAuthSession,
   getAccessToken,
