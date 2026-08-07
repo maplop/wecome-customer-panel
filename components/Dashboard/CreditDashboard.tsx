@@ -1,11 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ClientRequestItem, CreditDetailsModal, DeniedRequestModal } from './components'
-import { Plus, RefreshCw } from '@/lib/icons'
+import { Plus, RefreshCw, Check, Filter } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientDataStore } from '@/stores/client-data-store'
@@ -166,24 +167,24 @@ export default function CreditDashboard() {
 
       <div className="flex flex-1 min-h-0 flex-col">
         {/* Welcome + New Request */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div>
+        <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between md:gap-15">
+          <div className="min-w-0 flex-1">
             <TitleCard>
               ¡Bienvenido {user.name}!
             </TitleCard>
 
             <SubtitleCard>
-              Consulta el estado de tus solicitudes de crédito, revisa los detalles  <br /> y continúa con los trámites pendientes.
+              Consulte el estado actual de sus solicitudes de crédito y revise la información detallada de cada una.
             </SubtitleCard>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center md:ml-auto">
             <ButtonCard
               variant="secondary"
               onClick={handleRefreshRequests}
               disabled={isRefreshingRequests}
               loading={isRefreshingRequests}
               loadingText="Actualizando..."
-              className="w-auto px-4 py-2"
+              className="w-full sm:w-auto px-4 py-2"
             >
               <RefreshCw size={16} />
               Actualizar solicitudes
@@ -194,7 +195,7 @@ export default function CreditDashboard() {
               disabled={isCreatingRequest}
               loading={isCreatingRequest}
               loadingText="Creando solicitud..."
-              className="w-auto px-4 py-2"
+              className="w-full sm:w-auto px-4 py-2"
             >
               <Plus />
               Nueva solicitud de crédito
@@ -223,20 +224,50 @@ export default function CreditDashboard() {
         ) : (
           <>
             {/* Tabs */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === tab
-                    ? 'bg-brand-dark text-background'
-                    : 'bg-transparent text-foreground border border-border hover:bg-secondary'
-                    }`}
+            <div className="mb-6 flex flex-wrap items-center gap-2 md:gap-2">
+              <div className="hidden md:flex flex-wrap items-center gap-2">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === tab
+                      ? 'bg-brand-dark text-background'
+                      : 'bg-transparent text-foreground border border-border hover:bg-secondary'
+                      }`}
+                  >
+                    {TAB_LABELS[tab]}
+                  </button>
+                ))}
+              </div>
+
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <button
+                    type="button"
+                    className="md:hidden flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-secondary"
+                  >
+                    <Filter className="h-4 w-4" />
+                    {TAB_LABELS[activeTab]}
+                  </button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Content
+                  align="start"
+                  className="w-52 rounded-xl border border-border bg-background shadow-lg z-20 p-1"
                 >
-                  {TAB_LABELS[tab]}
-                </button>
-              ))}
+                  {TABS.map((tab) => (
+                    <DropdownMenu.Item
+                      key={tab}
+                      onSelect={() => setActiveTab(tab)}
+                      className="flex items-center justify-between px-4 py-2 text-sm text-foreground hover:bg-secondary rounded-md cursor-pointer outline-none"
+                    >
+                      {TAB_LABELS[tab]}
+                      {activeTab === tab && <Check className="h-4 w-4 text-brand-accent" />}
+                    </DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
             </div>
 
             {/* Credit list */}

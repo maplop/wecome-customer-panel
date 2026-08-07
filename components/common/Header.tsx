@@ -27,7 +27,7 @@ export function Header({
   const menuItems = [
     {
       id: 'profile',
-      label: 'Mi perfil',
+      label: 'Ver perfil',
       icon: User,
       onClick: () => router.push(ROUTES.PROFILE.ROOT),
     },
@@ -60,8 +60,9 @@ export function Header({
               type="button"
               className="flex items-center gap-2 text-sm text-white cursor-pointer transition hover:opacity-90"
             >
-              <span className="max-w-55 truncate">{userEmail || 'Mi cuenta'}</span>
-              <span aria-hidden>▾</span>
+              <User className="h-5 w-5" />
+              <span>Mi cuenta</span>
+              <span aria-hidden className="inline">▾</span>
             </button>
           </DropdownMenu.Trigger>
 

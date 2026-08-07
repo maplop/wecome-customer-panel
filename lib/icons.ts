@@ -31,4 +31,5 @@ export {
   Receipt,
   CalendarDays,
   Tag,
+  Filter,
 } from "lucide-react";
