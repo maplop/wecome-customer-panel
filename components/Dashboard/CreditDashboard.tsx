@@ -166,7 +166,7 @@ export default function CreditDashboard() {
 
       <div className="flex flex-1 min-h-0 flex-col">
         {/* Welcome + New Request */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
             <TitleCard>
               ¡Bienvenido {user.name}!
@@ -176,7 +176,7 @@ export default function CreditDashboard() {
               Consulta el estado de tus solicitudes de crédito, revisa los detalles  <br /> y continúa con los trámites pendientes.
             </SubtitleCard>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <ButtonCard
               variant="secondary"
               onClick={handleRefreshRequests}
@@ -240,9 +240,9 @@ export default function CreditDashboard() {
             </div>
 
             {/* Credit list */}
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2">
+            <div className="grid min-h-0 flex-1 auto-rows-max content-start grid-cols-1 gap-4 overflow-y-auto pb-2 sm:grid-cols-2 lg:grid-cols-1">
               {filteredCredits.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">
+                <p className="text-sm text-muted-foreground py-8 text-center sm:col-span-2 lg:col-span-1">
                   No hay créditos en esta categoría.
                 </p>
               ) : (
