@@ -21,10 +21,11 @@ import {
   roundUpToThousand,
   parseFormattedAmount,
   frequencyToApiCode,
+  AMOUNT_STEP,
 } from "./credit-math";
 import { useMaxCreditEstimate } from "./useMaxCreditEstimate";
 
-export { TERMS, MIN_AMOUNT, MAX_AMOUNT_CAP, PAYMENT_FREQUENCIES };
+export { TERMS, MIN_AMOUNT, MAX_AMOUNT_CAP, PAYMENT_FREQUENCIES, AMOUNT_STEP };
 export type { PaymentFrequency, CreditType };
 
 export function useCreditSelection() {

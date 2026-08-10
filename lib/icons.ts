@@ -32,4 +32,5 @@ export {
   CalendarDays,
   Tag,
   Filter,
+  Minus,
 } from "lucide-react";

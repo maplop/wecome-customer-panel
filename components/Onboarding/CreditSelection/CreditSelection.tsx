@@ -7,8 +7,8 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import RiskModal from './RiskModal'
 import { formatMoney } from '@/utils/formatters'
-import { Shield, ShieldCheck, Loader2 } from '@/lib/icons'
-import { useCreditSelection, TERMS, PAYMENT_FREQUENCIES } from './useCreditSelection'
+import { Shield, ShieldCheck, Loader2, Plus, Minus } from '@/lib/icons'
+import { useCreditSelection, TERMS, PAYMENT_FREQUENCIES, AMOUNT_STEP } from './useCreditSelection'
 
 
 export default function CreditSelection() {
@@ -74,19 +74,45 @@ export default function CreditSelection() {
                 Monto del crédito
               </label>
 
-              <div className="flex items-center gap-2 relative">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={amountInput}
-                  onChange={handleAmountInputChange}
-                  onBlur={handleAmountInputBlur}
-                  onKeyDown={handleAmountInputKeyDown}
-                  className="w-full py-2 text-right text-sm font-semibold text-foreground outline-none focus:border-brand-accent"
-                />
-                <label className="text-sm font-medium  text-muted-foreground">
-                  MXN
-                </label>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleAmountChange(Math.max(minAmount, amount - AMOUNT_STEP))}
+                  disabled={amount <= minAmount}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Disminuir monto"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+
+                <div className="inline-grid items-center">
+                  <span
+                    aria-hidden
+                    className="invisible col-start-1 row-start-1 max-w-32 truncate whitespace-pre border border-transparent px-3 py-2 text-sm font-semibold"
+                  >
+                    {amountInput || '0'}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={amountInput}
+                    onChange={handleAmountInputChange}
+                    onBlur={handleAmountInputBlur}
+                    onKeyDown={handleAmountInputKeyDown}
+                    size={1}
+                    className="col-start-1 row-start-1 w-full min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-right text-sm font-semibold text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleAmountChange(Math.min(maxAmount, amount + AMOUNT_STEP))}
+                  disabled={amount >= maxAmount}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Aumentar monto"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
@@ -132,6 +158,7 @@ export default function CreditSelection() {
               )}
             </div>
           </div>
+
 
           {/* Plazo + Frecuencia de pago, lado a lado */}
           <div className="grid grid-cols-[2fr_3fr] gap-4">

@@ -5,6 +5,7 @@ export const TERMS = [12, 24] as const;
 export const MIN_AMOUNT = 10000;
 export const MAX_AMOUNT_CAP = 250000;
 export const PAYMENT_FREQUENCIES = ["SEMANAL", "QUINCENAL", "MENSUAL"] as const;
+export const AMOUNT_STEP = 1000;
 
 export type PaymentFrequency = (typeof PAYMENT_FREQUENCIES)[number];
 export type CreditType = "protected" | "esencial";
