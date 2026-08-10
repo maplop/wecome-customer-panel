@@ -1,157 +1,40 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ClientRequestItem, CreditDetailsModal, DeniedRequestModal } from './components'
 import { Plus, RefreshCw, Check, Filter } from '@/lib/icons'
-import { ROUTES } from '@/lib/routes'
-import { useRouter } from 'next/navigation'
-import { useClientDataStore } from '@/stores/client-data-store'
-import { useClientRequestStore, useCreditDetailsStore } from '@/stores'
-import type { RequestStatus, ClientRequestRecord } from '@/types/client-request'
-import { addRequest, getRequestsByClient } from '@/services/client-requests'
-
-export type TabFilter = RequestStatus | 'all'
-
-const TAB_LABELS: Record<TabFilter, string> = {
-  all: 'Todos',
-  pending: 'Pendientes',
-  resolved: 'Resueltos',
-  approved: 'Aprobados',
-  active: 'Activos',
-  completed: 'Finalizados',
-  denied: 'Denegados'
-}
-
-const TABS = Object.keys(TAB_LABELS) as TabFilter[]
-const DEFAULT_REQUEST_FORM_ID = '859'
+import { useCreditDashboard, TABS, TAB_LABELS } from './useCreditDashboard'
 
 export default function CreditDashboard() {
-  const router = useRouter()
-  const session = useClientDataStore((state) => state)
-  const requests = useClientRequestStore((state) => state.requests)
-  const [isCreatingRequest, setIsCreatingRequest] = useState(false)
-  const [isRefreshingRequests, setIsRefreshingRequests] = useState(false)
-  const [createRequestError, setCreateRequestError] = useState('')
-  const [refreshRequestsError, setRefreshRequestsError] = useState('')
-
-  const user = useMemo(() => {
-    const data = session.client?.pii
-    return { name: `${data?.name} ${data?.apellido_paterno}`, email: data?.email }
-  }, [session])
-
-  const [activeTab, setActiveTab] = useState<TabFilter>('all')
-  const [resolvedOfferModal, setCreditDetailsModal] = useState<{ open: boolean; credit: ClientRequestRecord | null }>({ open: false, credit: null })
-  const [deniedRequestModal, setDeniedRequestModal] = useState<{ open: boolean; credit: ClientRequestRecord | null }>({ open: false, credit: null })
-
-  const filteredCredits = requests.filter((r) =>
-    activeTab === 'all' ? true : r.data.estado === activeTab
-  )
-
-  const handleOpenDetail = (record: ClientRequestRecord) => {
-    const estado = record.data.estado ?? 'pending'
-
-    if (estado === 'resolved' || estado === 'approved') {
-      setCreditDetailsModal({ open: true, credit: record })
-    } else if (estado === 'denied') {
-      setDeniedRequestModal({ open: true, credit: record })
-    }
-  }
-
-  const handleCloseCreditDetailsModal = () =>
-    setCreditDetailsModal({ open: false, credit: null })
-
-  const handleCloseDeniedRequestModal = () =>
-    setDeniedRequestModal({ open: false, credit: null })
-
-  const handleCreateNewRequest = async () => {
-    if (isCreatingRequest) return
-
-    const clientId = Number(session.client?.id ?? 0)
-    if (!clientId) {
-      setCreateRequestError('No se pudo identificar el cliente para crear una nueva solicitud.')
-      return
-    }
-
-    setCreateRequestError('')
-    setIsCreatingRequest(true)
-
-    const currentStep = ROUTES.ONBOARDING.CREDIT_SELECTION
-
-    try {
-      const currentFormId = requests[0]?.form_id
-      const formId = String(currentFormId ?? DEFAULT_REQUEST_FORM_ID)
-      const createdRequest = await addRequest({
-        form_id: formId,
-        client: clientId,
-        enabled: 1,
-        data: {
-          paso_actual: currentStep,
-        },
-      })
-
-      if (!createdRequest?.id) {
-        throw new Error('No se pudo crear la nueva solicitud.')
-      }
-
-      useClientRequestStore.getState().upsertRequest(createdRequest, true)
-      router.push(currentStep)
-    } catch (error) {
-      setCreateRequestError(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo crear la nueva solicitud. Intenta nuevamente.',
-      )
-    } finally {
-      setIsCreatingRequest(false)
-    }
-  }
-
-  const handleRefreshRequests = async () => {
-    if (isRefreshingRequests) return
-
-    const clientId = Number(session.client?.id ?? 0)
-    if (!clientId) {
-      setRefreshRequestsError('No se pudo identificar el cliente para actualizar solicitudes.')
-      return
-    }
-
-    setRefreshRequestsError('')
-    setIsRefreshingRequests(true)
-
-    try {
-      const latestRequests = await getRequestsByClient(String(clientId))
-      useClientRequestStore.getState().syncClientRequests(clientId, latestRequests)
-      useCreditDetailsStore.getState().clearCreditDetails()
-    } catch (error) {
-      setRefreshRequestsError(
-        error instanceof Error
-          ? error.message
-          : 'No se pudieron actualizar las solicitudes. Intenta nuevamente.',
-      )
-    } finally {
-      setIsRefreshingRequests(false)
-    }
-  }
-
-  const handleRetryDeniedRequest = () => {
-    // Mock: en producción aquí se permitiría intentar de nuevo con datos actualizados
-    if (!deniedRequestModal.credit) return
-    const id = deniedRequestModal.credit.id
-    handleCloseDeniedRequestModal()
-    // Redirigir a actualizar información
-    router.push(`${ROUTES.ONBOARDING.PERSONAL_DATA}?requestId=${id}`)
-  }
+  const {
+    user,
+    activeTab,
+    setActiveTab,
+    filteredCredits,
+    canRequestNewCredit,
+    isCreatingRequest,
+    isRefreshingRequests,
+    createRequestError,
+    refreshRequestsError,
+    creditDetailsModal,
+    deniedRequestModal,
+    handleOpenDetail,
+    handleCloseCreditDetailsModal,
+    handleCloseDeniedRequestModal,
+    handleCreateNewRequest,
+    handleRefreshRequests,
+    handleRetryDeniedRequest,
+  } = useCreditDashboard()
 
   return (
     <>
       {/* Resolved Offer Modal */}
-      {resolvedOfferModal.open && resolvedOfferModal.credit && (
+      {creditDetailsModal.open && creditDetailsModal.credit && (
         <CreditDetailsModal
-          credit={resolvedOfferModal.credit}
+          credit={creditDetailsModal.credit}
           onClose={handleCloseCreditDetailsModal}
         />
       )}
@@ -190,16 +73,18 @@ export default function CreditDashboard() {
               Actualizar solicitudes
             </ButtonCard>
 
-            <ButtonCard
-              onClick={handleCreateNewRequest}
-              disabled={isCreatingRequest}
-              loading={isCreatingRequest}
-              loadingText="Creando solicitud..."
-              className="w-full sm:w-auto px-4 py-2"
-            >
-              <Plus />
-              Nueva solicitud de crédito
-            </ButtonCard>
+            {canRequestNewCredit && (
+              <ButtonCard
+                onClick={handleCreateNewRequest}
+                disabled={isCreatingRequest}
+                loading={isCreatingRequest}
+                loadingText="Creando solicitud..."
+                className="w-full sm:w-auto px-4 py-2"
+              >
+                <Plus />
+                Nueva solicitud de crédito
+              </ButtonCard>
+            )}
           </div>
         </div>
         {createRequestError && (
@@ -292,4 +177,3 @@ export default function CreditDashboard() {
     </>
   )
 }
-

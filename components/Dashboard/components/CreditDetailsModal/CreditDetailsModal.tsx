@@ -35,6 +35,8 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
   } = useCreditDetails(credit)
 
   const canAcceptOffer = credit.data.estado === 'resolved'
+  const isCompleted = credit.data.estado === 'completed'
+  const isActive = credit.data.estado === 'active'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -49,8 +51,16 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                   <CheckCircle className="h-5 w-5 text-brand-accent" />
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-foreground">¡Tu crédito fue aprobado!</p>
-                  <p className="text-xs text-muted-foreground">Oferta disponible</p>
+<p className="text-base font-semibold text-foreground">
+                      {isCompleted
+                        ? '¡Tu crédito fue completado!'
+                        : isActive
+                          ? '¡Tu crédito está activo!'
+                          : '¡Tu crédito fue aprobado!'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isCompleted ? 'Crédito finalizado' : isActive ? 'Crédito en curso' : 'Oferta disponible'}
+                    </p>
                 </div>
               </div>
               <button

@@ -26,13 +26,13 @@ export const ESTADO_CONFIG: Record<DashboardRequestStatus, EstadoConfigItem> = {
   },
   active: {
     label: "Activo",
-    className: "bg-brand-accent/10 text-brand-accent",
-    dot: "bg-brand-accent",
+    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   completed: {
     label: "Completado",
-    className: "bg-brand-dark/10 text-brand-dark",
-    dot: "bg-brand-dark",
+    className: "bg-brand-accent/10 text-brand-accent",
+    dot: "bg-brand-accent",
   },
   denied: {
     label: "Denegado",
