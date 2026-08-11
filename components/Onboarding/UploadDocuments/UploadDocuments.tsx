@@ -414,7 +414,7 @@ export default function UploadDocuments() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
 
     const newErrors: Record<string, string> = {}
     DOCUMENT_TYPES.filter((d) => d.required).forEach((d) => {

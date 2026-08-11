@@ -48,11 +48,12 @@ export function useCreditResult() {
   const handleContinue = async () => {
     setIsSubmitting(true);
     setError("");
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SUCCESS;
     try {
       await updateActiveRequestData({
-        paso_actual: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
+        paso_actual: nextStep,
       });
-      router.push(ROUTES.ONBOARDING.CREDIT_AUTHORIZATION);
+      router.push(nextStep);
     } catch (err) {
       setError(
         err instanceof Error

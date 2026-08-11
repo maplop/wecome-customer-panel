@@ -57,9 +57,6 @@ export default function PersonalData() {
   }
 
   const nombreCompleto = `${clientData?.name} ${clientData.apellido_paterno} ${clientData.motherlastname}`.trim()
-  const edad = clientData.birthdate
-    ? new Date().getFullYear() - new Date(clientData.birthdate).getFullYear()
-    : ''
 
   const handleContinue = async () => {
     const nextStep = ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
