@@ -2,7 +2,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
-import { updateActiveRequestData } from "@/services/client-requests";
+import {
+  updateActiveRequestData,
+  addRequest,
+} from "@/services/client-requests";
 import { evaluateScore } from "@/services/onboarding/evaluate-score";
 import { useClientRequestStore, useClientDataStore } from "@/stores";
 import { formatMoney, normalizePaymentFrequency } from "@/utils/formatters";
@@ -27,6 +30,9 @@ import { useMaxCreditEstimate } from "./useMaxCreditEstimate";
 
 export { TERMS, MIN_AMOUNT, MAX_AMOUNT_CAP, PAYMENT_FREQUENCIES, AMOUNT_STEP };
 export type { PaymentFrequency, CreditType };
+
+const SOLICITUD_CON_SEGURO = "859";
+const SOLICITUD_SIN_SEGURO = "1024";
 
 export function useCreditSelection() {
   const router = useRouter();
@@ -229,6 +235,34 @@ export function useCreditSelection() {
 
       if (!result) {
         throw new Error("No se pudo obtener el resultado de la evaluación.");
+      }
+
+      // La solicitud se crea en este paso si aún no existe (p. ej. el cliente
+      // recién registrado llega aquí sin solicitud previa).
+      const requestStore = useClientRequestStore.getState();
+      if (!requestStore.getActiveRequest()) {
+        const createdClientId = Number(client?.id ?? 0);
+        if (!createdClientId) {
+          throw new Error(
+            "No se pudo identificar al cliente para crear la solicitud.",
+          );
+        }
+
+        const createdRequest = await addRequest({
+          form_id:
+            hasInsurance === "protected"
+              ? SOLICITUD_CON_SEGURO
+              : SOLICITUD_SIN_SEGURO,
+          client: createdClientId,
+          enabled: 1,
+          data: {},
+        });
+
+        if (!createdRequest?.id) {
+          throw new Error("No se pudo crear la solicitud.");
+        }
+
+        requestStore.upsertRequest(createdRequest, true);
       }
 
       await updateActiveRequestData({

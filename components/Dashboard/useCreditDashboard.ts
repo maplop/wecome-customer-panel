@@ -95,7 +95,7 @@ export function useCreditDashboard() {
     setCreateRequestError("");
     setIsCreatingRequest(true);
 
-    const currentStep = ROUTES.ONBOARDING.CREDIT_SELECTION;
+    const currentStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE;
 
     try {
       const currentFormId = requests[0]?.form_id;

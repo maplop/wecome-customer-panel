@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
-import { addRequest } from '@/services/client-requests'
 import { updateClientData } from '@/services/client-data'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
@@ -13,8 +12,6 @@ import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisi
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
-import { useClientDataStore } from '@/stores/client-data-store'
-import { useClientRequestStore } from '@/stores/client-request-store'
 import { evaluatePasswordStrength } from '@/utils/password-strength'
 
 interface FormState {
@@ -22,8 +19,6 @@ interface FormState {
   password: string
   confirm: string
 }
-
-const DEFAULT_REQUEST_FORM_ID = '859'
 
 export default function CreateAccount() {
   const router = useRouter()
@@ -87,24 +82,6 @@ export default function CreateAccount() {
         password: form.password,
         username: form.email,
       })
-
-      const createdClientId = Number(useClientDataStore.getState().client?.id || 0)
-      if (createdClientId > 0) {
-        const createdRequest = await addRequest({
-          form_id: DEFAULT_REQUEST_FORM_ID,
-          client: createdClientId,
-          enabled: 1,
-          data: {},
-        })
-
-        if (!createdRequest?.id) {
-          throw new Error('No se pudo crear la solicitud inicial del cliente.')
-        }
-
-        useClientRequestStore.getState().upsertRequest(createdRequest, true)
-      } else {
-        throw new Error('No se pudo resolver el cliente para crear la solicitud inicial.')
-      }
 
       await updateClientData({
         pii: {
