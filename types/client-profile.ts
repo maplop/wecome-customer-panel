@@ -1,50 +1,34 @@
 export interface ClientProfileType {
-  actividad_economica: string;
-  aguinaldo_proporcional: number;
-  antiguedad_empresa_anos: number;
-  antiguedad_laboral_anos: number;
-  antiguedad_laboral_meses: number;
-
-  correo_electronico: string;
-  created_at: string;
-
-  curp: string;
-  datos_de_contacto: string;
-  domicilio_fiscal_y_particular: string;
-
-  edad: number;
-  empresa_afiliada: string;
+  // ========== IDENTIDAD PERSONAL ==========
+  nombre: string;
+  segundo_nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
   fecha_de_nacimiento: string;
+  edad: number;
+  curp: string;
 
-  historial_crediticio:
-    | "Bueno"
-    | "Regular"
-    | "Débil"
-    | "Malo"
-    | "No disponible"
-    | null;
+  // ========== CONTACTO ==========
+  email: string;
 
-  nacionalidad: string;
-  nivel_de_estudios: string;
+  // ========== DOMICILIO ==========
+  pais: string;
+  estado: string;
+  ciudad: string;
+  calle: string;
+  numero_exterior: string;
+  codigo_postal: string;
 
-  nombres: string;
-  primer_apellido: string;
-  segundo_apellido: string;
+  // ========== EMPLEO ACTUAL ==========
+  empresa: string;
+  antiguedad_en_anhos_empresa_actual: number;
+  anhos_activamente_trabajando: number;
 
-  ocupacion: string;
+  // ========== COMPENSACIÓN Y PRESTACIONES ==========
+  salario_bruto_mensual: number;
+  aguinaldo_proporcional: number;
+  vacaciones_pendientes: number;
 
-  regimen_conyugal: string;
-
-  rfc: string;
-
-  sueldo_bruto_mensual: number;
-
-  telefono: string;
-
-  tipo_identificacion_oficial: string;
-  numero_identificacion_oficial: string;
-
-  vacaciones_pendientes_dias: number;
-
-  vigencia_preautorizacion: string;
+  // ========== INFORMACIÓN COMPLEMENTARIA ==========
+  historial_crediticio: string | null;
 }

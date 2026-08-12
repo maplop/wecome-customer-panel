@@ -14,7 +14,7 @@ export default function UserConfirm() {
   const { data } = useClientProfileStore()
 
   const curp = data?.curp
-  const email = data?.correo_electronico
+  const email = data?.email
 
   const isVerified = Boolean(data?.curp)
   const firstName = curp?.slice(0, 4)

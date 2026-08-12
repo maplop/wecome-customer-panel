@@ -24,7 +24,7 @@ export default function CreateAccount() {
   const router = useRouter()
   const { data } = useClientProfileStore()
 
-  const email = data?.correo_electronico || ''
+  const email = data?.email || ''
 
   const [form, setForm] = useState<FormState>({ email: email, password: '', confirm: '' })
   const [errors, setErrors] = useState<Partial<FormState>>({})
@@ -55,12 +55,6 @@ export default function CreateAccount() {
     return e
   }
 
-  const nombresSeparados = data?.nombres?.trim().split(/\s+/).filter(Boolean) ?? []
-  const primerNombre = nombresSeparados[0] ?? ''
-  const segundoNombre = nombresSeparados.length > 1
-    ? nombresSeparados.slice(1).join(' ')
-    : ''
-
   const handleSubmit = async (e: React.FormEvent) => {
     const nextStep = ROUTES.ONBOARDING.PERSONAL_DATA
 
@@ -85,32 +79,27 @@ export default function CreateAccount() {
 
       await updateClientData({
         pii: {
-          name: primerNombre,
-          secondname: segundoNombre,
-          apellido_paterno: data?.primer_apellido,
-          motherlastname: data?.segundo_apellido,
-          email: data?.correo_electronico,
-          phone: data?.telefono,
+          name: data?.nombre,
+          secondname: data?.segundo_nombre,
+          apellido_paterno: data?.apellido_paterno,
+          motherlastname: data?.apellido_materno,
+          email: data?.email,
           curp: data?.curp,
-          rfc: data?.rfc,
           birthdate: data?.fecha_de_nacimiento?.split('T')[0],
-          fullname: `${data?.nombres} ${data?.primer_apellido} ${data?.segundo_apellido}`.trim(),
+          fullname: `${data?.nombre} ${data?.apellido_paterno} ${data?.apellido_materno}`.trim(),
           age: data?.edad,
-          nationality: data?.nacionalidad,
-          empresa_donde_trabaja: data?.empresa_afiliada,
-          sueldo_bruto: data?.sueldo_bruto_mensual,
-          salario: data?.sueldo_bruto_mensual,
-          cargo_en_empresa: data?.ocupacion,
-          antiguedad_laboral___empresarial: [data?.antiguedad_laboral_anos ? `${data.antiguedad_laboral_anos} años` : '', data?.antiguedad_laboral_meses ? `${data.antiguedad_laboral_meses} meses` : ''].filter(Boolean).join(' y '),
-          anios_trabajados: data?.antiguedad_laboral_anos,
-          antiguedad_empresa_anios: data?.antiguedad_empresa_anos,
-          vacaciones_pendientes_dias: data?.vacaciones_pendientes_dias,
+          nationality: data?.pais,
+          empresa_donde_trabaja: data?.empresa,
+          sueldo_bruto: data?.salario_bruto_mensual,
+          salario: data?.salario_bruto_mensual,
+          antiguedad_laboral___empresarial: data?.anhos_activamente_trabajando
+            ? `${data.anhos_activamente_trabajando} años`
+            : '',
+          anios_trabajados: data?.anhos_activamente_trabajando,
+          antiguedad_empresa_anios: data?.antiguedad_en_anhos_empresa_actual,
+          vacaciones_pendientes_dias: data?.vacaciones_pendientes,
           aguinaldo_proporcional: data?.aguinaldo_proporcional,
           historial_crediticio: data?.historial_crediticio,
-          actividad_economica: data?.actividad_economica,
-          nivel_de_estudio: data?.nivel_de_estudios,
-          numero_de_identificacion: data?.numero_identificacion_oficial,
-          tipo_de_identificacion: data?.tipo_identificacion_oficial,
           paso_actual: nextStep,
         },
       })

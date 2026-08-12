@@ -20,7 +20,7 @@ import { ONBOARDING_OTP_LENGTH } from '@/services/onboarding/onboarding.constant
 export default function IdentityVerification() {
   const router = useRouter()
   const { data } = useClientProfileStore()
-  const email = data?.correo_electronico
+  const email = data?.email
 
   const [digits, setDigits] = useState(Array.from({ length: ONBOARDING_OTP_LENGTH }, () => ''))
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
