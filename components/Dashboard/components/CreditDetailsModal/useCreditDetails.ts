@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { AmortizacionRow, ClientRequestRecord } from "@/types/client-request";
 import { formatPaymentFrequency } from "@/utils/formatters";
 import { updateActiveRequestData } from "@/services/client-requests";
-import { calculateScore, type EvaluateScoreResponse } from "@/services/onboarding/evaluate-score";
+import { calculateScore } from "@/services/onboarding/evaluate-score";
+import type { EvaluateScoreResponse } from "@/types/score";
 import confetti from "canvas-confetti";
 import { Shield, ShieldCheck } from "@/lib/icons";
 import {

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { EvaluateScoreResponse } from "@/services/onboarding/evaluate-score";
+import type { EvaluateScoreResponse } from "@/types/score";
 
 export interface CreditDetailsCacheEntry {
   scoreData: EvaluateScoreResponse;

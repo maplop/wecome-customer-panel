@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  evaluateScore,
-  type EvaluateScoreResponse,
-} from "@/services/onboarding/evaluate-score";
+import { evaluateScore } from "@/services/onboarding/evaluate-score";
+import type { EvaluateScoreResponse } from "@/types/score";
 import type { PaymentFrequency } from "./credit-math";
 
 // Monto y frecuencia fijos, usados solo para "sondear" la capacidad_endeudamiento_max
