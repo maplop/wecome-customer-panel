@@ -233,32 +233,23 @@ export function useCreditSelection() {
 
       await updateActiveRequestData({
         monto_solicitado: amount,
-        sueldo_bruto_mensual: salaryBruto,
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
         plazo_solicitado: term,
         frecuencia_de_pago_solicitada: frequencyToApiCode(paymentFrequency),
-        paso_actual: nextStep,
-
         perfil: result.perfil,
         historial_crediticio_usado: result.historial_crediticio_usado ?? "",
-        score_consolidado: String(result.score_consolidado),
-        score_ajustado: String(result.score_ajustado),
         probabilidad_rotacion_promedio: String(
           result.probabilidad_rotacion_promedio,
         ),
-        sueldo_neto_mensual: result.sueldo_neto_mensual,
         capacidad_endeudamiento_max: result.capacidad_endeudamiento_max,
-        tasa_mensual_sin_iva: parseFloat(result.tasa_mensual_sin_iva),
-        seguro_vida: result.seguro_vida_al_millar,
-        seguro_invalidez_total_permanente: result.seguro_invalidez_al_millar,
         comision_apertura: result.comision_apertura,
-        pago_por_periodo_sin_seguros: result.pago_por_periodo_sin_seguros,
-        pago_por_periodo_con_seguros_iva:
-          result.pago_por_periodo_con_seguros_iva,
-        numero_de_periodos: result.numero_de_periodos,
-        monto_total_a_pagar: result.monto_total_a_pagar,
-        monto_total_a_pagar_con_seguros: result.monto_total_a_pagar_con_seguros,
+        monto_total_a_pagar: hasInsurance
+          ? result.monto_total_a_pagar_con_seguros
+          : result.monto_total_a_pagar,
+        pago_por_periodo: hasInsurance
+          ? result.pago_por_periodo_con_seguros_iva
+          : result.pago_por_periodo_sin_seguros,
         evaluation_id: result.evaluation_id,
       });
 

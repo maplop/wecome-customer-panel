@@ -8,6 +8,7 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Search, Check } from '@/lib/icons'
 import { updateActiveRequestData } from '@/services/client-requests'
+import { updateClientData } from '@/services/client-data'
 import { InfoNote } from '../common/InfoNote'
 
 export default function CreditAuthorization() {
@@ -21,8 +22,8 @@ export default function CreditAuthorization() {
     setIsSubmitting(true)
     setError('')
     try {
+      await updateClientData({ pii: { paso_actual: nextStep } })
       await updateActiveRequestData({
-        paso_actual: nextStep,
         autorizacion_de_consulta_de_historial_crediticio: accepted,
       })
       router.push(nextStep)

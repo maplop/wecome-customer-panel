@@ -8,7 +8,7 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { X, Check } from '@/lib/icons'
-import { updateActiveRequestData } from '@/services/client-requests'
+import { updateClientData } from '@/services/client-data'
 
 const DOCUMENTS = [
   {
@@ -204,7 +204,7 @@ export default function TermsAcceptance() {
     try {
       setError('')
 
-      await updateActiveRequestData({ paso_actual: nextStep })
+      await updateClientData({ pii: { paso_actual: nextStep } })
 
       router.push(nextStep)
     } catch (err) {

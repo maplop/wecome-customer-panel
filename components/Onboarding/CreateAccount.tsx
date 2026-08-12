@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { registerAndLogin } from '@/services/auth'
-import { addRequest, updateActiveRequestData } from '@/services/client-requests'
+import { addRequest } from '@/services/client-requests'
 import { updateClientData } from '@/services/client-data'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { ButtonCard } from '@/components/common/ButtonCard'
@@ -134,11 +134,8 @@ export default function CreateAccount() {
           nivel_de_estudio: data?.nivel_de_estudios,
           numero_de_identificacion: data?.numero_identificacion_oficial,
           tipo_de_identificacion: data?.tipo_identificacion_oficial,
+          paso_actual: nextStep,
         },
-      })
-
-      await updateActiveRequestData({
-        paso_actual: nextStep,
       })
 
       router.push(nextStep)

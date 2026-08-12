@@ -10,7 +10,7 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { isApiClientError } from '@/sdk/dynamicore/frontend'
 import { login } from '@/services/auth'
-import { useClientRequestStore } from '@/stores/client-request-store'
+import { useClientDataStore } from '@/stores/client-data-store'
 
 function resolvePostLoginRoute(currentRequestStep: unknown): string {
   if (typeof currentRequestStep !== 'string') return ROUTES.DASHBOARD.ROOT
@@ -48,7 +48,7 @@ export default function Login() {
       })
 
       const currentRequestStep =
-        useClientRequestStore.getState().getActiveRequest()?.data?.paso_actual
+        useClientDataStore.getState().client?.pii?.paso_actual
       router.push(resolvePostLoginRoute(currentRequestStep))
     } catch (err) {
       if (isApiClientError(err)) {

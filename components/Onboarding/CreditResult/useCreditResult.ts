@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClientRequestStore } from "@/stores";
-import { updateActiveRequestData } from "@/services/client-requests";
+import { updateClientData } from "@/services/client-data";
 import { ROUTES } from "@/lib/routes";
 import {
   normalizePaymentFrequency,
@@ -50,9 +50,7 @@ export function useCreditResult() {
     setError("");
     const nextStep = ROUTES.ONBOARDING.CREDIT_SUCCESS;
     try {
-      await updateActiveRequestData({
-        paso_actual: nextStep,
-      });
+      await updateClientData({ pii: { paso_actual: nextStep } });
       router.push(nextStep);
     } catch (err) {
       setError(

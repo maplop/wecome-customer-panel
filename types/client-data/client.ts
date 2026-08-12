@@ -12,6 +12,7 @@ export interface ClientType {
 }
 
 export interface ClientPiiType {
+  paso_actual?: string;
   cat: string;
   ine: string;
   rfc: string;

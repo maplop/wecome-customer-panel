@@ -10,7 +10,7 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { InfoNote } from '@/components/common/InfoNote'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { updateActiveRequestData } from '@/services/client-requests'
+import { updateClientData } from '@/services/client-data'
 
 interface DataRowProps {
   label: string
@@ -65,8 +65,8 @@ export default function PersonalData() {
       setIsSubmitting(true)
       setSubmitError(null)
 
-      await updateActiveRequestData({
-        paso_actual: nextStep,
+      await updateClientData({
+        pii: { paso_actual: nextStep },
       })
 
       router.push(nextStep)

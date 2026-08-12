@@ -13,7 +13,6 @@ import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { verifyIneWithJumio } from '@/services/onboarding/jumio'
 import { useClientDataStore } from '@/stores/client-data-store'
-import { updateActiveRequestData } from '@/services/client-requests'
 import { toast } from '@/hooks/use-toast'
 
 interface DocumentType {
@@ -509,13 +508,12 @@ export default function UploadDocuments() {
 
       await updateClientData(
         {
-          pii: piiPayload,
+          pii: {
+            ...piiPayload,
+            paso_actual: nextStep,
+          },
         },
       )
-
-      await updateActiveRequestData({
-        paso_actual: nextStep,
-      })
 
       router.push(nextStep)
     } catch (error) {

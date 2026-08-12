@@ -7,7 +7,7 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
-import { updateActiveRequestData } from '@/services/client-requests'
+import { updateClientData } from '@/services/client-data'
 import { useClientRequestStore } from '@/stores'
 
 
@@ -25,7 +25,7 @@ export default function CreditSuccess() {
     try {
       setError('')
 
-      await updateActiveRequestData({ paso_actual: nextStep, })
+      await updateClientData({ pii: { paso_actual: nextStep } })
 
       router.push(nextStep)
     } catch (err) {

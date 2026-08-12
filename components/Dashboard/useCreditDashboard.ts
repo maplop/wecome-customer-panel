@@ -10,6 +10,7 @@ import type {
   ClientRequestRecord,
 } from "@/types/client-request";
 import { addRequest, getRequestsByClient } from "@/services/client-requests";
+import { updateClientData } from "@/services/client-data";
 
 export type TabFilter = RequestStatus | "all";
 
@@ -103,14 +104,13 @@ export function useCreditDashboard() {
         form_id: formId,
         client: clientId,
         enabled: 1,
-        data: {
-          paso_actual: currentStep,
-        },
       });
 
       if (!createdRequest?.id) {
         throw new Error("No se pudo crear la nueva solicitud.");
       }
+
+      await updateClientData({ pii: { paso_actual: currentStep } });
 
       useClientRequestStore.getState().upsertRequest(createdRequest, true);
       router.push(currentStep);

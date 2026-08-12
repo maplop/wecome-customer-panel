@@ -7,38 +7,43 @@ export interface AmortizacionRow {
 }
 
 export interface ClientRequestData {
-  autorizacion_de_consulta_de_historial_crediticio?: boolean;
-  plazo_solicitado?: number;
-  plazo_ofertado?: number;
-  tipo_de_credito_solicitado?: string;
-  tipo_de_credito_ofertado?: string;
-  monto_solicitado?: number;
+  //autorizacion_de_consulta_de_historial_crediticio?: boolean;
+  //sueldo_neto_mensual?: number;
+  //sueldo_bruto_mensual?: number;
+  //tasa_mensual_sin_iva?: number;
+  //seguro_vida?: number;
+  //seguro_invalidez_total_permanente?: number;
+  //seguro_vida_al_millar?: number;
+  //seguro_invalidez_al_millar?: number;
+  //paso_actual?: string;
+  //score_consolidado?: string;
+  //score_ajustado?: string;
+  //pago_por_periodo_sin_seguros?: number;
+  //pago_por_periodo_con_seguros_iva?: number;
+  //monto_total_a_pagar_con_seguros?: number;
+  //tabla_amortizacion?: AmortizacionRow[];
+  //numero_de_periodos?: number;
+
   estado?: RequestStatus;
+  perfil?: string;
+  historial_crediticio_usado?: string;
+  probabilidad_rotacion_promedio?: string;
+  comision_apertura?: number;
+  pago_por_periodo?: number;
+  monto_total_a_pagar?: number;
   capacidad_endeudamiento_max?: number;
+
+  plazo_solicitado?: number;
+  tipo_de_credito_solicitado?: string;
+  monto_solicitado?: number;
+  frecuencia_de_pago_solicitada?: number;
+
+  plazo_ofertado?: number;
+  tipo_de_credito_ofertado?: string;
   monto_ofertado?: number;
   frecuencia_de_pago_ofertada?: number;
-  frecuencia_de_pago_solicitada?: number;
-  paso_actual?: string;
-  perfil?: string;
-  score_consolidado?: string;
-  score_ajustado?: string;
-  probabilidad_rotacion_promedio?: string;
-  sueldo_neto_mensual?: number;
-  sueldo_bruto_mensual?: number;
-  tasa_mensual_sin_iva?: number;
-  seguro_vida?: number;
-  seguro_invalidez_total_permanente?: number;
-  seguro_vida_al_millar?: number;
-  seguro_invalidez_al_millar?: number;
-  historial_crediticio_usado?: string;
-  comision_apertura?: number;
-  pago_por_periodo_sin_seguros?: number;
-  pago_por_periodo_con_seguros_iva?: number;
-  numero_de_periodos?: number;
-  monto_total_a_pagar?: number;
-  monto_total_a_pagar_con_seguros?: number;
+
   evaluation_id?: string;
-  tabla_amortizacion?: AmortizacionRow[];
 }
 
 export type RequestStatus =
