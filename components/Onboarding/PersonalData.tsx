@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useClientDataStore } from '@/stores'
-import { formatMoney, formatMxPhoneNumber } from '@/utils/formatters'
+import { formatDateLongEs, formatMoney } from '@/utils/formatters'
 import { ButtonCard } from '@/components/common/ButtonCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { TitleCard } from '@/components/common/TitleCard'
@@ -93,15 +93,13 @@ export default function PersonalData() {
 
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
         <DataRow label="Nombre completo" value={nombreCompleto} />
-        <DataRow label="RFC" value={clientData.rfc} />
         <DataRow label="CURP" value={clientData.curp} />
+        <DataRow label="Fecha de nacimiento" value={formatDateLongEs(clientData.birthdate)} />
+        <DataRow label="Edad" value={clientData.age ? `${clientData.age} años` : '-'} />
+        <DataRow label="Correo electrónico" value={clientData.email} />
         <DataRow label="Nacionalidad" value={clientData.nationality} />
         <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
-        <DataRow label="Ocupación" value={clientData.cargo_en_empresa} />
-        <DataRow label="Salario" value={`${formatMoney(Number(clientData.sueldo_bruto))} MXN`} />
-        <DataRow label="Antigüedad" value={clientData.antiguedad_laboral___empresarial.split(' y ').filter(p => /\d/.test(p)).join(' y ')} />
-        <DataRow label="Teléfono" value={formatMxPhoneNumber(clientData.phone)} />
-        <DataRow label="Correo electrónico" value={clientData.email} />
+        <DataRow label="Salario bruto mensual" value={`${formatMoney(Number(clientData.sueldo_bruto))} MXN`} />
       </div>
 
       <InfoNote
