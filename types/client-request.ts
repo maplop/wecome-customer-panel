@@ -7,23 +7,6 @@ export interface AmortizacionRow {
 }
 
 export interface ClientRequestData {
-  //autorizacion_de_consulta_de_historial_crediticio?: boolean;
-  //sueldo_neto_mensual?: number;
-  //sueldo_bruto_mensual?: number;
-  //tasa_mensual_sin_iva?: number;
-  //seguro_vida?: number;
-  //seguro_invalidez_total_permanente?: number;
-  //seguro_vida_al_millar?: number;
-  //seguro_invalidez_al_millar?: number;
-  //paso_actual?: string;
-  //score_consolidado?: string;
-  //score_ajustado?: string;
-  //pago_por_periodo_sin_seguros?: number;
-  //pago_por_periodo_con_seguros_iva?: number;
-  //monto_total_a_pagar_con_seguros?: number;
-  //tabla_amortizacion?: AmortizacionRow[];
-  //numero_de_periodos?: number;
-
   estado?: RequestStatus;
   perfil?: string;
   historial_crediticio_usado?: string;

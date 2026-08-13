@@ -55,12 +55,9 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
         numero_de_periodos: endpointData.numero_de_periodos ?? 0,
         monto_total_a_pagar: endpointData.monto_total_a_pagar ?? 0,
         comision_apertura: endpointData.comision_apertura ?? 0,
-        seguro_vida:
-          endpointData.seguro_vida_al_millar ?? endpointData.seguro_vida ?? 0,
+        seguro_vida: endpointData.seguro_vida_al_millar ?? 0,
         seguro_invalidez_total_permanente:
-          endpointData.seguro_invalidez_al_millar ??
-          endpointData.seguro_invalidez_total_permanente ??
-          0,
+          endpointData.seguro_invalidez_al_millar ?? 0,
       };
     },
     [data.tipo_de_credito_ofertado, data.tipo_de_credito_solicitado],
@@ -200,28 +197,14 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
               perfil: scoreData.perfil,
               historial_crediticio_usado:
                 scoreData.historial_crediticio_usado ?? "",
-              score_consolidado: String(scoreData.score_consolidado),
-              score_ajustado: String(scoreData.score_ajustado),
               probabilidad_rotacion_promedio: String(
                 scoreData.probabilidad_rotacion_promedio,
               ),
-              sueldo_neto_mensual: scoreData.sueldo_neto_mensual,
               capacidad_endeudamiento_max:
                 scoreData.capacidad_endeudamiento_max,
-              tasa_mensual_sin_iva: parseFloat(scoreData.tasa_mensual_sin_iva),
-              seguro_vida_al_millar: scoreData.seguro_vida_al_millar,
-              seguro_invalidez_al_millar: scoreData.seguro_invalidez_al_millar,
               comision_apertura: scoreData.comision_apertura,
-              pago_por_periodo_sin_seguros:
-                scoreData.pago_por_periodo_sin_seguros,
-              pago_por_periodo_con_seguros_iva:
-                scoreData.pago_por_periodo_con_seguros_iva,
-              numero_de_periodos: scoreData.numero_de_periodos,
               monto_total_a_pagar: scoreData.monto_total_a_pagar,
-              monto_total_a_pagar_con_seguros:
-                scoreData.monto_total_a_pagar_con_seguros,
               evaluation_id: scoreData.evaluation_id ?? evaluationId,
-              tabla_amortizacion: scoreData.tabla_amortizacion,
             }
           : {}),
       });

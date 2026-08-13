@@ -85,8 +85,9 @@ export default function CreateAccount() {
           motherlastname: data?.apellido_materno,
           email: data?.email,
           curp: data?.curp,
+          rfc: data?.RFC,
           birthdate: data?.fecha_de_nacimiento?.split('T')[0],
-          fullname: `${data?.nombre} ${data?.apellido_paterno} ${data?.apellido_materno}`.trim(),
+          fullname: `${data?.nombre} ${data?.segundo_nombre} ${data?.apellido_paterno} ${data?.apellido_materno}`.trim(),
           age: data?.edad != null ? String(data.edad) : undefined,
           nationality: data?.pais,
           empresa_donde_trabaja: data?.empresa,
@@ -119,6 +120,11 @@ export default function CreateAccount() {
               : undefined,
           historial_crediticio: data?.historial_crediticio,
           paso_actual: nextStep,
+          city: data?.ciudad,
+          state: data?.estado,
+          street: data?.calle,
+          num_ext: data?.numero_exterior,
+          zipcode: data?.codigo_postal,
         },
       })
 

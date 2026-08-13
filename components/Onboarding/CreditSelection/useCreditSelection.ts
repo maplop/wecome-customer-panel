@@ -227,7 +227,7 @@ export function useCreditSelection() {
       const result = await evaluateScore({
         action: "evaluate",
         employer_id: String(client?.id ?? ""),
-        employee_key: client?.pii?.rfc ?? "",
+        employee_key: client?.pii?.rfc || client?.pii?.curp || "",
         monto_solicitado: amount,
         plazo_meses: term,
         periodicidad: paymentFrequency,

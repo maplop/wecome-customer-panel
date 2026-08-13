@@ -7,6 +7,7 @@ export interface ClientProfileType {
   fecha_de_nacimiento: string;
   edad: number;
   curp: string;
+  RFC: string;
 
   // ========== CONTACTO ==========
   email: string;

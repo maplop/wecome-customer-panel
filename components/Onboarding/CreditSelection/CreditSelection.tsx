@@ -142,7 +142,6 @@ export default function CreditSelection() {
                   {formatMoney(maxAmount)}
                   {isMaxAmountEstimated && (
                     <span className="italic text-muted-foreground/70">
-                      (estimado)
                       {hasMaxAmountError && (
                         <button
                           type="button"

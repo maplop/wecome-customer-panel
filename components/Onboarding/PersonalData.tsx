@@ -56,7 +56,7 @@ export default function PersonalData() {
     )
   }
 
-  const nombreCompleto = `${clientData?.name} ${clientData.apellido_paterno} ${clientData.motherlastname}`.trim()
+  const nombreCompleto = `${clientData?.name} ${clientData?.secondname} ${clientData.apellido_paterno} ${clientData.motherlastname}`.trim()
 
   const handleContinue = async () => {
     const nextStep = ROUTES.ONBOARDING.UPLOAD_DOCUMENTS
@@ -94,6 +94,7 @@ export default function PersonalData() {
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
         <DataRow label="Nombre completo" value={nombreCompleto} />
         <DataRow label="CURP" value={clientData.curp} />
+        <DataRow label="RFC" value={clientData.rfc} />
         <DataRow label="Fecha de nacimiento" value={formatDateLongEs(clientData.birthdate)} />
         <DataRow label="Edad" value={clientData.age ? `${clientData.age} años` : '-'} />
         <DataRow label="Correo electrónico" value={clientData.email} />
