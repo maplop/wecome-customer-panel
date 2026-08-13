@@ -27,7 +27,7 @@ interface UseMaxCreditEstimateResult {
 /**
  * Obtiene (y cachea) la capacidad_endeudamiento_max real para el plazo actual.
  *
- * Como solo hay dos plazos posibles (TERMS = [12, 24]) y el salario no cambia
+ * Como solo hay dos plazos posibles (TERMS = [6, 12]) y el salario no cambia
  * durante la sesión, el resultado de cada plazo se pide UNA sola vez y se
  * reutiliza el resto de la sesión.
  *

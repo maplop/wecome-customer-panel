@@ -5,7 +5,7 @@ import { ButtonCard } from '@/components/common/ButtonCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ClientRequestItem, CreditDetailsModal, DeniedRequestModal } from './components'
-import { Plus, RefreshCw, Check, Filter } from '@/lib/icons'
+import { Plus, RefreshCw, Check, Filter, Wallet } from '@/lib/icons'
 import { useCreditDashboard, TABS, TAB_LABELS } from './useCreditDashboard'
 
 export default function CreditDashboard() {
@@ -97,9 +97,7 @@ export default function CreditDashboard() {
         {filteredCredits.length === 0 && activeTab === 'all' ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-4">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                <path d="M9 12h6" /><path d="M12 9v6" /><circle cx="12" cy="12" r="10" />
-              </svg>
+              <Wallet className="h-9 w-9 text-muted-foreground" />
             </div>
             <p className="text-base font-semibold text-foreground mb-1">Sin créditos activos</p>
             <p className="text-sm text-muted-foreground max-w-xs">

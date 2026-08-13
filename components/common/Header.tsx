@@ -25,6 +25,7 @@ export function Header({
   }, [])
 
   const menuItems = [
+
     {
       id: 'profile',
       label: 'Ver perfil',

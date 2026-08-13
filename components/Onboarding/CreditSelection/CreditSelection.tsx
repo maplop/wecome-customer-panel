@@ -180,6 +180,7 @@ export default function CreditSelection() {
               </div>
             </div>
 
+            {/*
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-foreground">Frecuencia de pago</label>
               <div className="flex rounded-xl bg-secondary p-1">
@@ -198,6 +199,7 @@ export default function CreditSelection() {
                 ))}
               </div>
             </div>
+            */}
           </div>
 
           {/* Insurance toggle */}

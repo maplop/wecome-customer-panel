@@ -1,7 +1,7 @@
 // Constantes y funciones puras del dominio "selección de crédito".
 // Sin dependencias de React: fáciles de testear de forma aislada.
 
-export const TERMS = [12, 24] as const;
+export const TERMS = [6, 12] as const;
 export const MIN_AMOUNT = 10000;
 export const MAX_AMOUNT_CAP = 250000;
 export const PAYMENT_FREQUENCIES = ["SEMANAL", "QUINCENAL", "MENSUAL"] as const;

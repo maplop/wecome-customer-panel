@@ -89,7 +89,7 @@ export function useCreditSelection() {
     retry: retryMaxAmountEstimate,
   } = useMaxCreditEstimate({
     employerId: client?.id,
-    employeeKey: client?.pii?.rfc,
+    employeeKey: client?.pii?.curp,
     term,
   });
 
@@ -227,7 +227,7 @@ export function useCreditSelection() {
       const result = await evaluateScore({
         action: "evaluate",
         employer_id: String(client?.id ?? ""),
-        employee_key: client?.pii?.rfc || client?.pii?.curp || "",
+        employee_key: client?.pii?.curp || "",
         monto_solicitado: amount,
         plazo_meses: term,
         periodicidad: paymentFrequency,
