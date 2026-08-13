@@ -1,8 +1,12 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import type { AmortizacionRow, ClientRequestRecord } from "@/types/client-request";
+import type {
+  AmortizacionRow,
+  ClientRequestData,
+  ClientRequestRecord,
+} from "@/types/client-request";
 import { formatPaymentFrequency } from "@/utils/formatters";
-import { updateActiveRequestData } from "@/services/client-requests";
+import { updateRequest } from "@/services/client-requests";
 import { calculateScore } from "@/services/onboarding/evaluate-score";
 import type { EvaluateScoreResponse } from "@/types/score";
 import confetti from "canvas-confetti";
@@ -11,7 +15,7 @@ import {
   calculateCreditBreakdown,
   type CreditBreakdownInput,
 } from "@/utils/calculateCreditBreakdown";
-import { useCreditDetailsStore } from "@/stores/credit-details-store";
+import { useClientRequestStore, useCreditDetailsStore } from "@/stores";
 
 const CONFETTI_Z_INDEX = 9999;
 
@@ -75,6 +79,7 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"detalles" | "amortizacion">("detalles");
   const [isLoading, setIsLoading] = useState(!cached);
@@ -179,11 +184,33 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     frame();
   }, [showSuccess]);
 
+  // Actualiza la solicitud EXACTA que se está viendo en el modal (no la
+  // "activa" del store, que podría ser otra), para que el item del dashboard
+  // cambie su estado al momento.
+  const updateThisRequest = useCallback(
+    async (patch: Partial<ClientRequestData>) => {
+      const updated = await updateRequest({
+        id: credit.id,
+        form_id: credit.form_id,
+        client: credit.client,
+        enabled: Number(credit.enabled || 1),
+        data: { ...data, ...patch },
+      });
+
+      if (updated) {
+        useClientRequestStore.getState().upsertRequest(updated);
+      }
+
+      return updated;
+    },
+    [credit.id, credit.form_id, credit.client, credit.enabled, data],
+  );
+
   const handleAccept = async () => {
     setIsUpdating(true);
     setError("");
     try {
-      await updateActiveRequestData({
+      await updateThisRequest({
         estado: "approved",
         monto_ofertado: montoOfertado,
         frecuencia_de_pago_ofertada:
@@ -220,6 +247,26 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     }
   };
 
+  // Rechaza la oferta del crédito: marca la solicitud como denegada.
+  // Devuelve true si se rechazó correctamente para que el modal pueda cerrarse.
+  const handleReject = async (): Promise<boolean> => {
+    setIsRejecting(true);
+    setError("");
+    try {
+      await updateThisRequest({ estado: "denied" });
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo rechazar la solicitud.",
+      );
+      return false;
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
   // Datos para mostrar
   const frecuenciaDePago = formatPaymentFrequency(
     data.frecuencia_de_pago_ofertada ?? data.frecuencia_de_pago_solicitada,
@@ -230,6 +277,7 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
   return {
     showSuccess,
     isUpdating,
+    isRejecting,
     error,
     tab,
     setTab,
@@ -242,5 +290,6 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     plazo,
     TipoIcon,
     handleAccept,
+    handleReject,
   };
 };

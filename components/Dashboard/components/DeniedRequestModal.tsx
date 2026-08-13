@@ -66,7 +66,7 @@ export default function DeniedRequestModal({ credit, onClose }: DeniedRequestMod
               Estado de la solicitud
             </span>
             <span className="text-4xl font-bold text-white">
-              No aprobada
+              DENEGADA
             </span>
             <p className="text-sm text-white/70 leading-relaxed">
               Tu solicitud no cumplió con los requisitos necesarios para su aprobación en este momento.

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, ShieldCheck, Tag, AlertCircle, CheckCircle2 } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
 import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
@@ -17,9 +18,11 @@ function formatMoney(n: number) {
 }
 
 export default function CreditDetailsModal({ credit, onClose }: CreditDetailsModalProps) {
+  const [confirmReject, setConfirmReject] = useState(false)
   const {
     showSuccess,
     isUpdating,
+    isRejecting,
     error,
     tab,
     setTab,
@@ -32,11 +35,19 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
     plazo,
     TipoIcon,
     handleAccept,
+    handleReject,
   } = useCreditDetails(credit)
 
   const canAcceptOffer = credit.data.estado === 'resolved'
   const isCompleted = credit.data.estado === 'completed'
   const isActive = credit.data.estado === 'active'
+
+  const handleRejectClick = async () => {
+    const rejected = await handleReject()
+    if (rejected) {
+      onClose()
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -51,16 +62,16 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                   <CheckCircle className="h-5 w-5 text-brand-accent" />
                 </div>
                 <div>
-<p className="text-base font-semibold text-foreground">
-                      {isCompleted
-                        ? '¡Tu crédito fue completado!'
-                        : isActive
-                          ? '¡Tu crédito está activo!'
-                          : '¡Tu crédito fue aprobado!'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isCompleted ? 'Crédito finalizado' : isActive ? 'Crédito en curso' : 'Oferta disponible'}
-                    </p>
+                  <p className="text-base font-semibold text-foreground">
+                    {isCompleted
+                      ? '¡Tu crédito fue completado!'
+                      : isActive
+                        ? '¡Tu crédito está activo!'
+                        : '¡Tu crédito fue aprobado!'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isCompleted ? 'Crédito finalizado' : isActive ? 'Crédito en curso' : 'Oferta disponible'}
+                  </p>
                 </div>
               </div>
               <button
@@ -333,23 +344,57 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                 >
                   Cerrar
                 </button>
+              ) : confirmReject ? (
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs text-center text-muted-foreground">
+                    ¿Seguro que deseas rechazar la oferta? Esta acción no se puede deshacer.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmReject(false)}
+                      disabled={isRejecting || isUpdating}
+                      className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRejectClick}
+                      disabled={isRejecting || isUpdating || isLoading || !!fetchError}
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm disabled:opacity-50"
+                    >
+                      {isRejecting ? 'Rechazando...' : 'Sí, rechazar'}
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmReject(true)}
+                      disabled={isUpdating || isLoading || !!fetchError || !creditData}
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-brand-dark text-white hover:bg-brand-dark/90 transition font-medium text-sm disabled:opacity-50"
+                    >
+                      Rechazar oferta
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAccept}
+                      disabled={isUpdating || isLoading || !!fetchError || !creditData}
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm disabled:opacity-50"
+                    >
+                      {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={onClose}
                     disabled={isUpdating || isLoading || !!fetchError}
-                    className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-secondary transition font-medium text-sm disabled:opacity-50"
                   >
                     Revisar después
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAccept}
-                    disabled={isUpdating || isLoading || !!fetchError || !creditData}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-brand-accent text-white hover:bg-brand-accent/90 transition font-medium text-sm disabled:opacity-50"
-                  >
-                    {isUpdating ? 'Aceptando...' : 'Aceptar oferta'}
                   </button>
                 </div>
               )}

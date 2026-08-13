@@ -16,27 +16,27 @@ export const ESTADO_CONFIG: Record<DashboardRequestStatus, EstadoConfigItem> = {
   },
   resolved: {
     label: "Resuelto",
-    className: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-    dot: "bg-sky-500",
-  },
-  approved: {
-    label: "Aprobado",
-    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    dot: "bg-emerald-500",
-  },
-  active: {
-    label: "Activo",
-    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    dot: "bg-emerald-500",
-  },
-  completed: {
-    label: "Completado",
-    className: "bg-brand-accent/10 text-brand-accent",
-    dot: "bg-brand-accent",
+    className: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    dot: "bg-teal-500",
   },
   denied: {
     label: "Denegado",
     className: "bg-red-500/10 text-red-600 dark:text-red-400",
     dot: "bg-red-500",
+  },
+  approved: {
+    label: "Aprobado",
+    className: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    dot: "bg-violet-500",
+  },
+  active: {
+    label: "Activo",
+    className: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    dot: "bg-sky-500",
+  },
+  completed: {
+    label: "Completado",
+    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
 };
