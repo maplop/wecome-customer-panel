@@ -9,7 +9,7 @@ import type {
   RequestStatus,
   ClientRequestRecord,
 } from "@/types/client-request";
-import { addRequest, getRequestsByClient } from "@/services/client-requests";
+import { getRequestsByClient } from "@/services/client-requests";
 import { updateClientData } from "@/services/client-data";
 
 export type TabFilter = RequestStatus | "all";
@@ -25,7 +25,6 @@ export const TAB_LABELS: Record<TabFilter, string> = {
 };
 
 export const TABS = Object.keys(TAB_LABELS) as TabFilter[];
-const DEFAULT_REQUEST_FORM_ID = "859";
 
 export function useCreditDashboard() {
   const router = useRouter();
@@ -98,21 +97,15 @@ export function useCreditDashboard() {
     const currentStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE;
 
     try {
-      const currentFormId = requests[0]?.form_id;
-      const formId = String(currentFormId ?? DEFAULT_REQUEST_FORM_ID);
-      const createdRequest = await addRequest({
-        form_id: formId,
-        client: clientId,
-        enabled: 1,
-      });
-
-      if (!createdRequest?.id) {
-        throw new Error("No se pudo crear la nueva solicitud.");
-      }
+      // La solicitud NO se crea aquí: se crea en CreditSelection al evaluar
+      // el score (useCreditSelection.handleContinue). Aquí limpiamos la
+      // solicitud activa (que tras el login apunta a la más reciente del
+      // cliente) para que en CreditSelection se haga POST y no PUT sobre una
+      // solicitud anterior, y solo navegamos al flujo.
+      useClientRequestStore.getState().setActiveRequestId(null);
 
       await updateClientData({ pii: { paso_actual: currentStep } });
 
-      useClientRequestStore.getState().upsertRequest(createdRequest, true);
       router.push(currentStep);
     } catch (error) {
       setCreateRequestError(

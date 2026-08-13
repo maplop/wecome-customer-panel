@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useClientRequestStore } from "@/stores";
+import { useClientRequestStore, useCreditDetailsStore } from "@/stores";
 import { updateClientData } from "@/services/client-data";
 import { ROUTES } from "@/lib/routes";
 import {
@@ -12,6 +12,7 @@ import {
 import {
   calculateCreditBreakdown,
   CreditBreakdownInput,
+  CreditBreakdown,
 } from "@/utils/calculateCreditBreakdown";
 
 export function useCreditResult() {
@@ -31,19 +32,33 @@ export function useCreditResult() {
     normalizePaymentFrequency(data.frecuencia_de_pago_solicitada),
   );
 
-  const creditInput: CreditBreakdownInput = {
-    tipo_de_credito_solicitado:
-      data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
-    pago_por_periodo_sin_seguros: data.pago_por_periodo_sin_seguros,
-    pago_por_periodo_con_seguros_iva: data.pago_por_periodo_con_seguros_iva,
-    numero_de_periodos: data.numero_de_periodos,
-    comision_apertura: data.comision_apertura,
-    seguro_vida: data.seguro_vida,
-    seguro_invalidez_total_permanente: data.seguro_invalidez_total_permanente,
-    monto_total_a_pagar: data.monto_total_a_pagar ?? 0,
-  };
+  // El backend no persiste los campos del desglose en la solicitud; los leemos
+  // del store local, donde useCreditSelection guardó el resultado del score
+  // (mismo patrón de caché por evaluation_id que usa el Dashboard).
+  const evaluationId = data.evaluation_id ?? "";
+  const cached = useCreditDetailsStore((state) =>
+    evaluationId ? state.detailsCache[evaluationId] : undefined,
+  );
 
-  const creditData = calculateCreditBreakdown(creditInput, amount);
+  const creditData: CreditBreakdown | null = cached?.scoreData
+    ? calculateCreditBreakdown(
+        {
+          tipo_de_credito_solicitado:
+            data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
+          pago_por_periodo_sin_seguros:
+            cached.scoreData.pago_por_periodo_sin_seguros,
+          pago_por_periodo_con_seguros_iva:
+            cached.scoreData.pago_por_periodo_con_seguros_iva,
+          numero_de_periodos: cached.scoreData.numero_de_periodos,
+          comision_apertura: cached.scoreData.comision_apertura,
+          seguro_vida: cached.scoreData.seguro_vida_al_millar,
+          seguro_invalidez_total_permanente:
+            cached.scoreData.seguro_invalidez_al_millar,
+          monto_total_a_pagar: cached.scoreData.monto_total_a_pagar,
+        } satisfies CreditBreakdownInput,
+        amount,
+      )
+    : null;
 
   const handleContinue = async () => {
     setIsSubmitting(true);

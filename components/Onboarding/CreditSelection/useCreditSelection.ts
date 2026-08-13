@@ -8,6 +8,7 @@ import {
 } from "@/services/client-requests";
 import { evaluateScore } from "@/services/onboarding/evaluate-score";
 import { useClientRequestStore, useClientDataStore } from "@/stores";
+import { useCreditDetailsStore } from "@/stores/credit-details-store";
 import { formatMoney, normalizePaymentFrequency } from "@/utils/formatters";
 import { normalizeCreditType } from "@/utils/credit-type";
 import {
@@ -237,35 +238,19 @@ export function useCreditSelection() {
         throw new Error("No se pudo obtener el resultado de la evaluación.");
       }
 
-      // La solicitud se crea en este paso si aún no existe (p. ej. el cliente
-      // recién registrado llega aquí sin solicitud previa).
+      // El backend no persiste los campos del desglose en la solicitud, así que
+      // guardamos el resultado completo del score en el store local (sessionStorage),
+      // con el mismo patrón de caché que usa el Dashboard (por evaluation_id).
+      useCreditDetailsStore.getState().setCreditDetails(result.evaluation_id, {
+        scoreData: result,
+        fetchedAt: Date.now(),
+      });
+
+      // Si la solicitud ya existe (mismo flujo, p. ej. vuelta atrás y re-evaluación)
+      // se actualiza con PUT. Si no existe (flujo nuevo), se crea con un solo POST
+      // ya con todos los datos del crédito — addRequest envía el data completo.
       const requestStore = useClientRequestStore.getState();
-      if (!requestStore.getActiveRequest()) {
-        const createdClientId = Number(client?.id ?? 0);
-        if (!createdClientId) {
-          throw new Error(
-            "No se pudo identificar al cliente para crear la solicitud.",
-          );
-        }
-
-        const createdRequest = await addRequest({
-          form_id:
-            hasInsurance === "protected"
-              ? SOLICITUD_CON_SEGURO
-              : SOLICITUD_SIN_SEGURO,
-          client: createdClientId,
-          enabled: 1,
-          data: {},
-        });
-
-        if (!createdRequest?.id) {
-          throw new Error("No se pudo crear la solicitud.");
-        }
-
-        requestStore.upsertRequest(createdRequest, true);
-      }
-
-      await updateActiveRequestData({
+      const creditDataPatch = {
         monto_solicitado: amount,
         tipo_de_credito_solicitado:
           hasInsurance === "protected" ? "protected" : "esencial",
@@ -285,7 +270,34 @@ export function useCreditSelection() {
           ? result.pago_por_periodo_con_seguros_iva
           : result.pago_por_periodo_sin_seguros,
         evaluation_id: result.evaluation_id,
-      });
+      };
+
+      if (!requestStore.getActiveRequest()) {
+        const createdClientId = Number(client?.id ?? 0);
+        if (!createdClientId) {
+          throw new Error(
+            "No se pudo identificar al cliente para crear la solicitud.",
+          );
+        }
+
+        const createdRequest = await addRequest({
+          form_id:
+            hasInsurance === "protected"
+              ? SOLICITUD_CON_SEGURO
+              : SOLICITUD_SIN_SEGURO,
+          client: createdClientId,
+          enabled: 1,
+          data: creditDataPatch,
+        });
+
+        if (!createdRequest?.id) {
+          throw new Error("No se pudo crear la solicitud.");
+        }
+
+        requestStore.upsertRequest(createdRequest, true);
+      } else {
+        await updateActiveRequestData(creditDataPatch);
+      }
 
       router.push(nextStep);
     } catch (err) {

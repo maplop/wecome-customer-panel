@@ -17,6 +17,22 @@ export default function CreditResult() {
 
   const { amount, term, paymentFrequencyLabel, creditData, isSubmitting, error, handleContinue, goBack } = useCreditResult()
 
+  if (!creditData) {
+    return (
+      <WrapperCard>
+        <div className="flex flex-col gap-2">
+          <TitleCard>Resultado de tu crédito</TitleCard>
+          <SubtitleCard>
+            No encontramos los datos de tu crédito. Regresa a la selección y vuelve a intentarlo.
+          </SubtitleCard>
+        </div>
+        <ButtonCard variant="secondary" disabled={isSubmitting} onClick={goBack}>
+          Regresar
+        </ButtonCard>
+      </WrapperCard>
+    )
+  }
+
   const TipoIcon = ICONS[creditData.iconKey]
 
   return (
