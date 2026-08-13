@@ -26,7 +26,6 @@ export default function CreditDashboard() {
     handleCloseDeniedRequestModal,
     handleCreateNewRequest,
     handleRefreshRequests,
-    handleRetryDeniedRequest,
   } = useCreditDashboard()
 
   return (
@@ -44,7 +43,6 @@ export default function CreditDashboard() {
         <DeniedRequestModal
           credit={deniedRequestModal.credit}
           onClose={handleCloseDeniedRequestModal}
-          onRetry={handleRetryDeniedRequest}
         />
       )}
 

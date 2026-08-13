@@ -149,13 +149,6 @@ export function useCreditDashboard() {
     }
   };
 
-  const handleRetryDeniedRequest = () => {
-    if (!deniedRequestModal.credit) return;
-    const id = deniedRequestModal.credit.id;
-    handleCloseDeniedRequestModal();
-    router.push(`${ROUTES.ONBOARDING.PERSONAL_DATA}?requestId=${id}`);
-  };
-
   return {
     user,
     activeTab,
@@ -173,6 +166,5 @@ export function useCreditDashboard() {
     handleCloseDeniedRequestModal,
     handleCreateNewRequest,
     handleRefreshRequests,
-    handleRetryDeniedRequest,
   };
 }

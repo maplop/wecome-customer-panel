@@ -10,11 +10,10 @@ import { FactCard } from '@/components/common/CreditDetails'
 interface DeniedRequestModalProps {
   credit: ClientRequestRecord
   onClose: () => void
-  onRetry: () => void
 }
 
 
-export default function DeniedRequestModal({ credit, onClose, onRetry }: DeniedRequestModalProps) {
+export default function DeniedRequestModal({ credit, onClose }: DeniedRequestModalProps) {
   const data = credit.data
 
   const solicitado = Number(data.monto_solicitado ?? 0)
