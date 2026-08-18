@@ -8,6 +8,7 @@ export {
   Upload,
   Trash,
   File,
+  FileText,
   Calendar,
   CircleDollarSign,
   HandCoins,

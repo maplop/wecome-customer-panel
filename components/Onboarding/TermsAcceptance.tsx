@@ -7,165 +7,34 @@ import { TitleCard } from '@/components/common/TitleCard'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
-import { X, Check } from '@/lib/icons'
+import { X, Check, FileText } from '@/lib/icons'
 import { updateClientData } from '@/services/client-data'
 
 const DOCUMENTS = [
   {
     id: 'advertising',
-    title: 'Autorización de publicidad',
-    description: 'Autorizo el uso de mis datos para fines publicitarios y de mercadotecnia por parte de Wecome.',
-    content: `AUTORIZACIÓN DE PUBLICIDAD
-
-Por medio del presente, otorgo mi consentimiento libre, expreso e informado a WECOME, S.A. de C.V. (en adelante "Wecome") para el tratamiento de mis datos personales con fines de prospección comercial, publicidad y mercadotecnia.
-
-Alcance de la autorización:
-
-1. Comunicaciones comerciales: Autorizo a Wecome a enviarme comunicaciones, promociones, ofertas y publicidad relacionada con sus productos y servicios financieros, incluyendo pero no limitado a créditos de nómina, seguros y productos complementarios.
-
-2. Canales de contacto: Las comunicaciones podrán realizarse a través de los siguientes medios:
-   - Correo electrónico
-   - Llamadas telefónicas
-   - Mensajes de texto SMS
-   - Notificaciones push en aplicaciones móviles
-   - Redes sociales y plataformas digitales
-
-3. Perfilamiento comercial: Autorizo a Wecome a realizar análisis de perfiles y segmentación con base en mi información financiera y de consumo para ofrecer productos que se ajusten a mis necesidades.
-
-4. Vigencia: La presente autorización tendrá vigencia a partir de su aceptación y hasta que el titular manifieste su revocación expresa mediante los canales establecidos por Wecome.
-
-5. Revocación: El titular podrá revocar la presente autorización en cualquier momento contactando a Wecome a través de los canales de atención al cliente establecidos en el Aviso de Privacidad.
-
-6. Derechos ARCO: El titular podrá ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) en los términos establecidos en el Aviso de Privacidad de Wecome.
-
-Al aceptar el presente documento, confirmo que he leído y entendido el alcance de la autorización otorgada.`,
+    title: 'Formato para fines publicitarios y mercadológicos',
+    url: '/documents/advertising.pdf',
+  },
+  {
+    id: 'transparency',
+    title: 'Aviso de transparencia y acceso a la información pública',
+    url: '/documents/transparency.pdf',
   },
   {
     id: 'privacy',
-    title: 'Aviso de privacidad Wecome',
-    description: 'He leído y entiendo el aviso de privacidad de Wecome, incluyendo el tratamiento de mis datos personales.',
-    content: `AVISO DE PRIVACIDAD WECOME
-
-WECOME, S.A. de C.V. (en adelante "Wecome"), con domicilio en la Ciudad de México, es el responsable del tratamiento de sus datos personales.
-
-Datos personales recabados:
-
-1. Datos de identificación: Nombre completo, fecha de nacimiento, nacionalidad, estado civil, CURP, RFC, y firma autógrafa.
-
-2. Datos de contacto: Domicilio, teléfono fijo y móvil, correo electrónico.
-
-3. Datos laborales: Ocupación, puesto, ingresos, antigüedad laboral, nombre y domicilio del empleador.
-
-4. Datos patrimoniales: Cuentas bancarias, historial crediticio, referencias personales y patrimoniales.
-
-5. Datos biométricos: Fotografía, huella dactilar y firma electrónica (únicamente para fines de identificación y seguridad).
-
-Finalidades del tratamiento:
-
-Finalidades primarias:
-- Evaluación de solicitudes de crédito y productos financieros
-- Contratación y administración de productos y servicios
-- Cumplimiento de obligaciones legales y regulatorias
-- Prevención de fraudes y lavado de dinero
-- Atención a clientes y gestión de quejas y aclaraciones
-
-Finalidades secundarias:
-- Prospección comercial y publicidad
-- Análisis de perfiles y segmentación comercial
-- Encuestas de satisfacción y calidad
-
-Transferencia de datos:
-
-Wecome podrá transferir sus datos personales a:
-- Autoridades financieras y regulatorias (CNBV, CONDUSEF, SAT)
-- Burós de crédito y sociedades de información crediticia
-- Proveedores de servicios de verificación de identidad
-- Aseguradoras y afianzadoras
-- Despachos de cobranza externos
-
-Derechos ARCO:
-
-Usted tiene derecho a:
-- Acceso: Conocer qué datos personales tenemos y cómo los utilizamos
-- Rectificación: Solicitar la corrección de sus datos si son inexactos
-- Cancelación: Solicitar la eliminación de sus datos
-- Oposición: Oponerse al tratamiento de sus datos para fines específicos
-
-Para ejercer sus derechos ARCO, puede contactarnos a través de:
-- Correo electrónico: privacidad@wecome.mx
-- Teléfono: 800 999 8080
-- Domicilio: Insurgentes Sur 1234, Col. Del Valle, CDMX
-
-Modificaciones al aviso de privacidad:
-
-Cualquier modificación a este aviso será comunicada a través de nuestros canales oficiales y en nuestro sitio web.
-
-Fecha de última actualización: Enero 2025`,
+    title: 'Aviso de Privacidad Integral',
+    url: '/documents/privacy.pdf',
   },
   {
     id: 'insurance',
-    title: 'Autorización de seguro Wecome',
-    description: 'Autorizo la contratación del seguro asociado al crédito de nómina en los términos establecidos.',
-    content: `AUTORIZACIÓN DE SEGURO WECOME
-
-Por medio del presente, autorizo expresamente a WECOME, S.A. de C.V. (en adelante "Wecome") a contratar el seguro de vida asociado a mi crédito de nómina, en los términos y condiciones que se describen a continuación.
-
-Términos del seguro:
-
-1. Cobertura: Seguro de vida por el monto total del crédito contratado, con cobertura por fallecimiento del titular.
-
-2. Beneficiario: El beneficiario del seguro será Wecome hasta por el monto del saldo insoluto del crédito. El excedente, en su caso, será entregado a los beneficiarios designados por el titular.
-
-3. Prima: El costo del seguro será equivalente al 2% (dos por ciento) del monto total del crédito, mismo que será financiado dentro del plan de pagos del crédito.
-
-4. Vigencia: La cobertura del seguro iniciará a partir de la fecha de disposición del crédito y permanecerá vigente hasta la liquidación total del mismo.
-
-5. Cobertura por incapacidad: El seguro también cubre incapacidad total y permanente del titular, liberando el saldo insoluto del crédito.
-
-6. Exclusiones: Quedan excluidos de la cobertura los siniestros derivados de:
-   - Enfermedades preexistentes no declaradas
-   - Actividades de alto riesgo no informadas
-   - Suicidio durante el primer año de vigencia
-   - Muerte por intoxicación alcohólica o consumo de sustancias ilícitas
-
-7. Aseguradora: La póliza será emitida por una aseguradora autorizada por la Comisión Nacional de Seguros y Fianzas, la cual será notificada al titular al momento de la contratación.
-
-8. Cancelación: El titular podrá cancelar el seguro en cualquier momento mediante solicitud expresa, sin que ello afecte las condiciones del crédito.
-
-Al aceptar el presente documento, confirmo que he leído y entendido los términos y condiciones del seguro asociado a mi crédito de nómina.`,
+    title: 'Autorización para contratación de seguro',
+    url: '/documents/insurance.pdf',
   },
   {
-    id: 'creditHistory',
-    title: 'Autorización de historial crediticio',
-    description: 'Autorizo a Wecome a consultar y analizar mi historial crediticio en burós de crédito.',
-    content: `AUTORIZACIÓN DE CONSULTA DE HISTORIAL CREDITICIO
-
-Por medio del presente, otorgo mi consentimiento expreso e informado a WECOME, S.A. de C.V. (en adelante "Wecome") para llevar a cabo la consulta de mi historial crediticio ante las Sociedades de Información Crediticia (Burós de Crédito) que correspondan.
-
-Objeto de la autorización:
-
-1. Consulta inicial: Autorizo a Wecome a consultar mi historial crediticio con la finalidad de evaluar mi solicitud de crédito y determinar mi capacidad de pago, así como para la integración de mi expediente crediticio.
-
-2. Consultas periódicas: Autorizo a Wecome a realizar consultas periódicas a mi historial crediticio durante la vigencia de cualquier relación contractual, con la finalidad de dar seguimiento a mi comportamiento crediticio y evaluar posibles modificaciones, renovaciones o ampliaciones de línea de crédito.
-
-3. Reporte de información: Autorizo a Wecome a reportar a las Sociedades de Información Crediticia mi comportamiento de pago, incluyendo el cumplimiento puntual o morosidad en mis obligaciones crediticias.
-
-4. Sociedades de Información Crediticia: Las consultas podrán realizarse ante:
-   - Círculo de Crédito, S.A. de C.V.
-   - Buró de Crédito, S.A. de C.V.
-   - Cualquier otra Sociedad de Información Crediticia autorizada por la Secretaría de Hacienda y Crédito Público
-
-5. Finalidades: La información obtenida será utilizada exclusivamente para:
-   - Evaluación y autorización de créditos
-   - Administración y seguimiento de cartera
-   - Prevención de fraudes
-   - Cumplimiento de disposiciones regulatorias aplicables
-
-6. Reconocimiento: Declaro conocer que, en caso de resultar negativo mi historial crediticio, Wecome podrá determinar no otorgar el crédito solicitado o modificar las condiciones del mismo.
-
-7. Derechos: Reconozco mi derecho a solicitar a Wecome el nombre de la Sociedad de Información Crediticia ante la cual se realizó la consulta, así como a obtener de dicha sociedad mi Reporte de Crédito Especial.
-
-Al aceptar el presente documento, confirmo que he leído y entendido el alcance de la autorización otorgada para la consulta de mi historial crediticio.`,
+    id: 'terms',
+    title: 'Términos y Condiciones',
+    url: '/documents/terms.pdf',
   },
 ]
 
@@ -174,9 +43,10 @@ export default function TermsAcceptance() {
 
   const [accepted, setAccepted] = useState<Record<string, boolean>>({
     advertising: false,
+    transparency: false,
     privacy: false,
     insurance: false,
-    creditHistory: false,
+    terms: false,
   })
   const [modalDoc, setModalDoc] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -200,7 +70,7 @@ export default function TermsAcceptance() {
   }
 
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
     try {
       setError('')
 
@@ -238,9 +108,13 @@ export default function TermsAcceptance() {
                 key={doc.id}
                 type="button"
                 onClick={() => setModalDoc(doc.id)}
-                className="w-full rounded-xl border border-border p-4 flex items-start gap-3 text-left transition hover:bg-secondary/50 active:scale-[0.99]"
+                className="w-full rounded-xl border border-border p-4 flex items-center gap-3 text-left transition hover:bg-secondary/50 active:scale-[0.99]"
               >
-                <div className="relative mt-0.5 shrink-0">
+                <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <span className="flex-1 text-sm font-semibold text-foreground">{doc.title}</span>
+                <div className="relative shrink-0">
                   <div
                     className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition ${checked ? 'border-transparent bg-brand-accent' : 'border-border'}`}
                   >
@@ -248,10 +122,6 @@ export default function TermsAcceptance() {
                       <Check className="stroke-white w-4 h-4" />
                     )}
                   </div>
-                </div>
-                <div className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-foreground">{doc.title}</span>
-                  <span className="text-xs text-muted-foreground leading-relaxed">{doc.description}</span>
                 </div>
               </button>
             )
@@ -278,9 +148,9 @@ export default function TermsAcceptance() {
       {/* Document modal */}
       {activeDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-3xl bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-              <h2 className="text-lg font-bold text-foreground">{activeDoc.title}</h2>
+              <h2 className="text-lg font-bold text-foreground truncate">{activeDoc.title}</h2>
               <button
                 type="button"
                 onClick={() => setModalDoc(null)}
@@ -292,24 +162,26 @@ export default function TermsAcceptance() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-sans">
-                {activeDoc.content}
-              </pre>
+            <div className="flex-1 overflow-auto px-6 py-5">
+              <iframe
+                src={activeDoc.url}
+                className="w-full h-[calc(90vh-12rem)] rounded-lg border border-border"
+                title={activeDoc.title}
+              />
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-border shrink-0 flex flex-col gap-3">
-              <ButtonCard
-                onClick={handleAcceptInModal}
-              >
-                Aceptar y cerrar
-              </ButtonCard>
+            <div className="px-6 py-4 border-t border-border shrink-0 flex flex-row gap-3">
               <ButtonCard
                 variant="secondary"
                 onClick={() => setModalDoc(null)}
               >
                 Cancelar
+              </ButtonCard>
+              <ButtonCard
+                onClick={handleAcceptInModal}
+              >
+                Aceptar y cerrar
               </ButtonCard>
             </div>
           </div>

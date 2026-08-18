@@ -7,7 +7,6 @@ import { ButtonCard } from '@/components/common/ButtonCard'
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Search, Check } from '@/lib/icons'
-import { updateActiveRequestData } from '@/services/client-requests'
 import { updateClientData } from '@/services/client-data'
 import { InfoNote } from '../common/InfoNote'
 
@@ -17,15 +16,13 @@ export default function CreditAuthorization() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
     setIsSubmitting(true)
     setError('')
     try {
       await updateClientData({ pii: { paso_actual: nextStep } })
-      await updateActiveRequestData({
-        autorizacion_de_consulta_de_historial_crediticio: accepted,
-      })
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
@@ -78,11 +75,13 @@ export default function CreditAuthorization() {
         </ul>
       </div>
 
+      {/*
       <InfoNote
         text="Esta consulta quedará registrada en tu historial crediticio. Si realizas
           solicitudes de crédito en múltiples instituciones en un periodo corto,
           esto puede afectar tu calificación crediticia."
       />
+      */}
 
       <div className="flex items-start gap-3">
         <button
@@ -117,7 +116,7 @@ export default function CreditAuthorization() {
         <ButtonCard
           variant="secondary"
           disabled={isSubmitting}
-          onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_RESULT)}
+          onClick={() => router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)}
         >
           Regresar
         </ButtonCard>
