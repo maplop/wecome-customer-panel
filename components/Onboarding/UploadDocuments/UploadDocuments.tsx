@@ -11,9 +11,11 @@ import { Check } from '@/lib/icons'
 import DocumentUploadField from './DocumentUploadField'
 import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
-import { verifyIneWithJumio } from '@/services/onboarding/jumio'
 import { useClientDataStore } from '@/stores/client-data-store'
 import { toast } from '@/hooks/use-toast'
+import { useJumioVerification } from "@dynamicore/jumio-sdk/react";
+import { getAccessToken } from '@/lib/auth-session'
+import { apiClient } from '@/sdk/dynamicore/frontend'
 
 interface DocumentType {
   id: string
@@ -245,6 +247,8 @@ export default function UploadDocuments() {
   const [submitProgress, setSubmitProgress] = useState(0)
   const [submitError, setSubmitError] = useState('')
   const [hydratedFromPii, setHydratedFromPii] = useState(false)
+  // Guardamos el File original para enviarlo a Jumio tal como indica la doc (File/Blob), evitando fetch de URL S3 privada (403)
+  const [jumioFiles, setJumioFiles] = useState<Record<string, File>>({})
 
   const currentTabDocs = DOCUMENT_TYPES.filter((d) => d.tab === activeTab)
   const tab1Docs = DOCUMENT_TYPES.filter((d) => d.tab === 1)
@@ -252,6 +256,24 @@ export default function UploadDocuments() {
   const tab1Complete = tab1Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const tab2Complete = tab2Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const allRequiredUploaded = tab1Complete && tab2Complete
+
+  const { verify } = useJumioVerification({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://front.dynamicore.io",
+    context: process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT,
+    authToken: () => getAccessToken() ?? "",
+    authTokenPrefix: "",
+    axiosInstance: apiClient as unknown as import("axios").AxiosInstance,
+    s3Signer: async (path, expires) => {
+      const signed = await getSignedUrl(path, expires ?? 300)
+      if (typeof signed === 'string') return signed
+      if (signed && typeof signed === 'object' && 'url' in signed) return String((signed as { url: string }).url)
+      return path
+    },
+    onStatusError: (err) => {
+      console.error("Error en validación en segundo plano:", err);
+    },
+  });
+
 
   useEffect(() => {
     if (hydratedFromPii) return
@@ -368,6 +390,8 @@ export default function UploadDocuments() {
       ]
 
       setDocuments((d) => ({ ...d, [docId]: { name: file.name, preview, value } }))
+      // Mantener File vivo para verify() como en la doc: frontImage: File, no URL S3
+      setJumioFiles((prev) => ({ ...prev, [docId]: file }))
       setErrors((e) => ({ ...e, [docId]: '' }))
     } catch {
       setErrors((e) => ({ ...e, [docId]: 'No se pudo cargar el documento. Intenta nuevamente.' }))
@@ -390,6 +414,11 @@ export default function UploadDocuments() {
         setJumioFailures((prev) => ({ ...prev, [docId]: false }))
       }
       setDocuments(nextDocuments)
+      setJumioFiles((prev) => {
+        const next = { ...prev }
+        delete next[docId]
+        return next
+      })
       setRemovingDocumentId(docId)
 
       try {
@@ -446,10 +475,17 @@ export default function UploadDocuments() {
         return
       }
 
-      const jumioResult = await verifyIneWithJumio({
+      // Uso correcto según doc: pasar File/Blob/DataURL. La URL S3 cruda es privada y da 403 si se hace fetch sin firmar.
+      // Prioridad: 1) File en memoria 2) preview data:URL 3) fallback con URL firmada vía s3Signer del hook
+      const frontFile = jumioFiles[INE_FRONT_DOC_ID]
+      const backFile = jumioFiles[INE_BACK_DOC_ID]
+      const frontPreviewIsDataUrl = Boolean(ineFrontDoc?.preview?.startsWith('data:'))
+      const backPreviewIsDataUrl = Boolean(ineBackDoc?.preview?.startsWith('data:'))
+
+      const jumioResult = await verify({
         clientId: jumioClientId,
-        frontImage: String(ineFrontDoc?.value?.[0]?.url || ''),
-        backImage: String(ineBackDoc?.value?.[0]?.url || ''),
+        frontImage: (frontFile ?? (frontPreviewIsDataUrl ? ineFrontDoc?.preview : String(ineFrontDoc?.value?.[0]?.url || ''))) as File | string,
+        backImage: (backFile ?? (backPreviewIsDataUrl ? ineBackDoc?.preview : String(ineBackDoc?.value?.[0]?.url || ''))) as File | string,
         awaitFinalStatus: false,
         onStatusResolved: (result) => {
           if (result.valid) {
