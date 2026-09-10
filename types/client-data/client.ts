@@ -47,7 +47,9 @@ export interface ClientPiiType {
   cargo_en_empresa: string;
   fuente_del_score: string;
   nivel_de_estudio: string;
+  regimen_conyugal: string;
   tipo_de_garantia: string;
+  datos_de_contacto: string;
   autorizacion_sic_2: string;
   recibo_de_nomina_1: string;
   recibo_de_nomina_2: string;
@@ -58,6 +60,7 @@ export interface ClientPiiType {
   empresa_donde_trabaja: string;
   aguinaldo_proporcional: string;
   tipo_de_identificacion: string;
+  vigencia_preautorizacion: string;
   antiguedad_empresa_anios: string;
   comprobante_de_domicilio: string;
   numero_de_identificacion: string;
@@ -72,6 +75,7 @@ export interface ClientPiiType {
   numero_de_consultas_al_buro: string;
   autorizacion_de_seguro_wecom: string;
   nivel_de_endeudamiento_previo: string;
+  domicilio_fiscal_y_particular: string;
   reporte_de_credito_consolidado: string;
   score_crediticio_en_originacion: string;
   antiguedad_laboral___empresarial: string;

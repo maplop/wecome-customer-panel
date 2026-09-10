@@ -85,46 +85,29 @@ export default function CreateAccount() {
           motherlastname: data?.apellido_materno,
           email: data?.email,
           curp: data?.curp,
-          rfc: data?.RFC,
-          birthdate: data?.fecha_de_nacimiento?.split('T')[0],
+          rfc: undefined,
+          birthdate: data?.fecha_nacimiento,
           fullname: `${data?.nombre} ${data?.segundo_nombre} ${data?.apellido_paterno} ${data?.apellido_materno}`.trim(),
-          age: data?.edad != null ? String(data.edad) : undefined,
+          age: data?.edad,
           nationality: data?.pais,
           empresa_donde_trabaja: data?.empresa,
-          sueldo_bruto:
-            data?.salario_bruto_mensual != null
-              ? String(data.salario_bruto_mensual)
-              : undefined,
-          salario:
-            data?.salario_bruto_mensual != null
-              ? String(data.salario_bruto_mensual)
-              : undefined,
-          antiguedad_laboral___empresarial: data?.anhos_activamente_trabajando
-            ? `${data.anhos_activamente_trabajando} años`
+          sueldo_bruto: data?.salario_bruto_mensual,
+          salario: data?.salario_bruto_mensual,
+          antiguedad_laboral___empresarial: data?.anos_activamente_trabajando
+            ? `${data.anos_activamente_trabajando} ${data.anos_activamente_trabajando === '1' ? 'año' : 'años'}`
             : '',
-          anios_trabajados:
-            data?.anhos_activamente_trabajando != null
-              ? String(data.anhos_activamente_trabajando)
-              : undefined,
-          antiguedad_empresa_anios:
-            data?.antiguedad_en_anhos_empresa_actual != null
-              ? String(data.antiguedad_en_anhos_empresa_actual)
-              : undefined,
-          vacaciones_pendientes_dias:
-            data?.vacaciones_pendientes != null
-              ? String(data.vacaciones_pendientes)
-              : undefined,
-          aguinaldo_proporcional:
-            data?.aguinaldo_proporcional != null
-              ? String(data.aguinaldo_proporcional)
-              : undefined,
+          anios_trabajados: data?.anos_activamente_trabajando,
+          antiguedad_empresa_anios: data?.antiguedad_en_la_empresa_actual,
+          vacaciones_pendientes_dias: data?.vacaciones_pendientes,
+          aguinaldo_proporcional: data?.aguinaldo_proporcional,
           historial_crediticio: data?.historial_crediticio,
           paso_actual: nextStep,
           city: data?.ciudad,
           state: data?.estado,
-          street: data?.calle,
-          num_ext: data?.numero_exterior,
+          street: data?.ciudad,
+          num_ext: data?.num_exterior,
           zipcode: data?.codigo_postal,
+          estatus: data?.estatus,
         },
       })
 

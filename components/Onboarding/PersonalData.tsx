@@ -94,12 +94,20 @@ export default function PersonalData() {
       <div className="rounded-2xl border border-border bg-secondary/30 p-5 flex flex-col gap-1">
         <DataRow label="Nombre completo" value={nombreCompleto} />
         <DataRow label="CURP" value={clientData.curp} />
-        <DataRow label="RFC" value={clientData.rfc} />
+        {/*<DataRow label="RFC" value={clientData.rfc} />*/}
         <DataRow label="Fecha de nacimiento" value={formatDateLongEs(clientData.birthdate)} />
         <DataRow label="Edad" value={clientData.age ? `${clientData.age} años` : '-'} />
         <DataRow label="Correo electrónico" value={clientData.email} />
         <DataRow label="Nacionalidad" value={clientData.nationality} />
         <DataRow label="Empresa" value={clientData.empresa_donde_trabaja} />
+        <DataRow
+          label="Antigüedad en la empresa"
+          value={
+            clientData.antiguedad_empresa_anios
+              ? `${clientData.antiguedad_empresa_anios} ${Number(clientData.antiguedad_empresa_anios) === 1 ? 'año' : 'años'}`
+              : '-'
+          }
+        />
         <DataRow label="Salario bruto mensual" value={`${formatMoney(Number(clientData.sueldo_bruto))} MXN`} />
       </div>
 
