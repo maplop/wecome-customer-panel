@@ -257,9 +257,6 @@ export default function UploadDocuments() {
   const tab2Complete = tab2Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const allRequiredUploaded = tab1Complete && tab2Complete
 
-  // `clientId` global del hook: se resuelve del store y queda como default.
-  // Si al montar aún no hay cliente, pasa `undefined` y el `clientId` por
-  // llamada en `verify()` (que tiene prioridad) lo cubre.
   const jumioClientId = useMemo(() => {
     const record = (client ?? {}) as Record<string, unknown>
     const entities = (record.entities ?? {}) as Record<string, unknown>
@@ -268,8 +265,6 @@ export default function UploadDocuments() {
     )
   }, [client])
 
-  // Hook único: `clientId` global + override por llamada en `verify()`.
-  // Ver README SDK "clientId: global o por llamada".
   const { verify } = useJumioVerification({
     clientId: jumioClientId || undefined,
     context: process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT,
