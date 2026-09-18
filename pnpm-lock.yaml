@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@dynamicore/jumio-sdk':
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
+        specifier: ^1.0.3
+        version: 1.0.3(react@19.2.4)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.71.1(react@19.2.4))
@@ -209,8 +209,8 @@ packages:
   '@date-fns/tz@1.4.1':
     resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
 
-  '@dynamicore/jumio-sdk@1.0.0':
-    resolution: {integrity: sha512-Bu4AHjoyKBvNgOV1iDkF8aOajseSmL9xON1f4zPwSTv0j0/l2Pw6FqZgGYsfVRniGqV0CdBxcAuxP9ozqDo4SQ==}
+  '@dynamicore/jumio-sdk@1.0.3':
+    resolution: {integrity: sha512-4hbJQkx4ZfA4Z8iB9ty00MOXFWHeburJPWhVL1GigY2j8ns1w6zRi/p0PPVPxbz2RcZbkQ5NlyOSQcCt6JVikg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=18.0.0'
@@ -1924,7 +1924,7 @@ snapshots:
 
   '@date-fns/tz@1.4.1': {}
 
-  '@dynamicore/jumio-sdk@1.0.0(react@19.2.4)':
+  '@dynamicore/jumio-sdk@1.0.3(react@19.2.4)':
     dependencies:
       axios: 1.16.1
     optionalDependencies:

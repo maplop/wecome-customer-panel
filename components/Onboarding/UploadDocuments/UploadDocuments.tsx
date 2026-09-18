@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
@@ -257,11 +257,23 @@ export default function UploadDocuments() {
   const tab2Complete = tab2Docs.filter((d) => d.required).every((d) => !!documents[d.id])
   const allRequiredUploaded = tab1Complete && tab2Complete
 
+  // `clientId` global del hook: se resuelve del store y queda como default.
+  // Si al montar aún no hay cliente, pasa `undefined` y el `clientId` por
+  // llamada en `verify()` (que tiene prioridad) lo cubre.
+  const jumioClientId = useMemo(() => {
+    const record = (client ?? {}) as Record<string, unknown>
+    const entities = (record.entities ?? {}) as Record<string, unknown>
+    return String(
+      entities.peopleId ?? record.id ?? record.external_id ?? '',
+    )
+  }, [client])
+
+  // Hook único: `clientId` global + override por llamada en `verify()`.
+  // Ver README SDK "clientId: global o por llamada".
   const { verify } = useJumioVerification({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || "https://front.dynamicore.io",
+    clientId: jumioClientId || undefined,
     context: process.env.NEXT_PUBLIC_DYNAMICORE_MORAL_CONTEXT,
     authToken: () => getAccessToken() ?? "",
-    authTokenPrefix: "",
     axiosInstance: apiClient as unknown as import("axios").AxiosInstance,
     s3Signer: async (path, expires) => {
       const signed = await getSignedUrl(path, expires ?? 300)

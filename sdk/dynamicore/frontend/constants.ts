@@ -57,4 +57,5 @@ export const SERVICES = {
   USERS_WEBCLIENTS: API_ENDPOINTS.AUTH.REGISTER,
 
   WECOME_SCORE: "/marketplace/apps/wecome/score",
+  RCC_FICO_SCORE: "/marketplace/apps/cc/rccficoscore/map",
 };

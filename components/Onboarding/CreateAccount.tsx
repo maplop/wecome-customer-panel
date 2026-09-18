@@ -12,6 +12,8 @@ import { TogglePasswordVisibility } from '@/components/common/TogglePasswordVisi
 import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useClientProfileStore } from '@/stores/client-profile-store'
+import { useClientDataStore } from '@/stores'
+import { resolveHistorialCrediticio } from '@/services/onboarding/rcc-fico-score'
 import { evaluatePasswordStrength } from '@/utils/password-strength'
 
 interface FormState {
@@ -77,6 +79,15 @@ export default function CreateAccount() {
         username: form.email,
       })
 
+      // El profile (whitelist) puede venir sin historial_crediticio. En ese
+      // caso lo consultamos vía RCC FICO Score antes de enviar el pii, para
+      // no persistir un null que luego rompe el score.
+      const clientId = useClientDataStore.getState().client?.id
+      const historial_crediticio = await resolveHistorialCrediticio(
+        data?.historial_crediticio,
+        clientId,
+      )
+
       await updateClientData({
         pii: {
           name: data?.nombre,
@@ -100,7 +111,7 @@ export default function CreateAccount() {
           antiguedad_empresa_anios: data?.antiguedad_en_la_empresa_actual,
           vacaciones_pendientes_dias: data?.vacaciones_pendientes,
           aguinaldo_proporcional: data?.aguinaldo_proporcional,
-          historial_crediticio: data?.historial_crediticio,
+          historial_crediticio,
           paso_actual: nextStep,
           city: data?.ciudad,
           state: data?.estado,
