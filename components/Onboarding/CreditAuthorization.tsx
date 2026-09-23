@@ -13,6 +13,7 @@ import {
   useJumioVerificationStore,
 } from '@/stores/jumio-verification-store'
 import { useClientDataStore } from '@/stores/client-data-store'
+import { useCreditHistoryQueryStore } from '@/stores/credit-history-query-store'
 import {
   fetchRccFicoScore,
   LOWEST_CREDIT_HISTORY_CATEGORY,
@@ -27,6 +28,7 @@ export default function CreditAuthorization() {
   const [showScoreErrorModal, setShowScoreErrorModal] = useState(false)
   const [showDefaultScoreAlert, setShowDefaultScoreAlert] = useState(false)
   const clientId = useClientDataStore((state) => state.client?.id)
+  const setCreditHistoryQuery = useCreditHistoryQueryStore((state) => state.setResult)
   const jumioStatus = useJumioVerificationStore((state) => state.status)
   const jumioResult = useJumioVerificationStore((state) => state.result)
   const jumioModalTitle = jumioStatus === 'failed'
@@ -67,13 +69,14 @@ export default function CreditAuthorization() {
         return
       }
 
-      const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+      const nextStep = ROUTES.ONBOARDING.CREDIT_HISTORY_RESULT
       await updateClientData({
         pii: {
           historial_crediticio: historialCrediticio,
           paso_actual: nextStep,
         },
       })
+      setCreditHistoryQuery(historialCrediticio, 'rcc')
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
@@ -83,7 +86,7 @@ export default function CreditAuthorization() {
   }
 
   const handleContinueWithoutHistory = async () => {
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const nextStep = ROUTES.ONBOARDING.CREDIT_HISTORY_RESULT
 
     try {
       setIsSubmitting(true)
@@ -94,6 +97,7 @@ export default function CreditAuthorization() {
           paso_actual: nextStep,
         },
       })
+      setCreditHistoryQuery(LOWEST_CREDIT_HISTORY_CATEGORY, 'fallback')
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')

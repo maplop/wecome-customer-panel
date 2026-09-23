@@ -51,7 +51,7 @@ export default function CreditDashboard() {
         <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between md:gap-15">
           <div className="min-w-0 flex-1">
             <TitleCard>
-              ¡Bienvenido {user.name}!
+              ¡Bienvenid@ {user.name}!
             </TitleCard>
 
             <SubtitleCard>

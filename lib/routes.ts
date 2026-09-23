@@ -16,6 +16,7 @@ export const ROUTES = {
     CREATE_ACCOUNT: "/onboarding/create-account",
     CREDIT_RESULT: "/onboarding/credit-result",
     CREDIT_AUTHORIZATION: "/onboarding/credit-authorization",
+    CREDIT_HISTORY_RESULT: "/onboarding/credit-history-result",
     CREDIT_SELECTION: "/onboarding/credit-selection",
     CREDIT_SUCCESS: "/onboarding/credit-success",
     CURP_VERIFICATION: "/onboarding/curp-verification",
@@ -74,19 +75,24 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
   },
   {
-    title: "Selección de crédito",
+    title: "Resultado de consulta",
     step: 9,
+    route: ROUTES.ONBOARDING.CREDIT_HISTORY_RESULT,
+  },
+  {
+    title: "Selección de crédito",
+    step: 10,
     route: ROUTES.ONBOARDING.CREDIT_SELECTION,
   },
   {
     title: "Resultado de crédito",
-    step: 10,
+    step: 11,
     route: ROUTES.ONBOARDING.CREDIT_RESULT,
   },
 
   {
     title: "Crédito exitoso",
-    step: 11,
+    step: 12,
     route: ROUTES.ONBOARDING.CREDIT_SUCCESS,
   },
 ] as const;
@@ -97,6 +103,7 @@ export const PROTECTED_ONBOARDING_ROUTES = new Set<string>([
   ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
   ROUTES.ONBOARDING.FINANCIAL_DATA,
   ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
+  ROUTES.ONBOARDING.CREDIT_HISTORY_RESULT,
   ROUTES.ONBOARDING.CREDIT_RESULT,
   ROUTES.ONBOARDING.CREDIT_SELECTION,
   ROUTES.ONBOARDING.FINAL_CONFIRM,
