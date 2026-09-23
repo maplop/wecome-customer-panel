@@ -2,6 +2,18 @@ import { apiClient, SERVICES } from "@/sdk/dynamicore/frontend";
 import { ApiResponse } from "@/types/api-response";
 
 export const RCC_FICO_SCORE_TYPE = "rccficoscore" as const;
+export const LOWEST_CREDIT_HISTORY_CATEGORY = "Malo";
+
+export function getCreditHistoryCategory(
+  score: string | number,
+): string | null {
+  const numericScore = Number(score);
+  if (!Number.isFinite(numericScore)) return null;
+  if (numericScore <= 449) return LOWEST_CREDIT_HISTORY_CATEGORY;
+  if (numericScore <= 550) return "Débil";
+  if (numericScore <= 650) return "Regular";
+  return "Bueno";
+}
 
 export interface RccFicoScorePayload {
   client_id: number;
@@ -57,6 +69,19 @@ export function extractHistorialCrediticio(
 
   const record = input as Record<string, unknown>;
 
+  // La respuesta de RCC devuelve el FICO en `scores[].valor`. Convertimos
+  // ese número a la categoría que consume el PII.
+  if (Array.isArray(record.scores)) {
+    for (const score of record.scores) {
+      if (score && typeof score === "object") {
+        const category = getCreditHistoryCategory(
+          (score as Record<string, unknown>).valor as string | number,
+        );
+        if (category) return category;
+      }
+    }
+  }
+
   const priorityKeys = [
     "historial_crediticio",
     "historial",
@@ -67,7 +92,13 @@ export function extractHistorialCrediticio(
   ];
   for (const key of priorityKeys) {
     const direct = normalizeScoreValue(record[key]);
-    if (direct) return direct;
+    if (!direct) continue;
+
+    if (["fico_score", "score", "valor", "value"].includes(key)) {
+      return getCreditHistoryCategory(direct) ?? direct;
+    }
+
+    return direct;
   }
 
   // Algunas respuestas anidan el resultado en `data` o `result`.

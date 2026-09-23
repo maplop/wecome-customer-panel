@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { WrapperCard } from '@/components/common/WrapperCard'
 import { TitleCard } from '@/components/common/TitleCard'
 import { SubtitleCard } from '@/components/common/SubtitleCard'
@@ -8,25 +8,15 @@ import { ROUTES } from '@/lib/routes'
 import { useRouter } from 'next/navigation'
 import { Search, Check } from '@/lib/icons'
 import { updateClientData } from '@/services/client-data'
-import { InfoNote } from '../common/InfoNote'
-import { useJumioVerificationStore } from '@/stores/jumio-verification-store'
-
-function getJumioPiiData(result: ReturnType<typeof useJumioVerificationStore.getState>['result']) {
-  const extractedData = result?.data?.details?.extractedData
-  const identity = extractedData?.[0]
-
-  if (!identity) return null
-
-  return {
-    city: identity.address?.city,
-    colony: identity.address?.line2,
-    estado: identity.address?.subdivision,
-    street: identity.address?.line1,
-    country: identity.address?.country,
-    zipcode: identity.address?.postalCode,
-    nationality: identity.nationality,
-  }
-}
+import {
+  getJumioPiiData,
+  useJumioVerificationStore,
+} from '@/stores/jumio-verification-store'
+import { useClientDataStore } from '@/stores/client-data-store'
+import {
+  fetchRccFicoScore,
+  LOWEST_CREDIT_HISTORY_CATEGORY,
+} from '@/services/onboarding/rcc-fico-score'
 
 export default function CreditAuthorization() {
   const router = useRouter()
@@ -34,6 +24,9 @@ export default function CreditAuthorization() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showJumioPendingModal, setShowJumioPendingModal] = useState(false)
+  const [showScoreErrorModal, setShowScoreErrorModal] = useState(false)
+  const [showDefaultScoreAlert, setShowDefaultScoreAlert] = useState(false)
+  const clientId = useClientDataStore((state) => state.client?.id)
   const jumioStatus = useJumioVerificationStore((state) => state.status)
   const jumioResult = useJumioVerificationStore((state) => state.result)
   const jumioModalTitle = jumioStatus === 'failed'
@@ -42,7 +35,15 @@ export default function CreditAuthorization() {
   const jumioModalMessage = jumioStatus === 'failed'
     ? 'No fue posible validar tu INE. Regresa a la carga de documentos e intenta nuevamente con fotos legibles.'
     : 'Aún estamos validando tu INE. Necesitamos confirmar los datos de tu identificación antes de consultar tu historial crediticio. Te avisaremos cuando puedas continuar.'
+  const hasOpenModal = showJumioPendingModal || showScoreErrorModal || showDefaultScoreAlert
 
+  useEffect(() => {
+    document.body.style.overflow = hasOpenModal ? 'hidden' : ''
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [hasOpenModal])
 
   const handleContinue = async () => {
     if (jumioStatus !== 'completed' || !jumioResult?.valid) {
@@ -50,7 +51,6 @@ export default function CreditAuthorization() {
       return
     }
 
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
     const jumioPiiData = getJumioPiiData(jumioResult)
 
     if (!jumioPiiData) {
@@ -61,9 +61,16 @@ export default function CreditAuthorization() {
     setIsSubmitting(true)
     setError('')
     try {
+      const historialCrediticio = await fetchRccFicoScore(clientId ?? '')
+      if (!historialCrediticio) {
+        setShowScoreErrorModal(true)
+        return
+      }
+
+      const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
       await updateClientData({
         pii: {
-          ...jumioPiiData,
+          historial_crediticio: historialCrediticio,
           paso_actual: nextStep,
         },
       })
@@ -72,6 +79,27 @@ export default function CreditAuthorization() {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleContinueWithoutHistory = async () => {
+    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+
+    try {
+      setIsSubmitting(true)
+      setError('')
+      await updateClientData({
+        pii: {
+          historial_crediticio: LOWEST_CREDIT_HISTORY_CATEGORY,
+          paso_actual: nextStep,
+        },
+      })
+      router.push(nextStep)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
+    } finally {
+      setIsSubmitting(false)
+      setShowDefaultScoreAlert(false)
     }
   }
 
@@ -118,15 +146,6 @@ export default function CreditAuthorization() {
           ))}
         </ul>
       </div>
-
-      {/*
-      <InfoNote
-        text="Esta consulta quedará registrada en tu historial crediticio. Si realizas
-          solicitudes de crédito en múltiples instituciones en un periodo corto,
-          esto puede afectar tu calificación crediticia."
-      />
-      */}
-
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -141,11 +160,11 @@ export default function CreditAuthorization() {
         </button>
         <label
           onClick={() => setAccepted(!accepted)}
-          className="text-xs text-muted-foreground leading-relaxed cursor-pointer select-none"
+          className="flex flex-col gap-1 text-xs text-muted-foreground leading-relaxed cursor-pointer select-none"
         >
-          Autorizo a Wecome a consultar mi historial crediticio ante las Sociedades
-          de Información Crediticia para los fines de evaluación de mi solicitud de
-          crédito.
+          <span>
+            Autorizo la consulta de mi historial crediticio.
+          </span>
         </label>
       </div>
 
@@ -154,8 +173,9 @@ export default function CreditAuthorization() {
           onClick={handleContinue}
           disabled={!accepted || isSubmitting}
           loading={isSubmitting}
+          loadingText="Consultando historial crediticio..."
         >
-          Continuar
+          Autorizar y consultar historial
         </ButtonCard>
         <ButtonCard
           variant="secondary"
@@ -187,6 +207,73 @@ export default function CreditAuthorization() {
             >
               Entendido
             </ButtonCard>
+          </div>
+        </div>
+      ) : null}
+
+      {showScoreErrorModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="score-error-title"
+            className="w-full max-w-md rounded-2xl bg-background p-6 shadow-2xl"
+          >
+            <h2 id="score-error-title" className="text-lg font-bold text-foreground">
+              No pudimos consultar tu historial crediticio
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              No fue posible obtener tu score crediticio en este momento. Puedes intentarlo nuevamente o continuar sin historial crediticio.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <ButtonCard
+                onClick={() => {
+                  setShowScoreErrorModal(false)
+                  void handleContinue()
+                }}
+              >
+                Intentar nuevamente
+              </ButtonCard>
+              <ButtonCard
+                variant="secondary"
+                onClick={() => {
+                  setShowScoreErrorModal(false)
+                  setShowDefaultScoreAlert(true)
+                }}
+              >
+                Continuar con categoría Malo
+              </ButtonCard>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showDefaultScoreAlert ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="default-score-title"
+            className="w-full max-w-md rounded-2xl bg-background p-6 shadow-2xl"
+          >
+            <h2 id="default-score-title" className="text-lg font-bold text-foreground">
+              Continuar con la categoría más baja
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Al continuar sin historial crediticio, valoraremos tu solicitud con la categoría de menor rango: {LOWEST_CREDIT_HISTORY_CATEGORY}.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <ButtonCard onClick={() => void handleContinueWithoutHistory()} loading={isSubmitting}>
+                Continuar
+              </ButtonCard>
+              <ButtonCard
+                variant="secondary"
+                disabled={isSubmitting}
+                onClick={() => setShowDefaultScoreAlert(false)}
+              >
+                Cancelar
+              </ButtonCard>
+            </div>
           </div>
         </div>
       ) : null}

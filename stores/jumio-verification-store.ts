@@ -44,7 +44,9 @@ function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-function normalizeResult(value: unknown): JumioVerificationResult {
+export function normalizeJumioVerificationResult(
+  value: unknown,
+): JumioVerificationResult {
   const source = isRecord(value) ? value : {}
   const data = isRecord(source.data) ? source.data : {}
   const details = isRecord(data.details) ? data.details : {}
@@ -77,6 +79,21 @@ function normalizeResult(value: unknown): JumioVerificationResult {
   }
 }
 
+export function getJumioPiiData(result: JumioVerificationResult | null) {
+  const identity = result?.data?.details?.extractedData?.[0]
+  if (!identity) return null
+
+  return {
+    city: identity.address?.city,
+    colony: identity.address?.line2,
+    estado: identity.address?.subdivision,
+    street: identity.address?.line1,
+    country: identity.address?.country,
+    zipcode: identity.address?.postalCode,
+    nationality: identity.nationality,
+  }
+}
+
 export const useJumioVerificationStore = create<JumioVerificationStore>()(
   persist(
     (set) => ({
@@ -84,7 +101,7 @@ export const useJumioVerificationStore = create<JumioVerificationStore>()(
       status: 'idle',
       setPending: () => set({ result: null, status: 'pending' }),
       setResult: (result) => {
-        const normalizedResult = normalizeResult(result)
+        const normalizedResult = normalizeJumioVerificationResult(result)
         set({
           result: normalizedResult,
           status: normalizedResult.valid ? 'completed' : 'failed',

@@ -12,7 +12,11 @@ import DocumentUploadField from './DocumentUploadField'
 import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { useClientDataStore } from '@/stores/client-data-store'
-import { useJumioVerificationStore } from '@/stores/jumio-verification-store'
+import {
+  getJumioPiiData,
+  normalizeJumioVerificationResult,
+  useJumioVerificationStore,
+} from '@/stores/jumio-verification-store'
 import { toast } from '@/hooks/use-toast'
 import { useJumioVerification } from "@dynamicore/jumio-sdk/react";
 import { getAccessToken } from '@/lib/auth-session'
@@ -500,10 +504,36 @@ export default function UploadDocuments() {
         frontImage: (frontFile ?? (frontPreviewIsDataUrl ? ineFrontDoc?.preview : String(ineFrontDoc?.value?.[0]?.url || ''))) as File | string,
         backImage: (backFile ?? (backPreviewIsDataUrl ? ineBackDoc?.preview : String(ineBackDoc?.value?.[0]?.url || ''))) as File | string,
         awaitFinalStatus: false,
-        onStatusResolved: (result) => {
-          setJumioResult(result)
-
+        onStatusResolved: async (result) => {
           if (result.valid) {
+            const normalizedResult = normalizeJumioVerificationResult(result)
+            const jumioPiiData = getJumioPiiData(normalizedResult)
+
+            if (!jumioPiiData) {
+              setJumioFailed()
+              toast({
+                variant: 'destructive',
+                title: 'Datos de INE incompletos',
+                description: 'No pudimos extraer los datos necesarios de tu identificacion.',
+                duration: TOAST_DURATION_RESULT_MS,
+              })
+              return
+            }
+
+            try {
+              await updateClientData({ pii: jumioPiiData })
+              setJumioResult(normalizedResult)
+            } catch {
+              setJumioFailed()
+              toast({
+                variant: 'destructive',
+                title: 'No se pudieron guardar tus datos',
+                description: 'Intenta validar tu INE nuevamente para continuar.',
+                duration: TOAST_DURATION_RESULT_MS,
+              })
+              return
+            }
+
             toast({
               title: 'Validación de INE completada',
               description: 'Tu INE fue validado correctamente.',
@@ -512,6 +542,7 @@ export default function UploadDocuments() {
             return
           }
 
+          setJumioResult(result)
           toast({
             variant: 'destructive',
             title: 'Resultado de validación de INE',
