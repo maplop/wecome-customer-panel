@@ -9,34 +9,7 @@ import { WrapperCard } from '@/components/common/WrapperCard'
 import { X, Check, FileText } from '@/lib/icons'
 import { ROUTES } from '@/lib/routes'
 import { updateClientData } from '@/services/client-data'
-
-const DOCUMENTS = [
-  {
-    id: 'advertising',
-    title: 'Formato para fines publicitarios y mercadológicos',
-    url: '/documents/advertising.pdf',
-  },
-  {
-    id: 'transparency',
-    title: 'Aviso de transparencia y acceso a la información pública',
-    url: '/documents/transparency.pdf',
-  },
-  {
-    id: 'privacy',
-    title: 'Aviso de Privacidad Integral',
-    url: '/documents/privacy.pdf',
-  },
-  {
-    id: 'insurance',
-    title: 'Autorización para contratación de seguro',
-    url: '/documents/insurance.pdf',
-  },
-  {
-    id: 'terms',
-    title: 'Términos y Condiciones',
-    url: '/documents/terms.pdf',
-  },
-]
+import { DOCUMENTS } from './constants'
 
 export default function TermsAcceptance() {
   const router = useRouter()
@@ -165,11 +138,52 @@ export default function TermsAcceptance() {
             </div>
 
             <div className="flex-1 overflow-auto px-6 py-5">
-              <iframe
-                src={activeDoc.url}
-                className="w-full h-[calc(90vh-12rem)] rounded-lg border border-border"
-                title={activeDoc.title}
-              />
+              {activeDoc.content ? (
+                <div className="flex flex-col gap-5 text-sm leading-relaxed text-muted-foreground">
+                  {activeDoc.content.paragraphs.slice(0, 2).map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+
+                  {activeDoc.content.bullets ? (
+                    <ul className="list-disc space-y-2 pl-5">
+                      {activeDoc.content.bullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {activeDoc.content.paragraphs.slice(2).map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+
+                  {activeDoc.content.sections?.map((section) => (
+                    <section key={section.title} className="flex flex-col gap-2">
+                      <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+                      {section.text ? <p>{section.text}</p> : null}
+                      {section.bullets ? (
+                        <ul className="list-disc space-y-2 pl-5">
+                          {section.bullets.map((bullet) => (
+                            <li key={bullet}>{bullet}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {section.afterText ? <p>{section.afterText}</p> : null}
+                    </section>
+                  ))}
+
+                  {activeDoc.content.legalNote ? (
+                    <p className="rounded-xl border border-border bg-secondary/40 p-3 text-xs">
+                      Nota legal: {activeDoc.content.legalNote}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <iframe
+                  src={activeDoc.url}
+                  className="w-full h-[calc(90vh-12rem)] rounded-lg border border-border"
+                  title={activeDoc.title}
+                />
+              )}
             </div>
 
             <div className="px-6 py-4 border-t border-border shrink-0 flex flex-row gap-3">
