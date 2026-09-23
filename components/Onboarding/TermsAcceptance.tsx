@@ -68,7 +68,7 @@ export default function TermsAcceptance() {
   }
 
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
 
     try {
       setError('')
@@ -139,7 +139,7 @@ export default function TermsAcceptance() {
           <ButtonCard
             variant="secondary"
             disabled={isSubmitting}
-            onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_AUTHORIZATION)}
+            onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
           >
             Regresar
           </ButtonCard>

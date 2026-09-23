@@ -114,7 +114,7 @@ export default function CreateAccount() {
           historial_crediticio,
           paso_actual: nextStep,
           city: data?.ciudad,
-          state: data?.estado,
+          estado: data?.estado,
           street: data?.ciudad,
           num_ext: data?.num_exterior,
           zipcode: data?.codigo_postal,

@@ -24,10 +24,11 @@ export interface ClientPiiType {
   aforo: string;
   email: string;
   phone: string;
-  state: string;
+  estado: string;
   colony: string;
   pagare: string;
   street: string;
+  country: string;
   fecha_1: string;
   num_ext: string;
   num_int: string;

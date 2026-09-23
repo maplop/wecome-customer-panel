@@ -64,16 +64,15 @@ export const ONBOARDING_STEPS = [
     route: ROUTES.ONBOARDING.UPLOAD_DOCUMENTS,
   },
   {
-    title: "Autorización de consulta",
-    step: 7,
-    route: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
-  },
-  {
     title: "Aceptación de términos",
-    step: 8,
+    step: 7,
     route: ROUTES.ONBOARDING.TERMS_ACCEPTANCE,
   },
-
+  {
+    title: "Autorización de consulta",
+    step: 8,
+    route: ROUTES.ONBOARDING.CREDIT_AUTHORIZATION,
+  },
   {
     title: "Selección de crédito",
     step: 9,
