@@ -9,20 +9,64 @@ import { useRouter } from 'next/navigation'
 import { Search, Check } from '@/lib/icons'
 import { updateClientData } from '@/services/client-data'
 import { InfoNote } from '../common/InfoNote'
+import { useJumioVerificationStore } from '@/stores/jumio-verification-store'
+
+function getJumioPiiData(result: ReturnType<typeof useJumioVerificationStore.getState>['result']) {
+  const extractedData = result?.data?.details?.extractedData
+  const identity = extractedData?.[0]
+
+  if (!identity) return null
+
+  return {
+    city: identity.address?.city,
+    colony: identity.address?.line2,
+    estado: identity.address?.subdivision,
+    street: identity.address?.line1,
+    country: identity.address?.country,
+    zipcode: identity.address?.postalCode,
+    nationality: identity.nationality,
+  }
+}
 
 export default function CreditAuthorization() {
   const router = useRouter()
   const [accepted, setAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [showJumioPendingModal, setShowJumioPendingModal] = useState(false)
+  const jumioStatus = useJumioVerificationStore((state) => state.status)
+  const jumioResult = useJumioVerificationStore((state) => state.result)
+  const jumioModalTitle = jumioStatus === 'failed'
+    ? 'No fue posible validar tu INE'
+    : 'Validación de INE en proceso'
+  const jumioModalMessage = jumioStatus === 'failed'
+    ? 'No fue posible validar tu INE. Regresa a la carga de documentos e intenta nuevamente con fotos legibles.'
+    : 'Aún estamos validando tu INE. Necesitamos confirmar los datos de tu identificación antes de consultar tu historial crediticio. Te avisaremos cuando puedas continuar.'
 
 
   const handleContinue = async () => {
+    if (jumioStatus !== 'completed' || !jumioResult?.valid) {
+      setShowJumioPendingModal(true)
+      return
+    }
+
     const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const jumioPiiData = getJumioPiiData(jumioResult)
+
+    if (!jumioPiiData) {
+      setError('No se encontraron los datos de identificación de Jumio. Intenta validar tu INE nuevamente.')
+      return
+    }
+
     setIsSubmitting(true)
     setError('')
     try {
-      await updateClientData({ pii: { paso_actual: nextStep } })
+      await updateClientData({
+        pii: {
+          ...jumioPiiData,
+          paso_actual: nextStep,
+        },
+      })
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
@@ -122,6 +166,30 @@ export default function CreditAuthorization() {
         </ButtonCard>
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
+
+      {showJumioPendingModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="jumio-pending-title"
+            className="w-full max-w-md rounded-2xl bg-background p-6 shadow-2xl"
+          >
+            <h2 id="jumio-pending-title" className="text-lg font-bold text-foreground">
+              {jumioModalTitle}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {jumioModalMessage}
+            </p>
+            <ButtonCard
+              className="mt-6"
+              onClick={() => setShowJumioPendingModal(false)}
+            >
+              Entendido
+            </ButtonCard>
+          </div>
+        </div>
+      ) : null}
     </WrapperCard>
   )
 }

@@ -12,6 +12,7 @@ import DocumentUploadField from './DocumentUploadField'
 import { getSignedUrl, upload as uploadToS3 } from '@/utils/aws/s3'
 import { updateClientData } from '@/services/client-data'
 import { useClientDataStore } from '@/stores/client-data-store'
+import { useJumioVerificationStore } from '@/stores/jumio-verification-store'
 import { toast } from '@/hooks/use-toast'
 import { useJumioVerification } from "@dynamicore/jumio-sdk/react";
 import { getAccessToken } from '@/lib/auth-session'
@@ -233,6 +234,9 @@ function buildDocumentsPiiPayload(
 export default function UploadDocuments() {
   const router = useRouter()
   const client = useClientDataStore((state) => state.client)
+  const setJumioPending = useJumioVerificationStore((state) => state.setPending)
+  const setJumioResult = useJumioVerificationStore((state) => state.setResult)
+  const setJumioFailed = useJumioVerificationStore((state) => state.setFailed)
 
   const [activeTab, setActiveTab] = useState<1 | 2>(1)
   const [documents, setDocuments] = useState<Record<string, UploadedDocumentState>>({})
@@ -482,6 +486,8 @@ export default function UploadDocuments() {
         return
       }
 
+      setJumioPending()
+
       // Uso correcto según doc: pasar File/Blob/DataURL. La URL S3 cruda es privada y da 403 si se hace fetch sin firmar.
       // Prioridad: 1) File en memoria 2) preview data:URL 3) fallback con URL firmada vía s3Signer del hook
       const frontFile = jumioFiles[INE_FRONT_DOC_ID]
@@ -495,6 +501,8 @@ export default function UploadDocuments() {
         backImage: (backFile ?? (backPreviewIsDataUrl ? ineBackDoc?.preview : String(ineBackDoc?.value?.[0]?.url || ''))) as File | string,
         awaitFinalStatus: false,
         onStatusResolved: (result) => {
+          setJumioResult(result)
+
           if (result.valid) {
             toast({
               title: 'Validación de INE completada',
@@ -512,6 +520,7 @@ export default function UploadDocuments() {
           })
         },
         onStatusError: () => {
+          setJumioFailed()
           toast({
             variant: 'destructive',
             title: 'Validación de INE pendiente',
@@ -528,6 +537,7 @@ export default function UploadDocuments() {
       })
 
       if (!jumioResult.valid) {
+        setJumioFailed()
         setActiveTab(1)
         setJumioFailures({
           [INE_FRONT_DOC_ID]: true,
