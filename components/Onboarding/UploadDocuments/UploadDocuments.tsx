@@ -449,7 +449,7 @@ export default function UploadDocuments() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
+    const nextStep = ROUTES.ONBOARDING.CREDIT_AUTHORIZATION
 
     const newErrors: Record<string, string> = {}
     DOCUMENT_TYPES.filter((d) => d.required).forEach((d) => {
@@ -645,7 +645,7 @@ export default function UploadDocuments() {
               ? () => setActiveTab(1)
               : () => router.push(ROUTES.ONBOARDING.PERSONAL_DATA)}
           >
-            {activeTab === 2 ? 'Regresar' : 'Regresar'}
+            Regresar
           </ButtonCard>
         </div>
       </form>

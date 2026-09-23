@@ -290,7 +290,7 @@ export default function CreditSelection() {
             <ButtonCard
               variant="secondary"
               disabled={isSubmitting}
-              onClick={() => router.push(ROUTES.ONBOARDING.CREDIT_AUTHORIZATION)}
+              onClick={() => router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)}
             >
               Regresar
             </ButtonCard>

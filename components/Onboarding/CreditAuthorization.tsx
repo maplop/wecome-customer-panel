@@ -18,7 +18,7 @@ export default function CreditAuthorization() {
 
 
   const handleContinue = async () => {
-    const nextStep = ROUTES.ONBOARDING.CREDIT_SELECTION
+    const nextStep = ROUTES.ONBOARDING.TERMS_ACCEPTANCE
     setIsSubmitting(true)
     setError('')
     try {
@@ -116,7 +116,7 @@ export default function CreditAuthorization() {
         <ButtonCard
           variant="secondary"
           disabled={isSubmitting}
-          onClick={() => router.push(ROUTES.ONBOARDING.TERMS_ACCEPTANCE)}
+          onClick={() => router.push(ROUTES.ONBOARDING.UPLOAD_DOCUMENTS)}
         >
           Regresar
         </ButtonCard>
