@@ -164,23 +164,3 @@ export async function fetchRccFicoScore(
     return null;
   }
 }
-
-/**
- * Resuelve el historial crediticio a enviar al pii:
- * 1. Si el profile (whitelist) ya trae valor, lo usa tal cual.
- * 2. Si no, consulta RCC FICO Score con el client_id y usa ese valor.
- * 3. Si tampoco hay valor ahí, retorna null para no bloquear el flujo.
- */
-export async function resolveHistorialCrediticio(
-  profileValue: string | null | undefined,
-  clientId: number | string | null | undefined,
-): Promise<string | null> {
-  const normalizedProfile =
-    typeof profileValue === "string" && profileValue.trim().length > 0
-      ? profileValue.trim()
-      : null;
-  if (normalizedProfile) return normalizedProfile;
-
-  if (clientId == null || String(clientId).trim() === "") return null;
-  return fetchRccFicoScore(clientId);
-}

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-type CreditHistoryQuerySource = 'rcc' | 'fallback' | null
+type CreditHistoryQuerySource = 'profile' | 'rcc' | 'fallback' | null
 
 interface CreditHistoryQueryStore {
   category: string | null

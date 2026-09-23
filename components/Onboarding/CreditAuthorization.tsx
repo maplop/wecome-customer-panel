@@ -28,6 +28,9 @@ export default function CreditAuthorization() {
   const [showScoreErrorModal, setShowScoreErrorModal] = useState(false)
   const [showDefaultScoreAlert, setShowDefaultScoreAlert] = useState(false)
   const clientId = useClientDataStore((state) => state.client?.id)
+  const existingHistorialCrediticio = useClientDataStore(
+    (state) => state.client?.pii?.historial_crediticio,
+  )
   const setCreditHistoryQuery = useCreditHistoryQueryStore((state) => state.setResult)
   const jumioStatus = useJumioVerificationStore((state) => state.status)
   const jumioResult = useJumioVerificationStore((state) => state.result)
@@ -63,7 +66,11 @@ export default function CreditAuthorization() {
     setIsSubmitting(true)
     setError('')
     try {
-      const historialCrediticio = await fetchRccFicoScore(clientId ?? '')
+      const hasExistingHistorial = typeof existingHistorialCrediticio === 'string'
+        && existingHistorialCrediticio.trim().length > 0
+      const historialCrediticio = hasExistingHistorial
+        ? existingHistorialCrediticio.trim()
+        : await fetchRccFicoScore(clientId ?? '')
       if (!historialCrediticio) {
         setShowScoreErrorModal(true)
         return
@@ -76,7 +83,7 @@ export default function CreditAuthorization() {
           paso_actual: nextStep,
         },
       })
-      setCreditHistoryQuery(historialCrediticio, 'rcc')
+      setCreditHistoryQuery(historialCrediticio, hasExistingHistorial ? 'profile' : 'rcc')
       router.push(nextStep)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo continuar. Intenta nuevamente.')
