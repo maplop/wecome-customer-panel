@@ -31,6 +31,8 @@ export default function CreditAuthorization() {
   const existingHistorialCrediticio = useClientDataStore(
     (state) => state.client?.pii?.historial_crediticio,
   )
+  const hasExistingHistorial = typeof existingHistorialCrediticio === 'string'
+    && existingHistorialCrediticio.trim().length > 0
   const setCreditHistoryQuery = useCreditHistoryQueryStore((state) => state.setResult)
   const jumioStatus = useJumioVerificationStore((state) => state.status)
   const jumioResult = useJumioVerificationStore((state) => state.result)
@@ -51,14 +53,14 @@ export default function CreditAuthorization() {
   }, [hasOpenModal])
 
   const handleContinue = async () => {
-    if (jumioStatus !== 'completed' || !jumioResult?.valid) {
+    if (!hasExistingHistorial && (jumioStatus !== 'completed' || !jumioResult?.valid)) {
       setShowJumioPendingModal(true)
       return
     }
 
-    const jumioPiiData = getJumioPiiData(jumioResult)
+    const jumioPiiData = hasExistingHistorial ? null : getJumioPiiData(jumioResult)
 
-    if (!jumioPiiData) {
+    if (!hasExistingHistorial && !jumioPiiData) {
       setError('No se encontraron los datos de identificación de Jumio. Intenta validar tu INE nuevamente.')
       return
     }
@@ -66,10 +68,8 @@ export default function CreditAuthorization() {
     setIsSubmitting(true)
     setError('')
     try {
-      const hasExistingHistorial = typeof existingHistorialCrediticio === 'string'
-        && existingHistorialCrediticio.trim().length > 0
       const historialCrediticio = hasExistingHistorial
-        ? existingHistorialCrediticio.trim()
+        ? existingHistorialCrediticio?.trim() ?? ''
         : await fetchRccFicoScore(clientId ?? '')
       if (!historialCrediticio) {
         setShowScoreErrorModal(true)
