@@ -298,6 +298,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                             <thead>
                               <tr className="border-b border-border text-muted-foreground">
                                 <th className="text-left py-2 pr-2 font-medium">Período</th>
+                                <th className="text-left py-2 px-2 font-medium">Fecha</th>
                                 <th className="text-right py-2 px-2 font-medium">Pago</th>
                                 <th className="text-right py-2 px-2 font-medium">Interés</th>
                                 <th className="text-right py-2 px-2 font-medium">Capital</th>
@@ -306,19 +307,20 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                             </thead>
                             <tbody>
                               {amortizacion.map((row) => (
-                                <tr key={row.periodo} className="border-b border-border/50">
-                                  <td className="py-2 pr-2 text-foreground">{row.periodo}</td>
+                                <tr key={row.cycle} className="border-b border-border/50">
+                                  <td className="py-2 pr-2 text-foreground">{row.cycle}</td>
+                                  <td className="py-2 px-2 text-foreground">{row.date}</td>
                                   <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.pago)}
+                                    {formatMoney(row.payment.expected)}
                                   </td>
                                   <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.interes)}
+                                    {formatMoney(row.interest.expected)}
                                   </td>
                                   <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.capital)}
+                                    {formatMoney(row.principal.expected)}
                                   </td>
                                   <td className="py-2 pl-2 text-right text-foreground">
-                                    {formatMoney(row.saldo)}
+                                    {formatMoney(row.final_balance)}
                                   </td>
                                 </tr>
                               ))}

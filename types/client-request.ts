@@ -1,9 +1,16 @@
 export interface AmortizacionRow {
-  periodo: number;
-  pago: number;
-  interes: number;
-  capital: number;
-  saldo: number;
+  date: string;
+  cycle: number;
+  balance: number;
+  payment: AmortizacionAmount;
+  interest: AmortizacionAmount;
+  principal: AmortizacionAmount;
+  final_balance: number;
+}
+
+export interface AmortizacionAmount {
+  paid: number;
+  expected: number;
 }
 
 export interface ClientRequestData {
