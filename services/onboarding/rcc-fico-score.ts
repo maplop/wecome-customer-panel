@@ -11,8 +11,9 @@ export function getCreditHistoryCategory(
   if (!Number.isFinite(numericScore)) return null;
   if (numericScore <= 449) return LOWEST_CREDIT_HISTORY_CATEGORY;
   if (numericScore <= 550) return "Débil";
-  if (numericScore <= 650) return "Regular";
-  return "Bueno";
+  if (numericScore <= 640) return "Regular";
+  if (numericScore <= 749) return "Bueno";
+  return "Excelente";
 }
 
 export interface RccFicoScorePayload {
