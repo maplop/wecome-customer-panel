@@ -157,7 +157,7 @@ export default function CreditAuthorization() {
           ))}
         </ul>
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => setAccepted(!accepted)}

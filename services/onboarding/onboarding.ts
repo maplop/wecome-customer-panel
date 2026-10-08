@@ -25,6 +25,7 @@ interface SendOtpResult {
 interface SendOtpResponse {
   data?: {
     all_results?: SendOtpResult[];
+    results?: SendOtpResult[];
   };
 }
 
@@ -60,9 +61,10 @@ export async function sendOtp(email: string): Promise<boolean> {
     },
   );
 
-  const emailResult = response.data?.data?.all_results?.find(
-    (item) => item.channel === "EMAIL",
-  );
+  const results =
+    response.data?.data?.all_results ?? response.data?.data?.results ?? [];
+
+  const emailResult = results.find((item) => item.channel === "EMAIL");
 
   return Boolean(emailResult?.success);
 }

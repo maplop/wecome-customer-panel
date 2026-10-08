@@ -58,4 +58,7 @@ export const SERVICES = {
 
   WECOME_SCORE: "/marketplace/apps/wecome/score",
   RCC_FICO_SCORE: "/marketplace/apps/cc/rccficoscore/map",
+
+  CREDIT_ORIGINATION:
+    "/internal/connector/4317/flows/01a0f931-9c9c-700d-bca6-30bd73c0201d",
 };

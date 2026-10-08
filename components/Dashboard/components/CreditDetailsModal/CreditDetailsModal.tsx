@@ -63,14 +63,22 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                 </div>
                 <div>
                   <p className="text-base font-semibold text-foreground">
-                    {isCompleted
+                    {canAcceptOffer
+                      ? 'Esta es la propuesta que tenemos para ti'
+                      : isCompleted
                       ? '¡Tu crédito fue completado!'
                       : isActive
                         ? '¡Tu crédito está activo!'
                         : '¡Tu crédito fue aprobado!'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {isCompleted ? 'Crédito finalizado' : isActive ? 'Crédito en curso' : 'Oferta disponible'}
+                    {canAcceptOffer
+                      ? 'Revisa las condiciones y decide si quieres aceptarla'
+                      : isCompleted
+                        ? 'Crédito finalizado'
+                        : isActive
+                          ? 'Crédito en curso'
+                          : 'Crédito aprobado'}
                   </p>
                 </div>
               </div>
@@ -90,7 +98,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                   <Check className="stroke-brand-dark w-8 h-8" />
                 </div>
                 <span className="text-xs font-medium text-white/60 uppercase tracking-widest">
-                  Monto aprobado
+                  {canAcceptOffer ? 'Monto de la oferta' : 'Monto aprobado'}
                 </span>
                 <span className="text-4xl font-bold text-white">
                   {formatMoney(montoOfertado)}

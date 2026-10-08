@@ -7,6 +7,10 @@ import type {
 } from "@/types/client-request";
 import { formatPaymentFrequency } from "@/utils/formatters";
 import { updateRequest } from "@/services/client-requests";
+import {
+  buildOriginateCreditPayload,
+  originateCredit,
+} from "@/services/credit-origination";
 import { calculateScore } from "@/services/onboarding/evaluate-score";
 import type { EvaluateScoreResponse } from "@/types/score";
 import confetti from "canvas-confetti";
@@ -210,6 +214,15 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     setIsUpdating(true);
     setError("");
     try {
+      // Contraoferta en estado "resolved": primero se origina el crédito
+      // en el flow 4317 y solo si responde 200 se marca como approved.
+      const originationPayload = buildOriginateCreditPayload({
+        credit,
+        scoreData,
+        amount: montoOfertado,
+      });
+      await originateCredit(originationPayload);
+
       await updateThisRequest({
         estado: "approved",
         monto_ofertado: montoOfertado,
