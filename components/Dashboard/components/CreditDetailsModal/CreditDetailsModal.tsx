@@ -49,9 +49,11 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
     }
   }
 
+  const modalMaxWidth = showSuccess ? "max-w-md" : "max-w-xl";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto">
+      <div className={`w-full ${modalMaxWidth} bg-background rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto`}>
 
         {!showSuccess ? (
           <>
@@ -66,10 +68,10 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                     {canAcceptOffer
                       ? 'Esta es la propuesta que tenemos para ti'
                       : isCompleted
-                      ? '¡Tu crédito fue completado!'
-                      : isActive
-                        ? '¡Tu crédito está activo!'
-                        : '¡Tu crédito fue aprobado!'}
+                        ? '¡Tu crédito fue completado!'
+                        : isActive
+                          ? '¡Tu crédito está activo!'
+                          : '¡Tu crédito fue aprobado!'}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {canAcceptOffer

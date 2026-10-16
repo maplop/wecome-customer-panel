@@ -29,23 +29,134 @@ export interface OriginateCreditInput {
 
 type ResponseRecord = Record<string, unknown>;
 
+export interface OriginatedCredit extends Record<string, unknown> {
+  id: number;
+  product?: number | string;
+  product_id?: number | string;
+}
+
+export function resolveOriginatedProductId(
+  originated: OriginatedCredit,
+): number {
+  // product_id = id del crédito recién creado (ej. 159341).
+  // Sin fallback: si no hay id válido, se lanza error.
+  const num = Number(originated.id);
+  if (!Number.isFinite(num) || num <= 0) {
+    throw new Error(
+      "No se encontró el product_id en la respuesta de originación.",
+    );
+  }
+  return Math.trunc(num);
+}
+
 function isResponseRecord(value: unknown): value is ResponseRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function getResponseMessage(value: unknown): string | null {
+function pickMeaningfulMessage(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.toUpperCase() === "OK") return null;
+  return value;
+}
+
+function findErrorMessage(value: unknown, depth = 0): string | null {
+  if (depth > 5 || value == null) return null;
+
+  if (typeof value === "string") {
+    return pickMeaningfulMessage(value);
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findErrorMessage(item, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+
   if (!isResponseRecord(value)) return null;
-  if (typeof value.message !== "string" || !value.message.trim()) return null;
-  return value.message.trim().toUpperCase() === "OK"
-    ? null
-    : value.message;
+
+  for (const key of ["message", "error", "detail", "details", "reason"]) {
+    const candidate = value[key];
+    if (typeof candidate === "string") {
+      const message = pickMeaningfulMessage(candidate);
+      if (message) return message;
+    } else if (Array.isArray(candidate)) {
+      const joined = candidate
+        .filter((entry): entry is string => typeof entry === "string")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .join(" ");
+      if (joined && joined.toUpperCase() !== "OK") return joined;
+      const found = findErrorMessage(candidate, depth + 1);
+      if (found) return found;
+    } else if (isResponseRecord(candidate)) {
+      const found = findErrorMessage(candidate, depth + 1);
+      if (found) return found;
+    }
+  }
+
+  if ("data" in value) {
+    return findErrorMessage(value.data, depth + 1);
+  }
+
+  return null;
 }
 
 function throwOriginationError(value: unknown): never {
   throw new Error(
-    getResponseMessage(value) ??
+    findErrorMessage(value) ??
       "El endpoint no confirmó que el crédito se haya originado correctamente.",
   );
+}
+
+/**
+ * Extrae el crédito creado desde las formas que devuelve el flow 4317.
+ * Forma actual: { code: 1, total: 1, data: [{ id, status: "pending", ... }] }
+ * Forma legada: { code: 1, data: { status: "ok" }, transaction: "..." }
+ */
+function extractOriginatedCredit(value: unknown): OriginatedCredit | null {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = extractOriginatedCredit(item);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  if (!isResponseRecord(value)) return null;
+
+  // Registro directo de crédito: { id: 159319, status: "pending", ... }
+  // Se acepta "pending" porque significa que el crédito sí se creó.
+  if (toPositiveInt(value.id) != null) {
+    return value as OriginatedCredit;
+  }
+
+  // Contenedor { code: 1, data: [...] | {...} }
+  if (value.code === 1 && "data" in value) {
+    const inner = (value as { data?: unknown }).data;
+
+    if (Array.isArray(inner)) {
+      return extractOriginatedCredit(inner);
+    }
+
+    if (isResponseRecord(inner)) {
+      // Legado: { code: 1, data: { status: "ok" }, transaction: "..." }
+      if (
+        inner.status === "ok" &&
+        typeof value.transaction === "string" &&
+        value.transaction.trim()
+      ) {
+        return value as unknown as OriginatedCredit;
+      }
+
+      const nested = extractOriginatedCredit(inner);
+      if (nested) return nested;
+    }
+  }
+
+  return null;
 }
 
 function toPositiveInt(value: unknown): number | null {
@@ -182,7 +293,7 @@ export function buildOriginateCreditPayload(
 
 export async function originateCredit(
   payload: OriginateCreditPayload,
-): Promise<unknown> {
+): Promise<OriginatedCredit> {
   const { data: response } = await apiClient.post<ApiResponse<unknown>>(
     SERVICES.CREDIT_ORIGINATION,
     payload,
@@ -202,17 +313,10 @@ export async function originateCredit(
     throwOriginationError(firstResult);
   }
 
-  const finalResult = firstResult.data;
-  if (
-    !isResponseRecord(finalResult) ||
-    finalResult.code !== 1 ||
-    !isResponseRecord(finalResult.data) ||
-    finalResult.data.status !== "ok" ||
-    typeof finalResult.transaction !== "string" ||
-    !finalResult.transaction.trim()
-  ) {
-    throwOriginationError(finalResult);
+  const originated = extractOriginatedCredit(firstResult);
+  if (!originated) {
+    throwOriginationError(firstResult);
   }
 
-  return flowResponse;
+  return originated;
 }

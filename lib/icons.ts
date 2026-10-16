@@ -31,6 +31,8 @@ export {
   CalendarClock,
   Receipt,
   CalendarDays,
+  ChevronDown,
+  Download,
   Tag,
   Filter,
   Minus,

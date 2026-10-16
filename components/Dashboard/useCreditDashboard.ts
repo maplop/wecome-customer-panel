@@ -67,7 +67,9 @@ export function useCreditDashboard() {
   const handleOpenDetail = (record: ClientRequestRecord) => {
     const estado = record.data.estado ?? "pending";
 
-    if (estado === "resolved" || estado === "approved" || estado === "completed" || estado === "active") {
+    if (estado === "approved" || estado === "completed" || estado === "active") {
+      router.push(ROUTES.DASHBOARD.CREDIT_DETAILS(record.id));
+    } else if (estado === "resolved") {
       setCreditDetailsModal({ open: true, credit: record });
     } else if (estado === "denied") {
       setDeniedRequestModal({ open: true, credit: record });

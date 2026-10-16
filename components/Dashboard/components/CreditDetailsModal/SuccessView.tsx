@@ -9,12 +9,11 @@ interface SuccessViewProps {
 export function SuccessView({ amount, onClose }: SuccessViewProps) {
   return (
     <>
-      <div className="px-6 py-10 flex flex-col items-center gap-5 text-center">
+      <div className="px-6 py-10 flex flex-col items-center gap-3 text-center">
         <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-brand-dark w-full">
           <div className="flex justify-center items-center w-10 h-10 rounded-full bg-brand-accent">
             <Check className="stroke-brand-dark w-8 h-8" />
           </div>
-
           <h2 id="approval-title" className="text-balance  text-white/60  text-2xl font-bold">
             {"¡Crédito aprobado!"}
           </h2>
@@ -25,7 +24,7 @@ export function SuccessView({ amount, onClose }: SuccessViewProps) {
         </p>
 
         {/* Monto aprobado */}
-        <div className="mt-6 w-full rounded-2xl border border-border bg-muted/40 p-5">
+        <div className="mt-4 w-full rounded-2xl border border-border bg-muted/40 p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Monto aprobado</p>
           <p className="mt-1 text-4xl font-bold tabular-nums text-foreground">
             {amount}

@@ -10,6 +10,7 @@ import { updateRequest } from "@/services/client-requests";
 import {
   buildOriginateCreditPayload,
   originateCredit,
+  resolveOriginatedProductId,
 } from "@/services/credit-origination";
 import { calculateScore } from "@/services/onboarding/evaluate-score";
 import type { EvaluateScoreResponse } from "@/types/score";
@@ -221,10 +222,12 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
         scoreData,
         amount: montoOfertado,
       });
-      await originateCredit(originationPayload);
+      const originated = await originateCredit(originationPayload);
+      const product_id = resolveOriginatedProductId(originated);
 
       await updateThisRequest({
         estado: "approved",
+        product_id,
         monto_ofertado: montoOfertado,
         frecuencia_de_pago_ofertada:
           data.frecuencia_de_pago_ofertada ??

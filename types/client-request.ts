@@ -34,6 +34,8 @@ export interface ClientRequestData {
   frecuencia_de_pago_ofertada?: number;
 
   evaluation_id?: string;
+
+  product_id?: number;
 }
 
 export type RequestStatus =
