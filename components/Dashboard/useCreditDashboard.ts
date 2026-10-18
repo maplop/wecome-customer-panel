@@ -68,7 +68,9 @@ export function useCreditDashboard() {
     const estado = record.data.estado ?? "pending";
 
     if (estado === "approved" || estado === "completed" || estado === "active") {
-      router.push(ROUTES.DASHBOARD.CREDIT_DETAILS(record.id));
+      const productId = record.data.product_id;
+      if (!productId) return;
+      router.push(ROUTES.DASHBOARD.CREDIT_DETAILS(productId));
     } else if (estado === "resolved") {
       setCreditDetailsModal({ open: true, credit: record });
     } else if (estado === "denied") {

@@ -37,6 +37,7 @@ export default function ClientRequestItem({
     showOffer ? data.tipo_de_credito_ofertado : data.tipo_de_credito_solicitado
   ) ?? '-'
   const plazo = showOffer ? data.plazo_ofertado : data.plazo_solicitado
+  const productId = data.product_id ? String(data.product_id) : request.id
 
   return (
     <div className="flex flex-col gap-3">
@@ -53,7 +54,7 @@ export default function ClientRequestItem({
                 Crédito Nómina
               </span>
               <span className="text-xs text-muted-foreground truncate">
-                {request.id}
+                {productId}
               </span>
             </div>
           </div>

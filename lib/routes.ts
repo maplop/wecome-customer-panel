@@ -30,7 +30,8 @@ export const ROUTES = {
   },
   DASHBOARD: {
     ROOT: "/dashboard",
-    CREDIT_DETAILS: (id: string) => `/dashboard/credits?id=${encodeURIComponent(id)}`,
+    CREDIT_DETAILS: (productId: string | number) =>
+      `/dashboard/credits?product_id=${encodeURIComponent(String(productId))}`,
   },
 } as const;
 
