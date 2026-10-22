@@ -35,6 +35,10 @@ export type { PaymentFrequency, CreditType };
 const SOLICITUD_CON_SEGURO = "859";
 const SOLICITUD_SIN_SEGURO = "1024";
 
+function formIdForCreditType(type: CreditType): string {
+  return type === "protected" ? SOLICITUD_CON_SEGURO : SOLICITUD_SIN_SEGURO;
+}
+
 export function useCreditSelection() {
   const router = useRouter();
   const activeRequest = useClientRequestStore((state) =>
@@ -250,6 +254,7 @@ export function useCreditSelection() {
       // se actualiza con PUT. Si no existe (flujo nuevo), se crea con un solo POST
       // ya con todos los datos del crédito — addRequest envía el data completo.
       const requestStore = useClientRequestStore.getState();
+      const formId = formIdForCreditType(hasInsurance);
       const creditDataPatch = {
         monto_solicitado: amount,
         tipo_de_credito_solicitado:
@@ -281,10 +286,7 @@ export function useCreditSelection() {
         }
 
         const createdRequest = await addRequest({
-          form_id:
-            hasInsurance === "protected"
-              ? SOLICITUD_CON_SEGURO
-              : SOLICITUD_SIN_SEGURO,
+          form_id: formId,
           client: createdClientId,
           enabled: 1,
           data: creditDataPatch,
@@ -296,7 +298,7 @@ export function useCreditSelection() {
 
         requestStore.upsertRequest(createdRequest, true);
       } else {
-        await updateActiveRequestData(creditDataPatch);
+        await updateActiveRequestData(creditDataPatch, { formId });
       }
 
       router.push(nextStep);

@@ -88,6 +88,7 @@ export const updateRequest = async (
 
 interface UpdateActiveRequestDataOptions {
   clientId?: number;
+  formId?: string | number;
 }
 
 export const updateActiveRequestData = async (
@@ -112,7 +113,7 @@ export const updateActiveRequestData = async (
 
   const updated = await updateRequest({
     id: activeRequest.id,
-    form_id: activeRequest.form_id,
+    form_id: options.formId ?? activeRequest.form_id,
     client: activeRequest.client,
     enabled: Number(activeRequest.enabled || 1),
     data: {

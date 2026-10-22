@@ -4,6 +4,7 @@ import type { ClientRequestRecord } from "@/types/client-request";
 import type { EvaluateScoreResponse } from "@/types/score";
 
 export interface OriginateCreditPayload {
+  template_id: number;
   client: number;
   amount: number;
   numero_cuotas: number;
@@ -31,6 +32,7 @@ type ResponseRecord = Record<string, unknown>;
 
 export interface OriginatedCredit extends Record<string, unknown> {
   id: number;
+  status?: string;
   product?: number | string;
   product_id?: number | string;
 }
@@ -51,6 +53,25 @@ export function resolveOriginatedProductId(
 
 function isResponseRecord(value: unknown): value is ResponseRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+// La misma URL responde con la definición del formulario (GET) o con el
+// crédito creado (POST). Una definición trae `template`, `tabs` y `config`,
+// y comparte el campo `id`, así que hay que descartarla explícitamente.
+function isFormDefinition(value: ResponseRecord): boolean {
+  return (
+    Array.isArray(value.template) ||
+    Array.isArray(value.tabs) ||
+    (isResponseRecord(value.config) && "assigned_product_id" in value.config)
+  );
+}
+
+function isOriginatedCreditRecord(
+  value: ResponseRecord,
+): value is OriginatedCredit {
+  if (isFormDefinition(value)) return false;
+  if (toPositiveInt(value.id) == null) return false;
+  return typeof value.status === "string" && value.status.trim().length > 0;
 }
 
 function pickMeaningfulMessage(value: unknown): string | null {
@@ -115,6 +136,7 @@ function throwOriginationError(value: unknown): never {
  * Extrae el crédito creado desde las formas que devuelve el flow 4317.
  * Forma actual: { code: 1, total: 1, data: [{ id, status: "pending", ... }] }
  * Forma legada: { code: 1, data: { status: "ok" }, transaction: "..." }
+ * La definición del formulario (respuesta de GET) se descarta aunque traiga `id`.
  */
 function extractOriginatedCredit(value: unknown): OriginatedCredit | null {
   if (Array.isArray(value)) {
@@ -129,8 +151,8 @@ function extractOriginatedCredit(value: unknown): OriginatedCredit | null {
 
   // Registro directo de crédito: { id: 159319, status: "pending", ... }
   // Se acepta "pending" porque significa que el crédito sí se creó.
-  if (toPositiveInt(value.id) != null) {
-    return value as OriginatedCredit;
+  if (isOriginatedCreditRecord(value)) {
+    return value;
   }
 
   // Contenedor { code: 1, data: [...] | {...} }
@@ -220,6 +242,12 @@ export function buildOriginateCreditPayload(
     throw new Error("No se encontró el cliente de la solicitud.");
   }
 
+  // form_id is the template already associated with this credit request.
+  const template_id = toPositiveInt(credit.form_id);
+  if (!template_id) {
+    throw new Error("No se encontro una plantilla valida en la solicitud.");
+  }
+
   const configuration = scoreData.configuracion_credito;
   const numero_cuotas = toPositiveInt(configuration?.numero_cuotas);
   if (!numero_cuotas) {
@@ -276,6 +304,7 @@ export function buildOriginateCreditPayload(
   }
 
   return {
+    template_id,
     client,
     amount,
     numero_cuotas,
