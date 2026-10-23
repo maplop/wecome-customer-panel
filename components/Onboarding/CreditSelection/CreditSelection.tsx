@@ -16,6 +16,7 @@ export default function CreditSelection() {
     salaryBrutoNum,
     minAmount,
     maxAmount,
+    suggestedAmounts,
     pct,
     term,
     paymentFrequency,
@@ -43,10 +44,10 @@ export default function CreditSelection() {
 
   } = useCreditSelection()
 
-
   return (
     <>
-      <WrapperCard>
+      <div inert={isEvaluating || isSubmitting || undefined}>
+        <WrapperCard>
         <div className="flex flex-col gap-2">
           <TitleCard>
             Elige tu crédito
@@ -130,7 +131,7 @@ export default function CreditSelection() {
                 }}
               />
             </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-[11px] text-muted-foreground">
               <span>{formatMoney(minAmount)}</span>
               {isEvaluating ? (
                 <span className="flex items-center gap-1 italic text-muted-foreground/80">
@@ -156,11 +157,33 @@ export default function CreditSelection() {
                 </span>
               )}
             </div>
+
+            {suggestedAmounts.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {suggestedAmounts.map((value) => {
+                  const isSelected = amount === value
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => handleAmountChange(value)}
+                      aria-pressed={isSelected}
+                      className={`rounded-xl px-2 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${isSelected
+                        ? 'border-2 border-brand-accent bg-brand-accent/10 text-brand-accent'
+                        : 'border border-brand-accent/25 bg-white text-foreground hover:border-brand-accent/50'
+                        }`}
+                    >
+                      {formatMoney(value)}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
 
-          {/* Plazo + Frecuencia de pago, lado a lado */}
-          <div className="grid grid-cols-[2fr_3fr] gap-4">
+          {/* Plazo */}
+          <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-foreground">Plazo</label>
               <div className="flex rounded-xl bg-secondary p-1">
@@ -297,7 +320,8 @@ export default function CreditSelection() {
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
         </div>
-      </WrapperCard>
+        </WrapperCard>
+      </div>
 
       {showRiskModal && (
         <RiskModal

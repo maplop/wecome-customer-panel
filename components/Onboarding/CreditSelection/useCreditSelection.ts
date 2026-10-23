@@ -114,6 +114,15 @@ export function useCreditSelection() {
     return Math.min(MAX_AMOUNT_CAP, Math.max(MIN_AMOUNT, rounded));
   }, [maxFromScore, maxFromSalary]);
 
+  // Tres montos intermedios, equiespaciados entre el mínimo y el máximo.
+  const suggestedAmounts = useMemo(() => {
+    const range = maxAmount - minAmount;
+    if (range < 4) return [];
+    return [1, 2, 3].map((step) =>
+      Math.round(minAmount + (range * step) / 4),
+    );
+  }, [minAmount, maxAmount]);
+
   const [amount, setAmount] = useState(MIN_AMOUNT);
   const [amountInput, setAmountInput] = useState(formatMoney(MIN_AMOUNT));
   const [hasInsurance, setHasInsurance] = useState<CreditType>("protected");
@@ -327,6 +336,7 @@ export function useCreditSelection() {
     salaryBrutoNum,
     minAmount,
     maxAmount,
+    suggestedAmounts,
     pct,
 
     // estado
