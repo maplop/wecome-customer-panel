@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, ShieldCheck, Tag, AlertCircle, CheckCircle2 } from '@/lib/icons'
+import { X, CheckCircle, Check, CalendarClock, CalendarDays, TrendingUp, Tag, AlertCircle, CheckCircle2 } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
+import { round2 } from '@/utils/calculateCreditBreakdown'
 import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
 import { LoadingState } from '@/components/common/LoadingState'
 import { SuccessView } from './SuccessView'
@@ -13,8 +14,23 @@ interface CreditDetailsModalProps {
   onClose: () => void
 }
 
-function formatMoney(n: number) {
-  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+function formatMoney(n?: number | null) {
+  if (n == null || !Number.isFinite(n)) return '-'
+
+  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+const MONTHS_ES_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+function formatShortDate(value?: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value?.trim() ?? '')
+  if (!match) return '-'
+
+  const [, year, month, day] = match
+  const monthIndex = Number(month) - 1
+  if (monthIndex < 0 || monthIndex > 11) return '-'
+
+  return `${day} ${MONTHS_ES_SHORT[monthIndex]} ${year}`
 }
 
 export default function CreditDetailsModal({ credit, onClose }: CreditDetailsModalProps) {
@@ -187,33 +203,9 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                           />
 
                           {creditData.mostrarSeguros && (
-                            <>
-                              <Row
-                                label="Seguro de vida"
-                                value={creditData.pagoPeriodico.seguroVida}
-                                operator="+"
-                              />
-                              <Row
-                                label="Seguro de invalidez"
-                                value={creditData.pagoPeriodico.seguroInvalidez}
-                                operator="+"
-                              />
-                            </>
-                          )}
-
-                          {creditData.mostrarSubtotal && (
                             <Row
-                              label="Subtotal"
-                              value={creditData.pagoPeriodico.subtotal}
-                              operator="="
-                              tone="muted"
-                            />
-                          )}
-
-                          {creditData.mostrarIva && (
-                            <Row
-                              label="IVA (16%)"
-                              value={creditData.pagoPeriodico.iva}
+                              label="Seguros e IVA"
+                              value={creditData.pagoPeriodico.segurosIva}
                               operator="+"
                             />
                           )}
@@ -242,16 +234,8 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
 
                           {creditData.mostrarSeguros && (
                             <Row
-                              label="Total seguros"
-                              value={creditData.totales.seguros}
-                              icon={<ShieldCheck className="h-4 w-4" />}
-                            />
-                          )}
-
-                          {creditData.mostrarIva && (
-                            <Row
-                              label="Total IVA"
-                              value={creditData.totales.iva}
+                              label="Seguros e IVA"
+                              value={creditData.totales.segurosIva}
                               operator="+"
                             />
                           )}
@@ -262,8 +246,8 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                             label="Total a pagar"
                             value={creditData.totales.total}
                             hint={creditData.mostrarSeguros
-                              ? 'Suma de capital + intereses + seguros + IVA'
-                              : 'Suma de capital + intereses (sin seguros ni IVA)'
+                              ? 'Incluye capital, intereses, seguros e IVA'
+                              : 'Capital + intereses (sin seguros)'
                             }
                           />
                         </div>
@@ -278,7 +262,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground">Comisión por apertura</p>
                               <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                                Se descuenta una sola vez al inicio. No se suma a tu pago semanal ni al total.
+                                Se descuenta una sola vez al inicio. No se suma a tu pago {frecuenciaDePago.toLowerCase()} ni al total.
                               </p>
                             </div>
                           </div>
@@ -304,36 +288,57 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
 
                       {amortizacion.length > 0 && (
                         <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
+                          <table className="w-full min-w-max text-xs">
                             <thead>
                               <tr className="border-b border-border text-muted-foreground">
                                 <th className="text-left py-2 pr-2 font-medium">Período</th>
                                 <th className="text-left py-2 px-2 font-medium">Fecha</th>
-                                <th className="text-right py-2 px-2 font-medium">Pago</th>
-                                <th className="text-right py-2 px-2 font-medium">Interés</th>
+                                <th className="text-right py-2 px-2 font-medium">Saldo inicial</th>
                                 <th className="text-right py-2 px-2 font-medium">Capital</th>
+                                <th className="text-right py-2 px-2 font-medium">Interés</th>
+                                {creditData.mostrarSeguros && (
+                                  <th className="text-right py-2 px-2 font-medium">Seguros + IVA</th>
+                                )}
+                                <th className="text-right py-2 px-2 font-medium">Pago total</th>
                                 <th className="text-right py-2 pl-2 font-medium">Saldo</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {amortizacion.map((row) => (
-                                <tr key={row.cycle} className="border-b border-border/50">
-                                  <td className="py-2 pr-2 text-foreground">{row.cycle}</td>
-                                  <td className="py-2 px-2 text-foreground">{row.date}</td>
-                                  <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.payment.expected)}
-                                  </td>
-                                  <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.interest.expected)}
-                                  </td>
-                                  <td className="py-2 px-2 text-right text-foreground">
-                                    {formatMoney(row.principal.expected)}
-                                  </td>
-                                  <td className="py-2 pl-2 text-right text-foreground">
-                                    {formatMoney(row.final_balance)}
-                                  </td>
-                                </tr>
-                              ))}
+                              {amortizacion.map((row) => {
+                                const paymentTotal = creditData.mostrarSeguros
+                                  ? row.payment_total?.expected
+                                  : row.payment.expected
+                                const insuranceAndIva = creditData.mostrarSeguros && row.payment_total
+                                  ? round2(row.payment_total.expected - row.payment.expected)
+                                  : null
+
+                                return (
+                                  <tr key={row.cycle} className="border-b border-border/50">
+                                    <td className="py-2 pr-2 text-foreground">{row.cycle}</td>
+                                    <td className="py-2 px-2 whitespace-nowrap text-foreground">{formatShortDate(row.date)}</td>
+                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
+                                      {formatMoney(row.balance)}
+                                    </td>
+                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
+                                      {formatMoney(row.principal.expected)}
+                                    </td>
+                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
+                                      {formatMoney(row.interest.expected)}
+                                    </td>
+                                    {creditData.mostrarSeguros && (
+                                      <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
+                                        {formatMoney(insuranceAndIva)}
+                                      </td>
+                                    )}
+                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
+                                      {formatMoney(paymentTotal)}
+                                    </td>
+                                    <td className="py-2 pl-2 text-right text-foreground whitespace-nowrap">
+                                      {formatMoney(row.final_balance)}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
                             </tbody>
                           </table>
                         </div>

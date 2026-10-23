@@ -3,8 +3,14 @@ export interface AmortizacionRow {
   cycle: number;
   balance: number;
   payment: AmortizacionAmount;
+  payment_total?: AmortizacionAmount;
   interest: AmortizacionAmount;
   principal: AmortizacionAmount;
+  interest_tax?: AmortizacionAmount;
+  unemployment_insurance?: AmortizacionAmount;
+  unemployment_insurance_tax?: AmortizacionAmount;
+  outstanding_balance_insurance?: AmortizacionAmount;
+  outstanding_balance_insurance_tax?: AmortizacionAmount;
   final_balance: number;
 }
 
@@ -21,6 +27,7 @@ export interface ClientRequestData {
   comision_apertura?: number;
   pago_por_periodo?: number;
   monto_total_a_pagar?: number;
+  monto_total_a_pagar_con_seguros?: number;
   capacidad_endeudamiento_max?: number;
 
   plazo_solicitado?: number;

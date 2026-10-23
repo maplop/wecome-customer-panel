@@ -11,8 +11,7 @@ import {
 } from "@/utils/formatters";
 import {
   calculateCreditBreakdown,
-  CreditBreakdownInput,
-  CreditBreakdown,
+  type CreditBreakdown,
 } from "@/utils/calculateCreditBreakdown";
 
 export function useCreditResult() {
@@ -40,24 +39,13 @@ export function useCreditResult() {
     evaluationId ? state.detailsCache[evaluationId] : undefined,
   );
 
+  const tipoDeCredito =
+    data.tipo_de_credito_ofertado ??
+    data.tipo_de_credito_solicitado ??
+    "essential";
+
   const creditData: CreditBreakdown | null = cached?.scoreData
-    ? calculateCreditBreakdown(
-        {
-          tipo_de_credito_solicitado:
-            data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
-          pago_por_periodo_sin_seguros:
-            cached.scoreData.pago_por_periodo_sin_seguros,
-          pago_por_periodo_con_seguros_iva:
-            cached.scoreData.pago_por_periodo_con_seguros_iva,
-          numero_de_periodos: cached.scoreData.numero_de_periodos,
-          comision_apertura: cached.scoreData.comision_apertura,
-          seguro_vida: cached.scoreData.seguro_vida_al_millar,
-          seguro_invalidez_total_permanente:
-            cached.scoreData.seguro_invalidez_al_millar,
-          monto_total_a_pagar: cached.scoreData.monto_total_a_pagar,
-        } satisfies CreditBreakdownInput,
-        amount,
-      )
+    ? calculateCreditBreakdown(cached.scoreData, tipoDeCredito)
     : null;
 
   const handleContinue = async () => {

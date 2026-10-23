@@ -18,11 +18,46 @@ import confetti from "canvas-confetti";
 import { Shield, ShieldCheck } from "@/lib/icons";
 import {
   calculateCreditBreakdown,
-  type CreditBreakdownInput,
+  type CreditBreakdown,
 } from "@/utils/calculateCreditBreakdown";
 import { useClientRequestStore, useCreditDetailsStore } from "@/stores";
 
 const CONFETTI_Z_INDEX = 9999;
+
+function isPositiveNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function isBreakdownValid(
+  response: EvaluateScoreResponse,
+  tipoDeCredito: string,
+): boolean {
+  if (!isPositiveNumber(response.pago_por_periodo_sin_seguros)) return false;
+  if (!isPositiveNumber(response.monto_total_a_pagar)) return false;
+
+  if (tipoDeCredito === "protected") {
+    if (!isPositiveNumber(response.pago_por_periodo_con_seguros_iva)) {
+      return false;
+    }
+    if (!isPositiveNumber(response.monto_total_a_pagar_con_seguros)) {
+      return false;
+    }
+    if (
+      response.pago_por_periodo_con_seguros_iva <
+      response.pago_por_periodo_sin_seguros
+    ) {
+      return false;
+    }
+    if (
+      response.monto_total_a_pagar_con_seguros <
+      response.monto_total_a_pagar
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 // Definir los iconos con tipo seguro
 const ICONS = { "shield-check": ShieldCheck, shield: Shield } as const;
@@ -49,38 +84,20 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
     state.detailsCache[evaluationId],
   );
 
-  // Función para construir el CreditBreakdownInput desde los datos del endpoint
-  const buildCreditInput = useCallback(
-    (endpointData: any): CreditBreakdownInput => {
-      return {
-        tipo_de_credito_solicitado:
-          data.tipo_de_credito_ofertado ??
-          data.tipo_de_credito_solicitado ??
-          "essential",
-        pago_por_periodo_sin_seguros:
-          endpointData.pago_por_periodo_sin_seguros ?? 0,
-        pago_por_periodo_con_seguros_iva:
-          endpointData.pago_por_periodo_con_seguros_iva ?? 0,
-        numero_de_periodos: endpointData.numero_de_periodos ?? 0,
-        monto_total_a_pagar: endpointData.monto_total_a_pagar ?? 0,
-        comision_apertura: endpointData.comision_apertura ?? 0,
-        seguro_vida: endpointData.seguro_vida_al_millar ?? 0,
-        seguro_invalidez_total_permanente:
-          endpointData.seguro_invalidez_al_millar ?? 0,
-      };
-    },
-    [data.tipo_de_credito_ofertado, data.tipo_de_credito_solicitado],
+  const tipoDeCredito =
+    data.tipo_de_credito_ofertado ??
+    data.tipo_de_credito_solicitado ??
+    "essential";
+
+  const calculateCredit = useCallback(
+    (response: EvaluateScoreResponse) =>
+      calculateCreditBreakdown(response, tipoDeCredito),
+    [tipoDeCredito],
   );
 
-  // Función para calcular el crédito
-  const calculateCredit = useCallback(
-    (endpointData: any) => {
-      const creditInput = buildCreditInput(endpointData);
-      const result = calculateCreditBreakdown(creditInput, montoOfertado);
-      return result;
-    },
-    [buildCreditInput, montoOfertado],
-  );
+  const cachedIsValid = cached
+    ? isBreakdownValid(cached.scoreData, tipoDeCredito)
+    : false;
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -88,10 +105,14 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"detalles" | "amortizacion">("detalles");
   const [isLoading, setIsLoading] = useState(!cached);
-  const [creditData, setCreditData] = useState<any>(() =>
-    cached ? calculateCredit(cached.scoreData) : null,
+  const [creditData, setCreditData] = useState<CreditBreakdown | null>(() =>
+    cached && cachedIsValid ? calculateCredit(cached.scoreData) : null,
   );
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(
+    cached && !cachedIsValid
+      ? "No se pudo obtener la información del crédito."
+      : null,
+  );
   const [scoreData, setScoreData] = useState<EvaluateScoreResponse | null>(
     cached?.scoreData ?? null,
   );
@@ -120,23 +141,27 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
           monto_solicitado: montoOfertado,
         });
 
-        if (result) {
-          setScoreData(result);
-          setCreditData(calculateCredit(result));
-
-          if (result.tabla_amortizacion) {
-            setAmortizacion(result.tabla_amortizacion);
-          }
-
-          useCreditDetailsStore
-            .getState()
-            .setCreditDetails(evaluationId, {
-              scoreData: result,
-              fetchedAt: Date.now(),
-            });
-        } else {
+        if (!result) {
           setFetchError("No se recibieron datos del servidor.");
+          return;
         }
+
+        if (!isBreakdownValid(result, tipoDeCredito)) {
+          setFetchError("No se pudo obtener la información del crédito.");
+          return;
+        }
+
+        setScoreData(result);
+        setCreditData(calculateCredit(result));
+
+        if (result.tabla_amortizacion) {
+          setAmortizacion(result.tabla_amortizacion);
+        }
+
+        useCreditDetailsStore.getState().setCreditDetails(evaluationId, {
+          scoreData: result,
+          fetchedAt: Date.now(),
+        });
       } catch (error) {
         setFetchError(
           "Ocurrió un error al obtener la información del crédito. Por favor, intenta más tarde.",
@@ -247,6 +272,15 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
                 scoreData.capacidad_endeudamiento_max,
               comision_apertura: scoreData.comision_apertura,
               monto_total_a_pagar: scoreData.monto_total_a_pagar,
+              ...(creditData
+                ? { pago_por_periodo: creditData.pagoPeriodico.total }
+                : {}),
+              ...(Number.isFinite(scoreData.monto_total_a_pagar_con_seguros)
+                ? {
+                    monto_total_a_pagar_con_seguros:
+                      scoreData.monto_total_a_pagar_con_seguros,
+                  }
+                : {}),
               evaluation_id: scoreData.evaluation_id ?? evaluationId,
             }
           : {}),

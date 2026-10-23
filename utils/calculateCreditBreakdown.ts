@@ -1,17 +1,6 @@
-import { toPositiveNumber } from "./formatters";
+import type { EvaluateScoreResponse } from "@/types/score";
 
 export type IconKey = "shield-check" | "shield";
-
-export interface CreditBreakdownInput {
-  tipo_de_credito_solicitado?: string;
-  pago_por_periodo_sin_seguros?: number;
-  pago_por_periodo_con_seguros_iva?: number;
-  numero_de_periodos?: number;
-  comision_apertura?: number;
-  seguro_vida?: number;
-  seguro_invalidez_total_permanente?: number;
-  monto_total_a_pagar: number;
-}
 
 export interface CreditBreakdown {
   tipo: string;
@@ -20,79 +9,52 @@ export interface CreditBreakdown {
   descripcion: string;
   pagoPeriodico: {
     pagoBase: number;
-    seguroVida: number;
-    seguroInvalidez: number;
-    subtotal: number;
-    iva: number;
+    segurosIva: number;
     total: number;
   };
   totales: {
     capitalIntereses: number;
-    seguros: number;
-    iva: number;
+    segurosIva: number;
     total: number;
     comisionApertura: number;
-    totalConComision: number;
   };
   mostrarSeguros: boolean;
-  mostrarIva: boolean;
   mostrarComision: boolean;
-  mostrarSubtotal: boolean;
 }
 
-const IVA_RATE = 0.16;
+export const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function calculateCreditBreakdown(
-  data: CreditBreakdownInput,
-  amount: number,
+  response: EvaluateScoreResponse,
+  tipoDeCredito?: string,
 ): CreditBreakdown {
-  const isProtected = data.tipo_de_credito_solicitado === "protected";
-
-  const pagoSinSeguros =
-    toPositiveNumber(data.pago_por_periodo_sin_seguros) ?? 0;
-  const pagoConSegurosIva =
-    toPositiveNumber(data.pago_por_periodo_con_seguros_iva) ?? 0;
-  const numeroPeriodos = toPositiveNumber(data.numero_de_periodos) ?? 0;
-  const montoTotalAPagar = toPositiveNumber(data.monto_total_a_pagar) ?? 0;
-  const comisionApertura = toPositiveNumber(data.comision_apertura) ?? 0;
-
-  const seguroVidaAlMillar = toPositiveNumber(data.seguro_vida) ?? 0;
-  const seguroInvalidezAlMillar =
-    toPositiveNumber(data.seguro_invalidez_total_permanente) ?? 0;
-  const seguroVidaPeriodo = amount * (seguroVidaAlMillar / 1000);
-  const seguroInvalidezPeriodo = amount * (seguroInvalidezAlMillar / 1000);
-  const segurosPeriodo = seguroVidaPeriodo + seguroInvalidezPeriodo;
+  const isProtected = tipoDeCredito === "protected";
 
   if (isProtected) {
-    const subtotal = pagoSinSeguros + segurosPeriodo;
-    const ivaPeriodo = subtotal * IVA_RATE;
-    const totalConTodo = pagoConSegurosIva * numeroPeriodos;
-
     return {
       tipo: "Protegido",
       iconKey: "shield-check",
       titulo: "Crédito Protegido",
-      descripcion: "Tu crédito incluye seguros de vida e invalidez + IVA",
+      descripcion: "Tu crédito incluye seguros + IVA",
       pagoPeriodico: {
-        pagoBase: pagoSinSeguros,
-        seguroVida: seguroVidaPeriodo,
-        seguroInvalidez: seguroInvalidezPeriodo,
-        subtotal,
-        iva: ivaPeriodo,
-        total: pagoConSegurosIva,
+        pagoBase: response.pago_por_periodo_sin_seguros,
+        segurosIva: round2(
+          response.pago_por_periodo_con_seguros_iva -
+            response.pago_por_periodo_sin_seguros,
+        ),
+        total: response.pago_por_periodo_con_seguros_iva,
       },
       totales: {
-        capitalIntereses: montoTotalAPagar,
-        seguros: segurosPeriodo * numeroPeriodos,
-        iva: ivaPeriodo * numeroPeriodos,
-        total: totalConTodo,
-        comisionApertura,
-        totalConComision: totalConTodo + comisionApertura,
+        capitalIntereses: response.monto_total_a_pagar,
+        segurosIva: round2(
+          response.monto_total_a_pagar_con_seguros -
+            response.monto_total_a_pagar,
+        ),
+        total: response.monto_total_a_pagar_con_seguros,
+        comisionApertura: response.comision_apertura,
       },
       mostrarSeguros: true,
-      mostrarIva: true,
       mostrarComision: true,
-      mostrarSubtotal: true,
     };
   }
 
@@ -102,24 +64,17 @@ export function calculateCreditBreakdown(
     titulo: "Crédito Esencial",
     descripcion: "Tu crédito NO incluye seguros ni IVA",
     pagoPeriodico: {
-      pagoBase: pagoSinSeguros,
-      seguroVida: 0,
-      seguroInvalidez: 0,
-      subtotal: pagoSinSeguros,
-      iva: 0,
-      total: pagoSinSeguros,
+      pagoBase: response.pago_por_periodo_sin_seguros,
+      segurosIva: 0,
+      total: response.pago_por_periodo_sin_seguros,
     },
     totales: {
-      capitalIntereses: montoTotalAPagar,
-      seguros: 0,
-      iva: 0,
-      total: montoTotalAPagar,
-      comisionApertura,
-      totalConComision: montoTotalAPagar + comisionApertura,
+      capitalIntereses: response.monto_total_a_pagar,
+      segurosIva: 0,
+      total: response.monto_total_a_pagar,
+      comisionApertura: response.comision_apertura,
     },
     mostrarSeguros: false,
-    mostrarIva: false,
     mostrarComision: true,
-    mostrarSubtotal: false,
   };
 }

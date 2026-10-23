@@ -93,37 +93,10 @@ export default function CreditResult() {
               icon={<TrendingUp className="h-4 w-4" />}
             />
 
-            {/* Solo mostrar seguros si es PROTEGIDO */}
             {creditData.mostrarSeguros && (
-              <>
-                <Row
-                  label="Seguro de vida"
-                  value={creditData.pagoPeriodico.seguroVida}
-                  operator="+"
-                />
-                <Row
-                  label="Seguro de invalidez"
-                  value={creditData.pagoPeriodico.seguroInvalidez}
-                  operator="+"
-                />
-              </>
-            )}
-
-            {/* Mostrar subtotal solo si hay seguros */}
-            {creditData.mostrarSubtotal && (
               <Row
-                label="Subtotal"
-                value={creditData.pagoPeriodico.subtotal}
-                operator="="
-                tone="muted"
-              />
-            )}
-
-            {/* Solo mostrar IVA si es PROTEGIDO */}
-            {creditData.mostrarIva && (
-              <Row
-                label="IVA (16%)"
-                value={creditData.pagoPeriodico.iva}
+                label="Seguros e IVA"
+                value={creditData.pagoPeriodico.segurosIva}
                 operator="+"
               />
             )}
@@ -151,20 +124,10 @@ export default function CreditResult() {
               icon={<TrendingUp className="h-4 w-4" />}
             />
 
-            {/* Solo mostrar seguros si es PROTEGIDO */}
             {creditData.mostrarSeguros && (
               <Row
-                label="Total seguros"
-                value={creditData.totales.seguros}
-                icon={<ShieldCheck className="h-4 w-4" />}
-              />
-            )}
-
-            {/* Solo mostrar IVA si es PROTEGIDO */}
-            {creditData.mostrarIva && (
-              <Row
-                label="Total IVA"
-                value={creditData.totales.iva}
+                label="Seguros e IVA"
+                value={creditData.totales.segurosIva}
                 operator="+"
               />
             )}
@@ -175,8 +138,8 @@ export default function CreditResult() {
               label={"Total a pagar"}
               value={creditData.totales.total}
               hint={creditData.mostrarSeguros
-                ? 'Suma de capital + intereses + seguros + IVA'
-                : 'Suma de capital + intereses (sin seguros ni IVA)'
+                ? 'Incluye capital, intereses, seguros e IVA'
+                : 'Capital + intereses (sin seguros)'
               }
             />
           </div>
@@ -195,7 +158,7 @@ export default function CreditResult() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">Comisión por apertura</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  Se descuenta una sola vez al inicio. No se suma a tu pago semanal ni al total.
+                  Se descuenta una sola vez al inicio. No se suma a tu pago {paymentFrequencyLabel.toLowerCase()} ni al total.
                 </p>
               </div>
             </div>
