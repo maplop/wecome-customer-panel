@@ -13,6 +13,7 @@ import {
   calculateCreditBreakdown,
   type CreditBreakdown,
 } from "@/utils/calculateCreditBreakdown";
+import { normalizeCreditType } from "@/utils/credit-type";
 
 export function useCreditResult() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export function useCreditResult() {
 
   const data = activeRequest?.data ?? {};
 
-  const amount = toPositiveNumber(data.monto_solicitado) ?? 0;
+  const amount = toPositiveNumber(data.monto_solicitado);
   const term = toPositiveNumber(data.plazo_solicitado) ?? 12;
   const paymentFrequencyLabel = formatPaymentFrequency(
     normalizePaymentFrequency(data.frecuencia_de_pago_solicitada),
@@ -39,14 +40,12 @@ export function useCreditResult() {
     evaluationId ? state.detailsCache[evaluationId] : undefined,
   );
 
-  const tipoDeCredito =
-    data.tipo_de_credito_ofertado ??
-    data.tipo_de_credito_solicitado ??
-    "essential";
+  const tipoDeCredito = normalizeCreditType(data.tipo_de_credito_solicitado);
 
-  const creditData: CreditBreakdown | null = cached?.scoreData
-    ? calculateCreditBreakdown(cached.scoreData, tipoDeCredito)
-    : null;
+  const creditData: CreditBreakdown | null =
+    cached?.scoreData && tipoDeCredito
+      ? calculateCreditBreakdown(cached.scoreData, tipoDeCredito)
+      : null;
 
   const handleContinue = async () => {
     setIsSubmitting(true);

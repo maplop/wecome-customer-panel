@@ -22,6 +22,7 @@ import {
 } from "./components";
 import { useCreditProduct } from "./useCreditProduct";
 import { safeMoney } from "./utils";
+import { ErrorMessage } from "@/components/common/ErrorMessage";
 
 function BackButton() {
   return (
@@ -65,9 +66,22 @@ function CreditDetailsContent() {
     isLoadingProduct,
     productError,
     isProductVisible,
+    isSyncingRequests,
   } = useCreditProduct();
 
   if (!hasRecord) {
+    if (isSyncingRequests) {
+      return (
+        <section
+          className="flex min-h-[60vh] flex-1 flex-col gap-4 pb-4"
+          aria-busy="true"
+        >
+          <div className="flex flex-1 items-center justify-center">
+            <LoadingState label="Buscando información de la solicitud..." />
+          </div>
+        </section>
+      );
+    }
     return (
       <section className="flex flex-col gap-4 pb-4">
         <BackButton />
@@ -130,16 +144,14 @@ function CreditDetailsContent() {
       </div>
 
       {productError && (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          No se pudo cargar el detalle del producto: {productError}
-        </p>
+        <ErrorMessage message={`No se pudo cargar el detalle del producto: ${productError}`} />
       )}
 
       {/* Cards resumen */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           label="Monto del crédito"
-          value={montoCredito > 0 ? formatMoney(montoCredito) : "—"}
+          value={montoCredito != null ? formatMoney(montoCredito) : "—"}
           description="Importe original"
           icon={<CreditCard className="h-6 w-6" aria-hidden="true" />}
         />

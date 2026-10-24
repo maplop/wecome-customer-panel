@@ -29,7 +29,15 @@ export const getRequestsByClient = async (
     },
   });
 
-  return Array.isArray(response?.data) ? response.data : [];
+  const requests = Array.isArray(response?.data) ? response.data : [];
+  const numericClientId = Number(clientId);
+  if (Number.isFinite(numericClientId) && numericClientId > 0) {
+    useClientRequestStore
+      .getState()
+      .syncClientRequests(numericClientId, requests);
+  }
+
+  return requests;
 };
 
 export const addRequest = async (
@@ -55,7 +63,12 @@ export const addRequest = async (
     },
   });
 
-  return pickRequestRecord(response?.data);
+  const record = pickRequestRecord(response?.data);
+  if (record) {
+    useClientRequestStore.getState().upsertRequest(record);
+  }
+
+  return record;
 };
 
 export const updateRequest = async (
@@ -83,7 +96,12 @@ export const updateRequest = async (
     data: payload.data ?? {},
   });
 
-  return pickRequestRecord(response?.data);
+  const record = pickRequestRecord(response?.data);
+  if (record) {
+    useClientRequestStore.getState().upsertRequest(record);
+  }
+
+  return record;
 };
 
 interface UpdateActiveRequestDataOptions {

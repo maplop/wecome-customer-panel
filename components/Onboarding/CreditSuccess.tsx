@@ -9,11 +9,13 @@ import { useRouter } from 'next/navigation'
 import { Check } from '@/lib/icons'
 import { updateClientData } from '@/services/client-data'
 import { useClientRequestStore } from '@/stores'
+import { toPositiveNumber } from '@/utils/formatters'
 
 
 export default function CreditSuccess() {
 
   const activeRequest = useClientRequestStore((state) => state.getActiveRequest())
+  const montoSolicitado = toPositiveNumber(activeRequest?.data.monto_solicitado)
 
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,8 +55,9 @@ export default function CreditSuccess() {
             ¡Solicitud enviada!
           </TitleCard>
           <SubtitleCard>
-            Tu solicitud de crédito por{' '}
-            <strong className="text-foreground">{Number(activeRequest?.data.monto_solicitado).toLocaleString('es-MX')} MXN</strong>{' '}
+            Tu solicitud de crédito{montoSolicitado != null ? (
+              <> por <strong className="text-foreground">{montoSolicitado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</strong></>
+            ) : null}{' '}
             ha sido enviada a nuestro equipo y se encuentra en proceso de revisión
           </SubtitleCard>
         </div>

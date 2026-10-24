@@ -6,6 +6,7 @@ import type { ClientRequestRecord } from '@/types/client-request'
 import { round2 } from '@/utils/calculateCreditBreakdown'
 import { Row, TotalRow, SectionTitle, FactCard } from '@/components/common/CreditDetails'
 import { LoadingState } from '@/components/common/LoadingState'
+import { ErrorMessage } from '@/components/common/ErrorMessage'
 import { SuccessView } from './SuccessView'
 import { useCreditDetails } from './useCreditDetails'
 
@@ -344,7 +345,7 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-border flex flex-col gap-3">
-              {error && <p className="text-xs text-destructive text-center">{error}</p>}
+              {error && <ErrorMessage message={error} />}
               {!canAcceptOffer ? (
                 <button
                   type="button"

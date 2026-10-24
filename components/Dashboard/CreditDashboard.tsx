@@ -7,6 +7,7 @@ import { SubtitleCard } from '@/components/common/SubtitleCard'
 import { ClientRequestItem, CreditDetailsModal, DeniedRequestModal } from './components'
 import { Plus, RefreshCw, Check, Filter, Wallet } from '@/lib/icons'
 import { useCreditDashboard, TABS, TAB_LABELS } from './useCreditDashboard'
+import { ErrorMessage } from '@/components/common/ErrorMessage'
 
 export default function CreditDashboard() {
   const {
@@ -85,12 +86,8 @@ export default function CreditDashboard() {
             )}
           </div>
         </div>
-        {createRequestError && (
-          <p className="mb-4 text-sm text-destructive">{createRequestError}</p>
-        )}
-        {refreshRequestsError && (
-          <p className="mb-4 text-sm text-destructive">{refreshRequestsError}</p>
-        )}
+        <ErrorMessage message={createRequestError} className="mb-4" />
+        <ErrorMessage message={refreshRequestsError} className="mb-4" />
 
         {filteredCredits.length === 0 && activeTab === 'all' ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -105,7 +102,7 @@ export default function CreditDashboard() {
         ) : (
           <>
             {/* Tabs */}
-            <div className="mb-6 flex flex-wrap items-center gap-2 md:gap-2">
+            <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-2">
               <div className="hidden md:flex flex-wrap items-center gap-2">
                 {TABS.map((tab) => (
                   <button

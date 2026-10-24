@@ -8,7 +8,7 @@ export const PAYMENT_FREQUENCIES = ["SEMANAL", "QUINCENAL", "MENSUAL"] as const;
 export const AMOUNT_STEP = 1000;
 
 export type PaymentFrequency = (typeof PAYMENT_FREQUENCIES)[number];
-export type CreditType = "protected" | "esencial";
+export type CreditType = "protected" | "essential";
 
 // fórmula real de retención (verificada con muestra real)
 const SUELDO_MINIMO_RETENCION = 8000;

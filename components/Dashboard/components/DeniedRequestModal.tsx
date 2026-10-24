@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { X, AlertCircle, CircleDollarSign, Calendar, ShieldCheck, CalendarClock, CalendarDays, Shield } from '@/lib/icons'
 import type { ClientRequestRecord } from '@/types/client-request'
-import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
+import { formatMoney, formatPaymentFrequency, toPositiveNumber } from '@/utils/formatters'
 import { getCreditTypeLabel, isProtectedCredit } from '@/utils/credit-type'
 import { FactCard } from '@/components/common/CreditDetails'
 
@@ -16,7 +16,7 @@ interface DeniedRequestModalProps {
 export default function DeniedRequestModal({ credit, onClose }: DeniedRequestModalProps) {
   const data = credit.data
 
-  const solicitado = Number(data.monto_solicitado ?? 0)
+  const solicitado = toPositiveNumber(data.monto_solicitado)
   const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function DeniedRequestModal({ credit, onClose }: DeniedRequestMod
           <section className="grid grid-cols-2 gap-3">
             <FactCard
               label="Monto solicitado"
-              value={formatMoney(solicitado)}
+              value={solicitado != null ? formatMoney(solicitado) : '—'}
               icon={<CircleDollarSign className="h-4 w-4" />}
             />
             <FactCard

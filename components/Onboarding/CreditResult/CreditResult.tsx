@@ -55,7 +55,7 @@ export default function CreditResult() {
             <span className="text-xs font-medium text-white/60 uppercase tracking-widest">Monto solicitado</span>
           </div>
           <p className="text-4xl font-bold text-white mt-2 tabular-nums">
-            {formatMoney(amount)}
+            {amount != null ? formatMoney(amount) : '—'}
           </p>
         </section>
 

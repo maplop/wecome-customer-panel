@@ -1,9 +1,10 @@
 import type { EstadoConfigItem } from "@/components/Dashboard/constants/request-status";
 import { Shield, ShieldCheck } from "@/lib/icons";
+import type { NormalizedCreditType } from "@/utils/credit-type";
 import { getCreditTypeLabel, isProtectedCredit } from "@/utils/credit-type";
 
 interface CreditDetailsCardProps {
-  creditType: string;
+  creditType: NormalizedCreditType | null | undefined;
   plazo?: number | null;
   periodicidad: string;
   status?: EstadoConfigItem;

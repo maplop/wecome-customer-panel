@@ -1,13 +1,17 @@
-export type NormalizedCreditType = "protected" | "esencial";
+export type NormalizedCreditType = "protected" | "essential";
 
 export function normalizeCreditType(
   value?: string | { id?: string } | null,
 ): NormalizedCreditType | null {
-  const raw = (typeof value === "object" ? (value as { id?: string }).id : value)?.trim().toLowerCase();
+  const raw = (
+    typeof value === "object" ? (value as { id?: string }).id : value
+  )
+    ?.trim()
+    .toLowerCase();
   if (!raw) return null;
 
   if (raw === "protected" || raw === "protegido") return "protected";
-  if (raw === "esencial") return "esencial";
+  if (raw === "essential") return "essential";
 
   return null;
 }
@@ -19,6 +23,6 @@ export function isProtectedCredit(value?: string | null): boolean {
 export function getCreditTypeLabel(value?: string | null): string {
   const normalized = normalizeCreditType(value);
   if (normalized === "protected") return "Protegido";
-  if (normalized === "esencial") return "Esencial";
+  if (normalized === "essential") return "Esencial";
   return value?.trim() || "—";
 }

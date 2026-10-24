@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 import { useCallback, useEffect, useState } from "react";
 import type {
   AmortizacionRow,
   ClientRequestData,
   ClientRequestRecord,
 } from "@/types/client-request";
-import { formatPaymentFrequency } from "@/utils/formatters";
+import { formatPaymentFrequency, toPositiveNumber } from "@/utils/formatters";
 import { updateRequest } from "@/services/client-requests";
 import {
   buildOriginateCreditPayload,
@@ -14,6 +14,7 @@ import {
 } from "@/services/credit-origination";
 import { calculateScore } from "@/services/onboarding/evaluate-score";
 import type { EvaluateScoreResponse } from "@/types/score";
+import { normalizeCreditType } from "@/utils/credit-type";
 import confetti from "canvas-confetti";
 import { Shield, ShieldCheck } from "@/lib/icons";
 import {
@@ -30,7 +31,7 @@ function isPositiveNumber(value: unknown): value is number {
 
 function isBreakdownValid(
   response: EvaluateScoreResponse,
-  tipoDeCredito: string,
+  tipoDeCredito: string | null,
 ): boolean {
   if (!isPositiveNumber(response.pago_por_periodo_sin_seguros)) return false;
   if (!isPositiveNumber(response.monto_total_a_pagar)) return false;
@@ -49,8 +50,7 @@ function isBreakdownValid(
       return false;
     }
     if (
-      response.monto_total_a_pagar_con_seguros <
-      response.monto_total_a_pagar
+      response.monto_total_a_pagar_con_seguros < response.monto_total_a_pagar
     ) {
       return false;
     }
@@ -75,19 +75,17 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
   const data = credit.data;
 
   const montoOfertado =
-    Number(data.monto_ofertado) || Number(data.monto_solicitado) || 0;
+    toPositiveNumber(data.monto_ofertado) ?? toPositiveNumber(data.monto_solicitado);
   const evaluationId = data.evaluation_id ?? "";
 
   // Caché del detalle por evaluation_id: evita re-peticiones al backend
   // al reabrir el modal. Se limpia al presionar "Actualizar solicitudes".
-  const cached = useCreditDetailsStore((state) =>
-    state.detailsCache[evaluationId],
+  const cached = useCreditDetailsStore(
+    (state) => state.detailsCache[evaluationId],
   );
 
-  const tipoDeCredito =
-    data.tipo_de_credito_ofertado ??
-    data.tipo_de_credito_solicitado ??
-    "essential";
+  // La oferta solo varía el monto; el tipo de crédito es el de la solicitud.
+  const tipoDeCredito = normalizeCreditType(data.tipo_de_credito_solicitado);
 
   const calculateCredit = useCallback(
     (response: EvaluateScoreResponse) =>
@@ -131,6 +129,18 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
       try {
         if (!evaluationId) {
           setFetchError("No se pudo obtener la información del crédito.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!tipoDeCredito) {
+          setFetchError("No se pudo determinar el tipo de crédito de la solicitud.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!montoOfertado) {
+          setFetchError("No se pudo determinar el monto de la solicitud.");
           setIsLoading(false);
           return;
         }
@@ -237,6 +247,14 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
   );
 
   const handleAccept = async () => {
+    if (!tipoDeCredito) {
+      setError("Tipo de crédito no disponible. No se puede procesar la solicitud.");
+      return;
+    }
+    if (!montoOfertado) {
+      setError("Monto no disponible. No se puede procesar la solicitud.");
+      return;
+    }
     setIsUpdating(true);
     setError("");
     try {
@@ -254,12 +272,6 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
         estado: "approved",
         product_id,
         monto_ofertado: montoOfertado,
-        frecuencia_de_pago_ofertada:
-          data.frecuencia_de_pago_ofertada ??
-          data.frecuencia_de_pago_solicitada,
-        plazo_ofertado: data.plazo_ofertado ?? data.plazo_solicitado,
-        tipo_de_credito_ofertado:
-          data.tipo_de_credito_ofertado ?? data.tipo_de_credito_solicitado,
         ...(scoreData
           ? {
               perfil: scoreData.perfil,
@@ -271,16 +283,19 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
               capacidad_endeudamiento_max:
                 scoreData.capacidad_endeudamiento_max,
               comision_apertura: scoreData.comision_apertura,
-              monto_total_a_pagar: scoreData.monto_total_a_pagar,
-              ...(creditData
-                ? { pago_por_periodo: creditData.pagoPeriodico.total }
-                : {}),
-              ...(Number.isFinite(scoreData.monto_total_a_pagar_con_seguros)
-                ? {
-                    monto_total_a_pagar_con_seguros:
-                      scoreData.monto_total_a_pagar_con_seguros,
-                  }
-                : {}),
+              // Backend tiene un solo campo monto_total_a_pagar: enviamos el valor correcto según tipo de crédito.
+              monto_total_a_pagar:
+                tipoDeCredito === "protected" &&
+                Number.isFinite(scoreData.monto_total_a_pagar_con_seguros)
+                  ? scoreData.monto_total_a_pagar_con_seguros
+                  : scoreData.monto_total_a_pagar,
+              // Backend tiene un solo campo pago_por_periodo: igual que monto_total_a_pagar,
+              // enviamos con seguros para "protected" y sin seguros para el resto.
+              pago_por_periodo:
+                tipoDeCredito === "protected" &&
+                Number.isFinite(scoreData.pago_por_periodo_con_seguros_iva)
+                  ? scoreData.pago_por_periodo_con_seguros_iva
+                  : scoreData.pago_por_periodo_sin_seguros,
               evaluation_id: scoreData.evaluation_id ?? evaluationId,
             }
           : {}),
@@ -318,10 +333,11 @@ export const useCreditDetails = (credit: ClientRequestRecord) => {
   };
 
   // Datos para mostrar
+  // La oferta solo varía el monto; plazo y frecuencia son los de la solicitud.
   const frecuenciaDePago = formatPaymentFrequency(
-    data.frecuencia_de_pago_ofertada ?? data.frecuencia_de_pago_solicitada,
+    data.frecuencia_de_pago_solicitada,
   );
-  const plazo = data.plazo_ofertado ?? data.plazo_solicitado;
+  const plazo = data.plazo_solicitado;
   const TipoIcon = creditData ? getIcon(creditData.iconKey) : Shield;
 
   return {

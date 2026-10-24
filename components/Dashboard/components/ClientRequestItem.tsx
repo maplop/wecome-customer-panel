@@ -1,7 +1,7 @@
 import { CreditCard } from '@/lib/icons'
 import type { ClientRequestRecord } from "@/types/client-request"
 import { ESTADO_CONFIG } from "../constants/request-status"
-import { formatMoney, formatPaymentFrequency } from '@/utils/formatters'
+import { formatMoney, formatPaymentFrequency, toPositiveNumber } from '@/utils/formatters'
 import { getCreditTypeLabel } from '@/utils/credit-type'
 
 export interface ClientRequestItemProps {
@@ -17,6 +17,23 @@ function formatDate(iso: string): string {
   })
 }
 
+function DateChip({
+  iso,
+  className = "",
+}: {
+  iso?: string
+  className?: string
+}) {
+  if (!iso) return null
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium leading-none text-muted-foreground ${className}`}
+    >
+      {formatDate(iso)}
+    </span>
+  )
+}
+
 export default function ClientRequestItem({
   request,
   handleOpenDetail,
@@ -28,19 +45,17 @@ export default function ClientRequestItem({
   const showOffer = ['approved', 'active', 'completed'].includes(estado)
 
   const monto = showOffer
-    ? Number(data.monto_ofertado ?? 0)
-    : Number(data.monto_solicitado ?? 0)
-  const frecuenciaDePago = formatPaymentFrequency(
-    showOffer ? data.frecuencia_de_pago_ofertada : data.frecuencia_de_pago_solicitada
-  )
-  const tipoDeCredito = getCreditTypeLabel(
-    showOffer ? data.tipo_de_credito_ofertado : data.tipo_de_credito_solicitado
-  ) ?? '-'
-  const plazo = showOffer ? data.plazo_ofertado : data.plazo_solicitado
-  const productId = data.product_id ? String(data.product_id) : request.id
+    ? toPositiveNumber(data.monto_ofertado)
+    : toPositiveNumber(data.monto_solicitado)
+
+  // La oferta solo varía el monto; plazo, tipo y frecuencia son los de la solicitud.
+  const frecuenciaDePago = formatPaymentFrequency(data.frecuencia_de_pago_solicitada)
+  const tipoDeCredito = getCreditTypeLabel(data.tipo_de_credito_solicitado) ?? '-'
+  const plazo = data.plazo_solicitado
+  //const productId = data.product_id ? String(data.product_id) : request.id
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 pt-3">
 
       {/* Vista tarjeta (por debajo de lg) */}
       <div className="lg:hidden rounded-2xl border border-border bg-card p-4 flex flex-col gap-3">
@@ -54,22 +69,20 @@ export default function ClientRequestItem({
                 Crédito Nómina
               </span>
               <span className="text-xs text-muted-foreground truncate">
-                {productId}
+                {request.id}
               </span>
             </div>
           </div>
-          <span className="text-[10px] text-muted-foreground shrink-0">
-            {formatDate(request.created_at)}
-          </span>
+          <DateChip iso={request.created_at} className="shrink-0" />
         </div>
 
         <div className="flex items-end justify-between gap-2">
           <div className="flex flex-col gap-0.5 min-w-0">
             <span className="text-xs text-muted-foreground">
-              {showOffer ? 'Aprobado' : 'Solicitado'}
+              {showOffer ? 'Monto Aprobado' : 'Monto Solicitado'}
             </span>
             <span className="text-lg font-bold text-brand-accent truncate">
-              {formatMoney(monto)}
+              {monto != null ? formatMoney(monto) : '—'}
             </span>
           </div>
           <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium w-fit ${estadoCfg.className}`}>
@@ -111,8 +124,11 @@ export default function ClientRequestItem({
       </div>
 
       {/* Vista fila (lg en adelante) */}
-      <div className="hidden lg:grid rounded-2xl border border-border bg-card px-5 pt-3 pb-5 grid-cols-[minmax(180px,1.8fr)_minmax(100px,1fr)_minmax(80px,0.7fr)_minmax(110px,0.9fr)_minmax(70px,0.6fr)_minmax(90px,0.8fr)_auto] items-center gap-x-6 gap-y-0">
-
+      <div className="relative hidden  lg:grid rounded-2xl border border-border bg-card px-5 pt-3 pb-5 grid-cols-[minmax(180px,1.8fr)_minmax(100px,1fr)_minmax(80px,0.7fr)_minmax(110px,0.9fr)_minmax(70px,0.6fr)_minmax(90px,0.8fr)_auto] items-center gap-x-6 gap-y-0">
+        <DateChip
+          iso={request.created_at}
+          className="absolute -top-3 right-5"
+        />
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary shrink-0">
             <CreditCard className="h-5 w-5 text-foreground" />
@@ -129,10 +145,10 @@ export default function ClientRequestItem({
 
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs text-muted-foreground">
-            {showOffer ? 'Aprobado' : 'Solicitado'}
+            {showOffer ? 'Monto Aprobado' : 'Monto Solicitado'}
           </span>
           <span className="text-base font-bold text-brand-accent truncate">
-            {formatMoney(monto)}
+            {monto != null ? formatMoney(monto) : '—'}
           </span>
         </div>
 

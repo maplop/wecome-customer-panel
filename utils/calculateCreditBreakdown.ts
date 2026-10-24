@@ -1,5 +1,7 @@
 import type { EvaluateScoreResponse } from "@/types/score";
 
+import type { NormalizedCreditType } from "@/utils/credit-type";
+
 export type IconKey = "shield-check" | "shield";
 
 export interface CreditBreakdown {
@@ -26,7 +28,7 @@ export const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function calculateCreditBreakdown(
   response: EvaluateScoreResponse,
-  tipoDeCredito?: string,
+  tipoDeCredito?: NormalizedCreditType | null,
 ): CreditBreakdown {
   const isProtected = tipoDeCredito === "protected";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
 import { useClientDataStore } from "@/stores/client-data-store";
@@ -44,6 +44,24 @@ export function useCreditDashboard() {
     open: boolean;
     credit: ClientRequestRecord | null;
   }>({ open: false, credit: null });
+
+  const clientId = Number(session.client?.id ?? 0);
+
+  // Sincronización en segundo plano al montar para mantener el store siempre al día
+  useEffect(() => {
+    if (!clientId) return;
+
+    let isMounted = true;
+    getRequestsByClient(String(clientId)).catch((error) => {
+      if (isMounted) {
+        console.error("[useCreditDashboard] auto-sync requests error:", error);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clientId]);
 
   const user = useMemo(() => {
     const data = session.client?.pii;

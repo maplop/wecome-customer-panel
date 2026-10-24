@@ -62,6 +62,8 @@ export function useCreditSelection() {
     return TERMS.includes(parsed as (typeof TERMS)[number]) ? parsed : TERMS[0];
   })();
   const resolvedType =
+    // Si no hay solicitud previa, arrancamos en "protected" como selección
+    // inicial de UI — el usuario todavía no eligió, no es un dato del backend.
     normalizeCreditType(requestData.tipo_de_credito_solicitado) ?? "protected";
   const resolvedPaymentFrequency = normalizePaymentFrequency(
     requestData.frecuencia_de_pago_solicitada,
@@ -118,9 +120,7 @@ export function useCreditSelection() {
   const suggestedAmounts = useMemo(() => {
     const range = maxAmount - minAmount;
     if (range < 4) return [];
-    return [1, 2, 3].map((step) =>
-      Math.round(minAmount + (range * step) / 4),
-    );
+    return [1, 2, 3].map((step) => Math.round(minAmount + (range * step) / 4));
   }, [minAmount, maxAmount]);
 
   const [amount, setAmount] = useState(MIN_AMOUNT);
@@ -225,7 +225,7 @@ export function useCreditSelection() {
   }, []);
 
   const handleRiskAccept = useCallback(() => {
-    setHasInsurance("esencial");
+    setHasInsurance("essential");
     setShowRiskModal(false);
   }, []);
 
@@ -267,7 +267,7 @@ export function useCreditSelection() {
       const creditDataPatch = {
         monto_solicitado: amount,
         tipo_de_credito_solicitado:
-          hasInsurance === "protected" ? "protected" : "esencial",
+          hasInsurance === "protected" ? "protected" : "essential",
         plazo_solicitado: term,
         frecuencia_de_pago_solicitada: frequencyToApiCode(paymentFrequency),
         perfil: result.perfil,
@@ -277,10 +277,15 @@ export function useCreditSelection() {
         ),
         capacidad_endeudamiento_max: result.capacidad_endeudamiento_max,
         comision_apertura: result.comision_apertura,
-        monto_total_a_pagar: hasInsurance
-          ? result.monto_total_a_pagar_con_seguros
-          : result.monto_total_a_pagar,
-        pago_por_periodo: hasInsurance
+        // Enviamos al backend el valor correcto segun tipo de credito.
+        // "protected" -> con seguros, cualquier otro -> sin seguros.
+        monto_total_a_pagar:
+          hasInsurance === "protected"
+            ? result.monto_total_a_pagar_con_seguros
+            : result.monto_total_a_pagar,
+        // Backend tiene un solo campo pago_por_periodo. Igual que monto_total_a_pagar:
+        // "protected" -> con seguros+IVA, cualquier otro -> sin seguros.
+        pago_por_periodo: hasInsurance === "protected"
           ? result.pago_por_periodo_con_seguros_iva
           : result.pago_por_periodo_sin_seguros,
         evaluation_id: result.evaluation_id,

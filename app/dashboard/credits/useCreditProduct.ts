@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ESTADO_CONFIG } from "@/components/Dashboard/constants/request-status";
 import { useCreditAccountDetails } from "@/hooks/use-credit-account-details";
 import { useClientRequestStore } from "@/stores/client-request-store";
+import { useClientDataStore } from "@/stores/client-data-store";
 import { useCreditDetailsStore } from "@/stores/credit-details-store";
-import { formatPaymentFrequency } from "@/utils/formatters";
-import { isProtectedCredit } from "@/utils/credit-type";
+import { getRequestsByClient } from "@/services/client-requests";
+import { formatPaymentFrequency, toPositiveNumber } from "@/utils/formatters";
+import { isProtectedCredit, normalizeCreditType } from "@/utils/credit-type";
 import type { CreditInstallment } from "@/types/credit-account";
 import { parseFraction } from "./utils";
 
@@ -35,6 +37,39 @@ export function useCreditProduct() {
     );
   }, [requests, productIdParam]);
 
+  const sessionClientId = useClientDataStore((state) => state.client?.id);
+  const storeClientId = useClientRequestStore((state) => state.clientId);
+  const resolvedClientId = sessionClientId
+    ? Number(sessionClientId)
+    : storeClientId;
+
+  const [isSyncingRequests, setIsSyncingRequests] = useState(false);
+
+  useEffect(() => {
+    if (!resolvedClientId) return;
+
+    let isMounted = true;
+    if (!record) {
+      setIsSyncingRequests(true);
+    }
+
+    getRequestsByClient(String(resolvedClientId))
+      .catch((err) => {
+        if (isMounted) {
+          console.error("[useCreditProduct] Error fetching requests:", err);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsSyncingRequests(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedClientId]);
+
   const estado = record?.data.estado;
   const accountId = Number(record?.data.product_id ?? productIdParam ?? 0);
 
@@ -47,21 +82,19 @@ export function useCreditProduct() {
     evaluationId ? state.detailsCache[evaluationId] : undefined,
   );
 
-  const creditType =
-    requestData?.tipo_de_credito_ofertado ??
-    requestData?.tipo_de_credito_solicitado ??
-    "";
+  // La oferta solo varía el monto; plazo, tipo y frecuencia se leen de los campos solicitados.
+  const creditType = normalizeCreditType(requestData?.tipo_de_credito_solicitado);
   const creditStatus = estado ? ESTADO_CONFIG[estado] : undefined;
-  const plazo = requestData?.plazo_ofertado ?? requestData?.plazo_solicitado;
-  const periodicidad = formatPaymentFrequency(
-    requestData?.frecuencia_de_pago_ofertada ??
-      requestData?.frecuencia_de_pago_solicitada,
-  );
+  const plazo = requestData?.plazo_solicitado;
+  const periodicidad = formatPaymentFrequency(requestData?.frecuencia_de_pago_solicitada);
 
   // --- Datos de la solicitud ---
-  const montoCredito = Number(
-    requestData?.monto_ofertado ?? requestData?.monto_solicitado ?? 0,
-  );
+  // toPositiveNumber devuelve null si el campo es 0, undefined o no finito.
+  // La page.tsx ya tiene montoCredito > 0 ? formatMoney(...) : "—"
+  const montoCredito =
+    toPositiveNumber(requestData?.monto_ofertado) ??
+    toPositiveNumber(requestData?.monto_solicitado) ??
+    null;
 
   // --- Datos del endpoint (producto contratado) ---
   const summary = accountDetails?.summary;
@@ -79,23 +112,18 @@ export function useCreditProduct() {
       ? Math.min(100, Math.round((paidAmount / paidTotal) * 100))
       : 0;
 
-  console.log("isProtectedCredit -- ", isProtectedCredit(creditType));
+  // Para crédito "protected" usamos exclusivamente el monto con seguros.
+  // Si ese campo falta, retornamos null (no caemos al monto sin seguros,
+  // ya que sería un valor financiero incorrecto para el cliente).
+  // Para cualquier otro tipo usamos el monto sin seguros.
+  // Como último recurso usamos summary?.totalAmount del endpoint live.
+  const totalAPagarFromRequest = isProtectedCredit(creditType)
+    ? (toPositiveNumber(requestData?.monto_total_a_pagar_con_seguros) ??
+      toPositiveNumber(cachedScore?.scoreData.monto_total_a_pagar_con_seguros))
+    : (toPositiveNumber(requestData?.monto_total_a_pagar) ??
+      toPositiveNumber(cachedScore?.scoreData.monto_total_a_pagar));
 
-  const totalAPagarFromCredit = isProtectedCredit(creditType)
-    ? (requestData?.monto_total_a_pagar_con_seguros ??
-      cachedScore?.scoreData.monto_total_a_pagar_con_seguros ??
-      requestData?.monto_total_a_pagar ??
-      cachedScore?.scoreData.monto_total_a_pagar)
-    : (requestData?.monto_total_a_pagar ??
-      cachedScore?.scoreData.monto_total_a_pagar);
-
-  console.log("requestData -- ", requestData);
-
-  const totalAPagar =
-    totalAPagarFromCredit != null &&
-    Number.isFinite(Number(totalAPagarFromCredit))
-      ? Number(totalAPagarFromCredit)
-      : summary?.totalAmount;
+  const totalAPagar = totalAPagarFromRequest ?? summary?.totalAmount ?? null;
 
   const pendingGroup = accountDetails?.pending;
   const upcomingGroup = accountDetails?.upcoming;
@@ -154,5 +182,6 @@ export function useCreditProduct() {
     isLoadingProduct,
     productError,
     isProductVisible,
+    isSyncingRequests,
   };
 }
