@@ -24,15 +24,17 @@ function SummaryStat({
   iconClassName: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-4">
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconClassName}`}>
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-lg font-semibold text-foreground">{terms}</p>
-        <p className="text-xs text-muted-foreground">{safeMoney(amount)}</p>
+    <div className="flex justify-between items-center gap-3 rounded-xl border border-border bg-muted/30 p-4">
+      <div className="flex items-center gap-3">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconClassName}`}>
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground">{safeMoney(amount)}</p>
+        </div>
       </div>
+      <p className="text-lg font-semibold text-foreground">{terms}</p>
     </div>
   );
 }

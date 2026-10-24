@@ -28,7 +28,8 @@ dist/
 next-env.d.ts
 
 # OS
-Thumbs.db        # Windows equivalent of .DS_Store
+# Windows equivalent of .DS_Store
+Thumbs.db
 
 # IDE
 .vscode/

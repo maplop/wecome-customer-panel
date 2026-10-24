@@ -7,6 +7,7 @@ import { useCreditAccountDetails } from "@/hooks/use-credit-account-details";
 import { useClientRequestStore } from "@/stores/client-request-store";
 import { useCreditDetailsStore } from "@/stores/credit-details-store";
 import { formatPaymentFrequency } from "@/utils/formatters";
+import { isProtectedCredit } from "@/utils/credit-type";
 import type { CreditInstallment } from "@/types/credit-account";
 import { parseFraction } from "./utils";
 
@@ -70,7 +71,6 @@ export function useCreditProduct() {
 
   // --- Datos del endpoint (producto contratado) ---
   const summary = accountDetails?.summary;
-  const totalAPagar = summary?.totalAmount;
   const saldoPendiente = summary?.currentAmount;
   const overdueAmount = summary?.overdueAmount ?? 0;
   const lateTerms = summary?.lateTerms ?? 0;
@@ -82,6 +82,19 @@ export function useCreditProduct() {
   const totalPayments = summary?.totalTerms ?? totalPaymentsFromLabel;
   const progressPct =
     paidTotal > 0 ? Math.min(100, Math.round((paidAmount / paidTotal) * 100)) : 0;
+
+  const totalAPagarFromCredit = isProtectedCredit(creditType)
+    ? requestData?.monto_total_a_pagar_con_seguros ??
+      cachedScore?.scoreData.monto_total_a_pagar_con_seguros ??
+      requestData?.monto_total_a_pagar ??
+      cachedScore?.scoreData.monto_total_a_pagar
+    : requestData?.monto_total_a_pagar ??
+      cachedScore?.scoreData.monto_total_a_pagar;
+  const totalAPagar =
+    totalAPagarFromCredit != null &&
+    Number.isFinite(Number(totalAPagarFromCredit))
+      ? Number(totalAPagarFromCredit)
+      : summary?.totalAmount;
 
   const pendingGroup = accountDetails?.pending;
   const upcomingGroup = accountDetails?.upcoming;

@@ -299,15 +299,11 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                                 {creditData.mostrarSeguros && (
                                   <th className="text-right py-2 px-2 font-medium">Seguros + IVA</th>
                                 )}
-                                <th className="text-right py-2 px-2 font-medium">Pago total</th>
                                 <th className="text-right py-2 pl-2 font-medium">Saldo</th>
                               </tr>
                             </thead>
                             <tbody>
                               {amortizacion.map((row) => {
-                                const paymentTotal = creditData.mostrarSeguros
-                                  ? row.payment_total?.expected
-                                  : row.payment.expected
                                 const insuranceAndIva = creditData.mostrarSeguros && row.payment_total
                                   ? round2(row.payment_total.expected - row.payment.expected)
                                   : null
@@ -330,9 +326,6 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                                         {formatMoney(insuranceAndIva)}
                                       </td>
                                     )}
-                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
-                                      {formatMoney(paymentTotal)}
-                                    </td>
                                     <td className="py-2 pl-2 text-right text-foreground whitespace-nowrap">
                                       {formatMoney(row.final_balance)}
                                     </td>

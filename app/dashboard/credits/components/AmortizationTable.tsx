@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Download } from "@/lib/icons";
+import { ChevronDown } from "@/lib/icons";
 import { formatMoney } from "@/utils/formatters";
 import type { CreditAmortizationRow } from "@/types/credit-account";
-import { installmentStatusMeta } from "../utils";
+import { formatShortDate, installmentStatusMeta } from "../utils";
 
 const INITIAL_ROWS = 6;
 
@@ -15,6 +15,15 @@ interface AmortizationTableProps {
 export default function AmortizationTable({ rows }: AmortizationTableProps) {
   const [showAll, setShowAll] = useState(false);
   const visibleRows = showAll ? rows : rows.slice(0, INITIAL_ROWS);
+
+  const hasInsurance = rows.some((row) => {
+    const insurance =
+      row.unemploymentInsurance.expected +
+      row.unemploymentInsuranceTax.expected +
+      row.outstandingBalanceInsurance.expected +
+      row.outstandingBalanceInsuranceTax.expected;
+    return insurance > 0 || row.totalPayment.expected > row.payment.expected;
+  });
 
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
@@ -34,17 +43,18 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
       ) : (
         <>
           <div className="mt-5 overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse text-sm">
+            <table className="w-full min-w-[850px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-foreground">
-                  <th scope="col" className="px-2 py-3 font-semibold">Pago</th>
-                  <th scope="col" className="px-2 py-3 font-semibold">Fecha límite</th>
-                  <th scope="col" className="px-2 py-3 text-right font-semibold">Pago base</th>
-                  <th scope="col" className="px-2 py-3 text-right font-semibold">Seguros</th>
-                  <th scope="col" className="px-2 py-3 text-right font-semibold">Pago total</th>
+                  <th scope="col" className="px-2 py-3 font-semibold">Período</th>
+                  <th scope="col" className="px-2 py-3 font-semibold">Fecha</th>
+                  <th scope="col" className="px-2 py-3 text-right font-semibold">Saldo inicial</th>
                   <th scope="col" className="px-2 py-3 text-right font-semibold">Capital</th>
                   <th scope="col" className="px-2 py-3 text-right font-semibold">Interés</th>
-                  <th scope="col" className="px-2 py-3 text-right font-semibold">Saldo restante</th>
+                  {hasInsurance && (
+                    <th scope="col" className="px-2 py-3 text-right font-semibold">Seguros + IVA</th>
+                  )}
+                  <th scope="col" className="px-2 py-3 text-right font-semibold">Saldo</th>
                   <th scope="col" className="px-2 py-3 font-semibold">Estado</th>
                 </tr>
               </thead>
@@ -55,7 +65,11 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                     row.unemploymentInsurance.expected +
                     row.unemploymentInsuranceTax.expected +
                     row.outstandingBalanceInsurance.expected +
-                    row.outstandingBalanceInsuranceTax.expected;
+                    row.outstandingBalanceInsuranceTax.expected ||
+                    (row.totalPayment.expected > row.payment.expected
+                      ? row.totalPayment.expected - row.payment.expected
+                      : 0);
+
                   return (
                     <tr
                       key={row.term}
@@ -64,22 +78,21 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                       <th scope="row" className="px-2 py-3 text-left font-semibold text-foreground">
                         {String(row.term).padStart(2, "0")}
                       </th>
-                      <td className="whitespace-nowrap px-2 py-3 text-foreground">{row.dueDate}</td>
+                      <td className="whitespace-nowrap px-2 py-3 text-foreground">{formatShortDate(row.dueDate)}</td>
                       <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
-                        {formatMoney(row.payment.expected)}
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-3 text-right text-muted-foreground">
-                        {formatMoney(insurance)}
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-3 text-right font-semibold text-foreground">
-                        {formatMoney(row.totalPayment.expected)}
+                        {formatMoney(row.balance)}
                       </td>
                       <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
                         {formatMoney(row.principal.expected)}
                       </td>
-                      <td className="whitespace-nowrap px-2 py-3 text-right text-muted-foreground">
+                      <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
                         {formatMoney(row.interest.expected)}
                       </td>
+                      {hasInsurance && (
+                        <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
+                          {formatMoney(insurance)}
+                        </td>
+                      )}
                       <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
                         {formatMoney(row.finalBalance)}
                       </td>
