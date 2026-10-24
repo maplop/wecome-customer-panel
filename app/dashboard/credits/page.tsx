@@ -44,6 +44,7 @@ function CreditDetailsContent() {
     hasRecord,
     hasSummary,
     montoCredito,
+    pagoPorPeriodo,
     creditType,
     creditStatus,
     plazo,
@@ -198,6 +199,8 @@ function CreditDetailsContent() {
           plazo={plazo}
           periodicidad={periodicidad}
           status={creditStatus}
+          montoAprobado={montoCredito}
+          pagoPorPeriodo={pagoPorPeriodo}
         />
       </div>
 

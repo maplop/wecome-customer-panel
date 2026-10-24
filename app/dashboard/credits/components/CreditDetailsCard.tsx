@@ -2,12 +2,16 @@ import type { EstadoConfigItem } from "@/components/Dashboard/constants/request-
 import { Shield, ShieldCheck } from "@/lib/icons";
 import type { NormalizedCreditType } from "@/utils/credit-type";
 import { getCreditTypeLabel, isProtectedCredit } from "@/utils/credit-type";
+import { formatMoney } from "@/utils/formatters";
+import { safeMoney } from "../utils";
 
 interface CreditDetailsCardProps {
   creditType: NormalizedCreditType | null | undefined;
   plazo?: number | null;
   periodicidad: string;
   status?: EstadoConfigItem;
+  montoAprobado?: number | null;
+  pagoPorPeriodo?: number | null;
 }
 
 export default function CreditDetailsCard({
@@ -15,6 +19,8 @@ export default function CreditDetailsCard({
   plazo,
   periodicidad,
   status,
+  montoAprobado,
+  pagoPorPeriodo,
 }: CreditDetailsCardProps) {
   const CreditTypeIcon = isProtectedCredit(creditType) ? ShieldCheck : Shield;
 
@@ -33,6 +39,25 @@ export default function CreditDetailsCard({
             {getCreditTypeLabel(creditType) || "—"}
           </dd>
         </div>
+
+        {montoAprobado != null && (
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-sm text-muted-foreground">Monto aprobado</dt>
+            <dd className="text-right text-sm font-semibold text-foreground">
+              {formatMoney(montoAprobado)}
+            </dd>
+          </div>
+        )}
+
+        {pagoPorPeriodo != null && (
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-sm text-muted-foreground">Pago por periodo</dt>
+            <dd className="text-right text-sm font-semibold text-foreground">
+              {formatMoney(pagoPorPeriodo)}
+            </dd>
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-4">
           <dt className="text-sm text-muted-foreground">Plazo</dt>
           <dd className="text-right text-sm font-semibold text-foreground">

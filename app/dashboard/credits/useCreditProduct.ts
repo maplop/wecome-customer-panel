@@ -96,6 +96,8 @@ export function useCreditProduct() {
     toPositiveNumber(requestData?.monto_solicitado) ??
     null;
 
+  const pagoPorPeriodo = toPositiveNumber(requestData?.pago_por_periodo) ?? null;
+
   // --- Datos del endpoint (producto contratado) ---
   const summary = accountDetails?.summary;
   const saldoPendiente = summary?.currentAmount;
@@ -158,6 +160,7 @@ export function useCreditProduct() {
     hasSummary: summary != null,
     // Solicitud
     montoCredito,
+    pagoPorPeriodo,
     creditType,
     creditStatus,
     plazo,

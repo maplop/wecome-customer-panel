@@ -4,7 +4,9 @@ export function normalizeCreditType(
   value?: string | { id?: string } | null,
 ): NormalizedCreditType | null {
   const raw = (
-    typeof value === "object" ? (value as { id?: string }).id : value
+    value !== null && typeof value === "object"
+      ? (value as { id?: string }).id
+      : value
   )
     ?.trim()
     .toLowerCase();
