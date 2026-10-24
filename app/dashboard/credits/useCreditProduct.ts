@@ -57,12 +57,6 @@ export function useCreditProduct() {
     requestData?.frecuencia_de_pago_ofertada ??
       requestData?.frecuencia_de_pago_solicitada,
   );
-  const tasaAnualPct =
-    cachedScore?.scoreData.configuracion_credito?.tasa_interes_anual_pct;
-  const tasaAnual =
-    tasaAnualPct != null && Number.isFinite(Number(tasaAnualPct))
-      ? `${Number(tasaAnualPct).toFixed(2)}%`
-      : "—";
 
   // --- Datos de la solicitud ---
   const montoCredito = Number(
@@ -81,15 +75,22 @@ export function useCreditProduct() {
   );
   const totalPayments = summary?.totalTerms ?? totalPaymentsFromLabel;
   const progressPct =
-    paidTotal > 0 ? Math.min(100, Math.round((paidAmount / paidTotal) * 100)) : 0;
+    paidTotal > 0
+      ? Math.min(100, Math.round((paidAmount / paidTotal) * 100))
+      : 0;
+
+  console.log("isProtectedCredit -- ", isProtectedCredit(creditType));
 
   const totalAPagarFromCredit = isProtectedCredit(creditType)
-    ? requestData?.monto_total_a_pagar_con_seguros ??
+    ? (requestData?.monto_total_a_pagar_con_seguros ??
       cachedScore?.scoreData.monto_total_a_pagar_con_seguros ??
       requestData?.monto_total_a_pagar ??
-      cachedScore?.scoreData.monto_total_a_pagar
-    : requestData?.monto_total_a_pagar ??
-      cachedScore?.scoreData.monto_total_a_pagar;
+      cachedScore?.scoreData.monto_total_a_pagar)
+    : (requestData?.monto_total_a_pagar ??
+      cachedScore?.scoreData.monto_total_a_pagar);
+
+  console.log("requestData -- ", requestData);
+
   const totalAPagar =
     totalAPagarFromCredit != null &&
     Number.isFinite(Number(totalAPagarFromCredit))
@@ -101,8 +102,23 @@ export function useCreditProduct() {
   const settledGroup = accountDetails?.settled;
   const amortizationTable = accountDetails?.amortizationTable ?? [];
 
+  const nextAmortizationRow = amortizationTable.find((row) => !row.isPaid);
   const nextInstallment: CreditInstallment | null =
-    pendingGroup?.installments[0] ?? upcomingGroup?.previousTerm ?? null;
+    pendingGroup?.installments[0] ??
+    (nextAmortizationRow
+      ? {
+          term: String(nextAmortizationRow.term),
+          dueDate: nextAmortizationRow.dueDate,
+          amount:
+            nextAmortizationRow.detail?.total ||
+            nextAmortizationRow.totalPayment.expected,
+          status: "open",
+          paid: 0,
+          late: 0,
+          isOverdue: false,
+          detail: nextAmortizationRow.detail,
+        }
+      : (upcomingGroup?.previousTerm ?? null));
   const upcomingInstallments = pendingGroup?.installments ?? [];
   const overdueInstallments = upcomingGroup?.installments ?? [];
 
@@ -118,7 +134,6 @@ export function useCreditProduct() {
     creditStatus,
     plazo,
     periodicidad,
-    tasaAnual,
     // Producto
     totalAPagar,
     saldoPendiente,

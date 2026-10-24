@@ -71,6 +71,7 @@ export interface CreditAmortizationRow {
   unemploymentInsuranceTax: CreditPaymentAmount;
   outstandingBalanceInsurance: CreditPaymentAmount;
   outstandingBalanceInsuranceTax: CreditPaymentAmount;
+  detail: CreditInstallmentDetail;
 }
 
 // Detalle completo del producto contratado.

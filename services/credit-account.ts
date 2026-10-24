@@ -101,18 +101,75 @@ function mapSummary(raw: unknown): CreditProductSummary {
   };
 }
 
-function mapAmortizationRow(raw: unknown): CreditAmortizationRow | null {
+function extractCycleNumbers(group: unknown): Set<number> {
+  const set = new Set<number>();
+  if (!isRecord(group) || !Array.isArray(group.cycles)) return set;
+  for (const c of group.cycles) {
+    if (isRecord(c) && c.cycle != null) {
+      const num = Number(c.cycle);
+      if (Number.isFinite(num)) {
+        set.add(num);
+      }
+    }
+  }
+  return set;
+}
+
+function getTodayYmd(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+interface CyclesStatusContext {
+  dueCycles: Set<number>;
+  openCycles: Set<number>;
+  paidCycles: Set<number>;
+}
+
+function mapAmortizationRow(
+  raw: unknown,
+  context?: CyclesStatusContext,
+): CreditAmortizationRow | null {
   if (!isRecord(raw)) return null;
   if (raw.date == null && raw.cycle == null) return null;
   const totalPayment = toAmount(raw.payment_total);
+  const term = toNumber(raw.cycle);
+  const dueDate = String(raw.date ?? "");
+  const daysOverdue = toNumber(raw.day_due);
+
+  const isPaid =
+    (context?.paidCycles.has(term) ?? false) || totalPayment.paid > 0;
+
+  // Comparación de fecha contra hoy (formato YYYY-MM-DD)
+  const dateMatch = dueDate.trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  const isDatePast = dateMatch ? dateMatch[1] < getTodayYmd() : false;
+
+  let isPast = false;
+  if (!isPaid) {
+    if (context && (context.dueCycles.size > 0 || context.openCycles.size > 0)) {
+      if (context.dueCycles.has(term)) {
+        isPast = true;
+      } else if (context.openCycles.has(term)) {
+        isPast = false;
+      } else {
+        isPast = isDatePast;
+      }
+    } else {
+      isPast = isDatePast;
+    }
+  }
+
   return {
-    term: toNumber(raw.cycle),
-    dueDate: String(raw.date ?? ""),
+    term,
+    dueDate,
     balance: toNumber(raw.balance),
     finalBalance: toNumber(raw.final_balance),
-    daysOverdue: toNumber(raw.day_due),
-    isPast: String(raw.past ?? "false") === "true",
-    isPaid: totalPayment.paid > 0,
+    daysOverdue,
+    isPast,
+    isPaid,
     payment: toAmount(raw.payment),
     principal: toAmount(raw.principal),
     interest: toAmount(raw.interest),
@@ -124,13 +181,23 @@ function mapAmortizationRow(raw: unknown): CreditAmortizationRow | null {
     outstandingBalanceInsuranceTax: toAmount(
       raw.outstanding_balance_insurance_tax,
     ),
+    detail: mapDetail(raw.detail),
   };
 }
 
-function mapAmortizationTable(raw: unknown): CreditAmortizationRow[] {
+function mapAmortizationTable(
+  raw: unknown,
+  rawContext?: RawRecord,
+): CreditAmortizationRow[] {
   if (!Array.isArray(raw)) return [];
+  const context: CyclesStatusContext = {
+    dueCycles: extractCycleNumbers(rawContext?.due),
+    openCycles: extractCycleNumbers(rawContext?.open),
+    paidCycles: extractCycleNumbers(rawContext?.paid),
+  };
+
   return raw
-    .map(mapAmortizationRow)
+    .map((item) => mapAmortizationRow(item, context))
     .filter((row): row is CreditAmortizationRow => row !== null);
 }
 
@@ -141,7 +208,7 @@ function mapAccountDetails(raw: unknown): CreditAccountDetails {
     upcoming: mapGroup(r.due),
     pending: mapGroup(r.open),
     settled: mapGroup(r.paid),
-    amortizationTable: mapAmortizationTable(r.payment_calendar),
+    amortizationTable: mapAmortizationTable(r.payment_calendar, r),
   };
 }
 

@@ -43,7 +43,7 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
       ) : (
         <>
           <div className="mt-5 overflow-x-auto">
-            <table className="w-full min-w-[850px] border-collapse text-sm">
+            <table className="w-full min-w-[950px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-foreground">
                   <th scope="col" className="px-2 py-3 font-semibold">Período</th>
@@ -54,6 +54,7 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                   {hasInsurance && (
                     <th scope="col" className="px-2 py-3 text-right font-semibold">Seguros + IVA</th>
                   )}
+                  <th scope="col" className="px-2 py-3 text-right font-semibold">Pago total</th>
                   <th scope="col" className="px-2 py-3 text-right font-semibold">Saldo</th>
                   <th scope="col" className="px-2 py-3 font-semibold">Estado</th>
                 </tr>
@@ -69,6 +70,7 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                     (row.totalPayment.expected > row.payment.expected
                       ? row.totalPayment.expected - row.payment.expected
                       : 0);
+                  const total = row.detail?.total || row.totalPayment.expected;
 
                   return (
                     <tr
@@ -93,6 +95,9 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                           {formatMoney(insurance)}
                         </td>
                       )}
+                      <td className="whitespace-nowrap px-2 py-3 text-right font-semibold text-foreground">
+                        {formatMoney(total)}
+                      </td>
                       <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
                         {formatMoney(row.finalBalance)}
                       </td>

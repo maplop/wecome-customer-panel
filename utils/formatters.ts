@@ -30,6 +30,24 @@ function parseDateInput(value: string | Date): Date | null {
   const raw = value.trim();
   if (!raw) return null;
 
+  // yyyy-mm-dd
+  const ymdMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (ymdMatch) {
+    const year = Number(ymdMatch[1]);
+    const month = Number(ymdMatch[2]);
+    const day = Number(ymdMatch[3]);
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month - 1 &&
+      parsed.getDate() === day
+    ) {
+      return parsed;
+    }
+    return null;
+  }
+
   // dd/mm/yyyy
   const dmyMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (dmyMatch) {

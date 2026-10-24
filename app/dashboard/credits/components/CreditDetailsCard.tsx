@@ -6,7 +6,6 @@ interface CreditDetailsCardProps {
   creditType: string;
   plazo?: number | null;
   periodicidad: string;
-  tasaAnual: string;
   status?: EstadoConfigItem;
 }
 
@@ -14,7 +13,6 @@ export default function CreditDetailsCard({
   creditType,
   plazo,
   periodicidad,
-  tasaAnual,
   status,
 }: CreditDetailsCardProps) {
   const CreditTypeIcon = isProtectedCredit(creditType) ? ShieldCheck : Shield;
@@ -43,10 +41,6 @@ export default function CreditDetailsCard({
         <div className="flex items-center justify-between gap-4">
           <dt className="text-sm text-muted-foreground">Periodicidad</dt>
           <dd className="text-right text-sm font-semibold text-foreground">{periodicidad}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <dt className="text-sm text-muted-foreground">Tasa anual</dt>
-          <dd className="text-right text-sm font-semibold text-foreground">{tasaAnual}</dd>
         </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="text-sm text-muted-foreground">Estatus</dt>

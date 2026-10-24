@@ -47,7 +47,6 @@ function CreditDetailsContent() {
     creditStatus,
     plazo,
     periodicidad,
-    tasaAnual,
     totalAPagar,
     saldoPendiente,
     overdueAmount,
@@ -186,7 +185,6 @@ function CreditDetailsContent() {
           creditType={creditType}
           plazo={plazo}
           periodicidad={periodicidad}
-          tasaAnual={tasaAnual}
           status={creditStatus}
         />
       </div>
@@ -214,7 +212,10 @@ function CreditDetailsContent() {
 
       <AmortizationTable rows={amortizationTable} />
 
-      <UpcomingPayments installments={upcomingInstallments} />
+      <UpcomingPayments
+        installments={upcomingInstallments}
+        totalPayments={totalPayments}
+      />
     </section>
   );
 }

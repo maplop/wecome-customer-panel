@@ -31,11 +31,24 @@ export function parseFraction(label?: string | null): [number, number] {
   ];
 }
 
+export function isDueDatePast(dueDate?: string | null): boolean {
+  if (!dueDate) return false;
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(dueDate.trim());
+  if (!match) return false;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return match[1] < today;
+}
+
 export function installmentStatusMeta(row: CreditAmortizationRow) {
   if (row.isPaid) {
     return { ...ESTADO_CONFIG.completed, label: "Pagado" };
   }
   if (row.isPast && !row.isPaid) {
+    // Si la fecha de la cuota aún no ha pasado, es Pendiente
+    if (row.dueDate && !isDueDatePast(row.dueDate)) {
+      return { ...ESTADO_CONFIG.pending, label: "Pendiente" };
+    }
     return {
       label: "Vencido",
       className: "bg-red-500/10 text-red-600 dark:text-red-400",
