@@ -294,12 +294,12 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                               <tr className="border-b border-border text-muted-foreground">
                                 <th className="text-left py-2 pr-2 font-medium">Período</th>
                                 <th className="text-left py-2 px-2 font-medium">Fecha</th>
-                                <th className="text-right py-2 px-2 font-medium">Saldo inicial</th>
                                 <th className="text-right py-2 px-2 font-medium">Capital</th>
                                 <th className="text-right py-2 px-2 font-medium">Interés</th>
                                 {creditData.mostrarSeguros && (
                                   <th className="text-right py-2 px-2 font-medium">Seguros + IVA</th>
                                 )}
+                                <th className="text-right py-2 px-2 font-medium">Pago total</th>
                                 <th className="text-right py-2 pl-2 font-medium">Saldo</th>
                               </tr>
                             </thead>
@@ -309,13 +309,14 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                                   ? round2(row.payment_total.expected - row.payment.expected)
                                   : null
 
+                                const pagoTotal = creditData.mostrarSeguros
+                                  ? (row.payment_total?.expected ?? row.payment.expected)
+                                  : row.payment.expected
+
                                 return (
                                   <tr key={row.cycle} className="border-b border-border/50">
                                     <td className="py-2 pr-2 text-foreground">{row.cycle}</td>
                                     <td className="py-2 px-2 whitespace-nowrap text-foreground">{formatShortDate(row.date)}</td>
-                                    <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
-                                      {formatMoney(row.balance)}
-                                    </td>
                                     <td className="py-2 px-2 text-right text-foreground whitespace-nowrap">
                                       {formatMoney(row.principal.expected)}
                                     </td>
@@ -327,6 +328,9 @@ export default function CreditDetailsModal({ credit, onClose }: CreditDetailsMod
                                         {formatMoney(insuranceAndIva)}
                                       </td>
                                     )}
+                                    <td className="py-2 px-2 text-right font-semibold text-foreground whitespace-nowrap">
+                                      {formatMoney(pagoTotal)}
+                                    </td>
                                     <td className="py-2 pl-2 text-right text-foreground whitespace-nowrap">
                                       {formatMoney(row.final_balance)}
                                     </td>

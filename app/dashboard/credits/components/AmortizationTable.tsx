@@ -48,7 +48,6 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                 <tr className="border-b border-border text-left text-foreground">
                   <th scope="col" className="px-2 py-3 font-semibold">Período</th>
                   <th scope="col" className="px-2 py-3 font-semibold">Fecha</th>
-                  <th scope="col" className="px-2 py-3 text-right font-semibold">Saldo inicial</th>
                   <th scope="col" className="px-2 py-3 text-right font-semibold">Capital</th>
                   <th scope="col" className="px-2 py-3 text-right font-semibold">Interés</th>
                   {hasInsurance && (
@@ -81,9 +80,6 @@ export default function AmortizationTable({ rows }: AmortizationTableProps) {
                         {String(row.term).padStart(2, "0")}
                       </th>
                       <td className="whitespace-nowrap px-2 py-3 text-foreground">{formatShortDate(row.dueDate)}</td>
-                      <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
-                        {formatMoney(row.balance)}
-                      </td>
                       <td className="whitespace-nowrap px-2 py-3 text-right text-foreground">
                         {formatMoney(row.principal.expected)}
                       </td>

@@ -78,9 +78,17 @@ function mapGroup(raw: unknown): CreditInstallmentGroup {
   const installments = mapInstallments(r.cycles);
   const mapSingle = (value: unknown): CreditInstallment | null =>
     mapInstallment(value);
+
+  // `total_amount` puede venir null en créditos recién originados.
+  // Fallback: suma de los amount de las cuotas del grupo.
+  const totalAmountRaw = r.total_amount != null ? toNumber(r.total_amount) : null;
+  const totalAmount =
+    totalAmountRaw ??
+    installments.reduce((sum, i) => sum + i.amount, 0);
+
   return {
     totalTerms: toNumber(r.total, installments.length),
-    totalAmount: toNumber(r.total_amount),
+    totalAmount,
     installments,
     nextTerm: isRecord(r.new_cycle) ? mapSingle(r.new_cycle) : null,
     previousTerm: isRecord(r.old_cycle) ? mapSingle(r.old_cycle) : null,
@@ -91,10 +99,17 @@ function mapSummary(raw: unknown): CreditProductSummary {
   const r = isRecord(raw) ? raw : {};
   const group = mapGroup({ ...r, total: r.total, total_amount: r.total_amount });
   const paidTotal = isRecord(r.paid_total) ? r.paid_total : {};
+
+  // `actual` viene null en créditos recién originados sin movimientos.
+  // En ese caso el saldo pendiente es igual al total del crédito.
+  const actualRaw = r.actual != null ? toNumber(r.actual) : null;
+  const totalAmount = toNumber(r.total_amount);
+  const currentAmount = actualRaw ?? totalAmount;
+
   return {
     ...group,
     lateTerms: toNumber(r.late),
-    currentAmount: toNumber(r.actual),
+    currentAmount,
     overdueAmount: toNumber(r.vencido ?? r.va_cp),
     paidAmountLabel: String(paidTotal.amount ?? ""),
     paidTermsLabel: String(paidTotal.cycles ?? ""),
