@@ -36,4 +36,6 @@ export {
   Tag,
   Filter,
   Minus,
+  KeyRound,
+  ArrowLeft,
 } from "lucide-react";
