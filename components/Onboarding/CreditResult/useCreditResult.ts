@@ -1,8 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useClientRequestStore, useCreditDetailsStore } from "@/stores";
+import {
+  useClientRequestStore,
+  useCreditDetailsStore,
+  useClientDataStore,
+} from "@/stores";
 import { updateClientData } from "@/services/client-data";
+import { runQdetectFind } from "@/services/onboarding/qdetect";
 import { ROUTES } from "@/lib/routes";
 import {
   normalizePaymentFrequency,
@@ -23,6 +28,8 @@ export function useCreditResult() {
   const activeRequest = useClientRequestStore((state) =>
     state.getActiveRequest(),
   );
+
+  const clientId = useClientDataStore((state) => state.client?.id);
 
   const data = activeRequest?.data ?? {};
 
@@ -52,6 +59,10 @@ export function useCreditResult() {
     setError("");
     const nextStep = ROUTES.ONBOARDING.CREDIT_SUCCESS;
     try {
+      // No avanzamos hasta que la consulta Qdetect termine (success o error).
+      // runQdetectFind nunca lanza, así que un fallo no bloquea la navegación.
+      await runQdetectFind(activeRequest?.client || clientId);
+
       await updateClientData({ pii: { paso_actual: nextStep } });
       router.push(nextStep);
     } catch (err) {

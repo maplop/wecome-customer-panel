@@ -61,4 +61,7 @@ export const SERVICES = {
 
   CREDIT_ORIGINATION:
     "/internal/connector/4317/flows/01a0f931-9c9c-700d-bca6-30bd73c0201d",
+
+  QDETECT_FIND:
+    "/internal/connector/22/flows/911006141aab4b13b1164dfe3b807a80",
 };
